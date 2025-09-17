@@ -1,4 +1,4 @@
-import type { Pet, FAQ, ChatConversation, User, Reminder } from '../types/index.js'
+import type { Pet, FAQ, ChatConversation, User, Reminder, ConsultationRecord } from '../types/index.js'
 
 export const mockUser: User = {
   id: '1',
@@ -12,8 +12,15 @@ export const mockPets: Pet[] = [
     name: 'Max',
     breed: 'Golden Retriever',
     birthDate: '2020-03-15',
-    weight: 28.5,
+    age: '4 años',
+    weight: {
+      min: 28,
+      max: 30,
+      unit: 'kg'
+    },
+    gender: 'macho',
     notes: 'Muy activo, le gusta jugar en el parque. Alérgico a algunos alimentos.',
+    observations: 'Presenta alergia alimentaria a pollo. Buen comportamiento general.',
     ownerId: '1',
     vaccinations: [
       {
@@ -22,7 +29,7 @@ export const mockPets: Pet[] = [
         name: 'Rabia',
         date: '2024-01-15',
         nextDue: '2025-01-15',
-        veterinarian: 'Dr. Martinez',
+        veterinarian: 'Clínica Veterinaria',
         notes: 'Sin reacciones adversas'
       },
       {
@@ -31,7 +38,18 @@ export const mockPets: Pet[] = [
         name: 'Múltiple (DHPP)',
         date: '2024-02-20',
         nextDue: '2025-02-20',
-        veterinarian: 'Dr. Martinez'
+        veterinarian: 'Clínica Veterinaria'
+      }
+    ],
+    treatments: [
+      {
+        id: 't1',
+        petId: '1',
+        type: 'antiparasitario',
+        name: 'Desparasitante oral',
+        date: '2024-10-01',
+        dose: '1 pastilla',
+        veterinarian: 'Clínica Veterinaria'
       }
     ],
     appointments: [
@@ -40,9 +58,51 @@ export const mockPets: Pet[] = [
         petId: '1',
         type: 'control',
         date: '2024-12-15',
-        veterinarian: 'Dr. Martinez',
+        veterinarian: 'Clínica Veterinaria',
         notes: 'Control rutinario',
         status: 'programada'
+      }
+    ],
+    documents: [
+      {
+        id: 'd1',
+        petId: '1',
+        name: 'Certificado de vacunación',
+        type: 'certificado',
+        uploadDate: '2024-01-15',
+        veterinarian: 'Clínica Veterinaria'
+      }
+    ],
+    consultationRecords: [
+      {
+        id: 'cr1',
+        petId: '1',
+        type: 'consulta',
+        title: 'Revisión rutinaria y problema digestivo',
+        date: '2024-10-15',
+        veterinarian: 'Clínica Veterinaria',
+        clinicName: 'Veterinaria San Martín',
+        diagnosis: 'Gastroenteritis leve. Se detectó sensibilidad alimentaria. Estado general bueno.',
+        prescription: 'Dieta blanda por 3 días. Probióticos durante 1 semana.',
+        notes: 'Max presentó vómitos esporádicos. Se recomienda cambio gradual de alimento.',
+        cost: 85,
+        nextAppointment: '2024-11-15',
+        createdBy: 'owner',
+        createdAt: '2024-10-15T16:30:00Z'
+      },
+      {
+        id: 'cr2',
+        petId: '1',
+        type: 'vacunacion',
+        title: 'Vacuna antirrábica anual',
+        date: '2024-01-15',
+        veterinarian: 'Clínica Veterinaria',
+        clinicName: 'Veterinaria San Martín',
+        diagnosis: 'Aplicación exitosa de vacuna antirrábica. Sin reacciones adversas.',
+        notes: 'Max se comportó muy bien durante la aplicación. Peso: 29kg.',
+        cost: 35,
+        createdBy: 'owner',
+        createdAt: '2024-01-15T11:00:00Z'
       }
     ]
   },
@@ -51,8 +111,15 @@ export const mockPets: Pet[] = [
     name: 'Luna',
     breed: 'Gato Persa',
     birthDate: '2021-07-22',
-    weight: 4.2,
+    age: '3 años',
+    weight: {
+      min: 4,
+      max: 4.5,
+      unit: 'kg'
+    },
+    gender: 'hembra',
     notes: 'Muy tranquila, le gusta dormir al sol. Necesita cepillado diario.',
+    observations: 'Pelo largo requiere cepillado frecuente para evitar nudos.',
     ownerId: '1',
     vaccinations: [
       {
@@ -64,6 +131,7 @@ export const mockPets: Pet[] = [
         veterinarian: 'Dra. Rodriguez'
       }
     ],
+    treatments: [],
     appointments: [
       {
         id: '2',
@@ -74,6 +142,23 @@ export const mockPets: Pet[] = [
         notes: 'Vacuna anual triple felina',
         status: 'programada'
       }
+    ],
+    documents: [],
+    consultationRecords: [
+      {
+        id: 'cr3',
+        petId: '2',
+        type: 'estetica',
+        title: 'Corte y limpieza dental',
+        date: '2024-09-20',
+        veterinarian: 'Dra. Rodriguez',
+        clinicName: 'Clínica Veterinaria del Centro',
+        diagnosis: 'Pelaje en buen estado. Se realizó limpieza dental preventiva.',
+        notes: 'Luna se mantuvo tranquila durante el procedimiento. Excelente comportamiento.',
+        cost: 120,
+        createdBy: 'owner',
+        createdAt: '2024-09-20T14:00:00Z'
+      }
     ]
   },
   {
@@ -81,8 +166,15 @@ export const mockPets: Pet[] = [
     name: 'Rocky',
     breed: 'Bulldog Francés',
     birthDate: '2019-11-08',
-    weight: 12.1,
+    age: '5 años',
+    weight: {
+      min: 12,
+      max: 12.5,
+      unit: 'kg'
+    },
+    gender: 'macho',
     notes: 'Problemas respiratorios leves. Evitar ejercicio intenso en verano.',
+    observations: 'Raza braquicéfala con dificultades respiratorias. Monitorear en clima caluroso.',
     ownerId: '1',
     vaccinations: [
       {
@@ -91,10 +183,30 @@ export const mockPets: Pet[] = [
         name: 'Rabia',
         date: '2024-03-05',
         nextDue: '2025-03-05',
-        veterinarian: 'Dr. Martinez'
+        veterinarian: 'Clínica Veterinaria'
       }
     ],
-    appointments: []
+    treatments: [],
+    appointments: [],
+    documents: [],
+    consultationRecords: [
+      {
+        id: 'cr4',
+        petId: '3',
+        type: 'control',
+        title: 'Control respiratorio',
+        date: '2024-08-10',
+        veterinarian: 'Clínica Veterinaria',
+        clinicName: 'Veterinaria San Martín',
+        diagnosis: 'Vías respiratorias ligeramente inflamadas. Típico de la raza. Recomendar evitar ejercicio intenso.',
+        prescription: 'Antiinflamatorio suave por 5 días. Evitar calor excesivo.',
+        notes: 'Rocky presentó jadeo excesivo después de caminar. Se recomienda ejercicio moderado.',
+        cost: 70,
+        nextAppointment: '2024-11-10',
+        createdBy: 'owner',
+        createdAt: '2024-08-10T10:30:00Z'
+      }
+    ]
   }
 ]
 
@@ -102,92 +214,215 @@ export const mockReminders: Reminder[] = [
   {
     id: '1',
     petId: '1',
-    type: 'appointment',
+    type: 'control',
     title: 'Control veterinario - Max',
-    description: 'Control rutinario programado con Dr. Martinez',
+    description: 'Control rutinario programado en clínica veterinaria',
     date: '2024-12-15',
+    time: '14:30',
+    location: 'Veterinaria San Martín',
     isCompleted: false
   },
   {
     id: '2',
     petId: '2',
-    type: 'vaccination',
+    type: 'vacuna',
     title: 'Vacuna Triple Felina - Luna',
     description: 'Vacuna anual con Dra. Rodriguez',
     date: '2024-11-20',
+    time: '10:00',
+    location: 'Clínica Veterinaria del Centro',
     isCompleted: false
   },
   {
     id: '3',
     petId: '1',
-    type: 'medication',
+    type: 'desparasitacion',
     title: 'Desparasitación - Max',
     description: 'Administrar desparasitante mensual',
     date: '2024-10-30',
+    time: '16:00',
     isCompleted: true
+  },
+  {
+    id: '4',
+    petId: '3',
+    type: 'higiene',
+    title: 'Baño y corte de uñas - Rocky',
+    description: 'Sesión de higiene mensual',
+    date: '2024-11-25',
+    time: '11:30',
+    location: 'Pet Spa Las Flores',
+    isCompleted: false
+  },
+  {
+    id: '5',
+    petId: '2',
+    type: 'estetica',
+    title: 'Corte y cepillado - Luna',
+    description: 'Mantenimiento del pelaje largo',
+    date: '2024-11-18',
+    time: '15:00',
+    location: 'Peluquería Canina Premium',
+    isCompleted: false
   }
 ]
 
 export const mockFAQs: FAQ[] = [
+  // Preguntas específicas para PERROS
   {
     id: '1',
     question: '¿Con qué frecuencia debo vacunar a mi perro?',
     answer: 'Los perros adultos necesitan vacunas anuales. Los cachorros requieren una serie de vacunas que comienzan a las 6-8 semanas de edad, con refuerzos cada 3-4 semanas hasta los 4 meses.',
-    category: 'salud'
-  },
-  {
-    id: '2',
-    question: '¿Qué alimentos son tóxicos para los gatos?',
-    answer: 'Los gatos no deben consumir chocolate, cebolla, ajo, uvas, pasas, alcohol, cafeína, aguacate y productos lácteos en exceso. Estos pueden ser tóxicos o causarles problemas digestivos.',
-    category: 'alimentacion'
-  },
-  {
-    id: '3',
-    question: '¿Cuándo debo preocuparme por el comportamiento de mi mascota?',
-    answer: 'Busca ayuda si observas cambios súbitos en el apetito, letargo, agresividad inusual, vómitos frecuentes, dificultad para respirar o cualquier comportamiento muy diferente al normal.',
-    category: 'comportamiento'
+    category: 'salud',
+    species: ['perro']
   },
   {
     id: '4',
     question: '¿Con qué frecuencia debo bañar a mi perro?',
     answer: 'La mayoría de los perros necesitan un baño cada 4-6 semanas, aunque esto puede variar según la raza, estilo de vida y tipo de pelaje. Los perros con piel sensible pueden necesitar baños menos frecuentes.',
-    category: 'cuidados'
+    category: 'cuidados',
+    species: ['perro']
+  },
+  {
+    id: '7',
+    question: '¿Cuánto ejercicio necesita mi perro?',
+    answer: 'Los perros necesitan al menos 30 minutos a 2 horas de ejercicio diario, dependiendo de la raza, edad y nivel de energía. Razas activas como Border Collie necesitan más ejercicio que razas más tranquilas.',
+    category: 'cuidados',
+    species: ['perro']
+  },
+  {
+    id: '8',
+    question: '¿Por qué mi perro come hierba?',
+    answer: 'Es normal que los perros coman hierba ocasionalmente. Puede ser por instinto, aburrimiento, o para ayudar con la digestión. Si lo hace frecuentemente o vomita después, consulta al veterinario.',
+    category: 'comportamiento',
+    species: ['perro']
+  },
+  {
+    id: '9',
+    question: '¿Qué alimentos son tóxicos para los perros?',
+    answer: 'Los perros no deben consumir chocolate, uvas, pasas, cebolla, ajo, aguacate, nueces de macadamia, alcohol, café y dulces con xilitol. Estos pueden ser muy tóxicos.',
+    category: 'alimentacion',
+    species: ['perro']
+  },
+  {
+    id: '10',
+    question: '¿Cuándo debe mi perro empezar el entrenamiento?',
+    answer: 'El entrenamiento básico puede comenzar desde las 8 semanas de edad. La socialización temprana (3-6 meses) es crucial. Nunca es demasiado tarde para entrenar, pero es más fácil cuando son jóvenes.',
+    category: 'comportamiento',
+    species: ['perro']
+  },
+
+  // Preguntas específicas para GATOS
+  {
+    id: '2',
+    question: '¿Qué alimentos son tóxicos para los gatos?',
+    answer: 'Los gatos no deben consumir chocolate, cebolla, ajo, uvas, pasas, alcohol, cafeína, aguacate y productos lácteos en exceso. Estos pueden ser tóxicos o causarles problemas digestivos.',
+    category: 'alimentacion',
+    species: ['gato']
+  },
+  {
+    id: '11',
+    question: '¿Con qué frecuencia debo limpiar la caja de arena?',
+    answer: 'La caja de arena debe limpiarse diariamente, removiendo los desechos sólidos y la arena aglomerada. Un cambio completo de arena debe hacerse semanalmente.',
+    category: 'cuidados',
+    species: ['gato']
+  },
+  {
+    id: '12',
+    question: '¿Por qué mi gato ronronea?',
+    answer: 'Los gatos ronronean cuando están contentos, relajados o buscan atención. También pueden ronronear cuando están estresados o enfermos como mecanismo de autoconsuelo.',
+    category: 'comportamiento',
+    species: ['gato']
+  },
+  {
+    id: '13',
+    question: '¿Necesita mi gato salir al exterior?',
+    answer: 'Los gatos pueden vivir felizmente en interiores. Si vive adentro, proporciona estímulos como rascadores, juguetes y lugares altos. El exterior puede ser peligroso (tráfico, predadores, enfermedades).',
+    category: 'cuidados',
+    species: ['gato']
+  },
+  {
+    id: '14',
+    question: '¿Cuándo debo esterilizar a mi gato?',
+    answer: 'La esterilización se recomienda entre los 4-6 meses de edad, antes del primer celo. Previene embarazos no deseados y reduce el riesgo de ciertos cánceres y comportamientos territoriales.',
+    category: 'salud',
+    species: ['gato']
+  },
+  {
+    id: '15',
+    question: '¿Por qué mi gato araña los muebles?',
+    answer: 'Arañar es natural en gatos: marcan territorio, mantienen sus uñas saludables y se estiran. Proporciona rascadores atractivos y usa repelentes naturales en muebles.',
+    category: 'comportamiento',
+    species: ['gato']
+  },
+
+  // Preguntas GENERALES (aplican a ambos)
+  {
+    id: '3',
+    question: '¿Cuándo debo preocuparme por el comportamiento de mi mascota?',
+    answer: 'Busca ayuda si observas cambios súbitos en el apetito, letargo, agresividad inusual, vómitos frecuentes, dificultad para respirar o cualquier comportamiento muy diferente al normal.',
+    category: 'comportamiento',
+    species: ['perro', 'gato', 'general']
   },
   {
     id: '5',
     question: '¿Qué debo hacer en caso de emergencia?',
     answer: 'En emergencias, mantén la calma, contacta inmediatamente a tu veterinario o clínica de emergencia más cercana. Ten siempre a mano números de teléfono de emergencia veterinaria.',
-    category: 'emergencias'
+    category: 'emergencias',
+    species: ['perro', 'gato', 'general']
   },
   {
     id: '6',
     question: '¿Cuánta comida debo darle a mi mascota?',
     answer: 'La cantidad depende de la edad, peso, nivel de actividad y tipo de alimento. Consulta las instrucciones del fabricante y ajusta según las recomendaciones de tu veterinario.',
-    category: 'alimentacion'
+    category: 'alimentacion',
+    species: ['perro', 'gato', 'general']
+  },
+  {
+    id: '16',
+    question: '¿Con qué frecuencia debo llevar mi mascota al veterinario?',
+    answer: 'Mascotas adultas y sanas deben ir al veterinario al menos una vez al año para chequeos. Cachorros, gatitos y mascotas mayores (7+ años) necesitan visitas más frecuentes.',
+    category: 'salud',
+    species: ['perro', 'gato', 'general']
+  },
+  {
+    id: '17',
+    question: '¿Cómo puedo saber si mi mascota tiene dolor?',
+    answer: 'Signos de dolor incluyen: cambios en el apetito, letargo, jadeo excesivo, vocalización inusual, cojera, cambios posturales, o evitar actividades normales. Consulta al veterinario si notas estos signos.',
+    category: 'salud',
+    species: ['perro', 'gato', 'general']
+  },
+  {
+    id: '18',
+    question: '¿Qué debo tener en un botiquín de primeros auxilios para mascotas?',
+    answer: 'Incluye: gasas, vendas, antiséptico, termómetro, jeringas sin aguja, manta, números de emergencia veterinaria, y cualquier medicamento específico de tu mascota.',
+    category: 'emergencias',
+    species: ['perro', 'gato', 'general']
   }
 ]
 
 export const mockChatConversations: ChatConversation[] = [
   {
     id: '1',
-    participantName: 'Dr. Martinez',
+    participantName: 'Asistente IA',
+    participantAvatar: '/paws-ai-avatar.png',
     unreadCount: 2,
     messages: [
       {
         id: '1',
-        text: 'Hola! ¿En qué puedo ayudarte hoy?',
+        text: '¡Hola! Soy tu asistente de IA especializado en cuidado de mascotas. ¿En qué puedo ayudarte hoy?',
         sender: 'vet',
         timestamp: '2024-10-15T09:00:00Z'
       },
       {
         id: '2',
-        text: 'Hola Doctor, tengo una pregunta sobre Max. Ha estado un poco decaído últimamente.',
+        text: 'Hola, tengo una pregunta sobre Max. Ha estado un poco decaído últimamente.',
         sender: 'user',
         timestamp: '2024-10-15T09:05:00Z'
       },
       {
         id: '3',
-        text: '¿Desde cuándo notas este cambio? ¿Ha tenido cambios en su apetito o actividad?',
+        text: 'Entiendo tu preocupación. ¿Desde cuándo notas este cambio? ¿Ha tenido cambios en su apetito o actividad? Esta información me ayudará a darte mejor orientación.',
         sender: 'vet',
         timestamp: '2024-10-15T09:07:00Z'
       },
@@ -199,20 +434,20 @@ export const mockChatConversations: ChatConversation[] = [
       },
       {
         id: '5',
-        text: 'Te recomiendo que lo traigas para un chequeo. Podría ser algo menor, pero es mejor asegurarnos.',
+        text: 'Basándome en lo que describes, podría ser normal pero es recomendable observarlo. Te sugiero considerar una consulta veterinaria si continúa así. ¿Has notado otros síntomas?',
         sender: 'vet',
         timestamp: '2024-10-15T09:15:00Z'
       },
       {
         id: '6',
-        text: 'Perfecto, ¿tienes disponibilidad esta semana?',
+        text: 'No, solo eso. ¿Debería preocuparme más?',
         sender: 'user',
         timestamp: '2024-10-15T09:17:00Z'
       }
     ],
     lastMessage: {
       id: '6',
-      text: 'Perfecto, ¿tienes disponibilidad esta semana?',
+      text: 'No, solo eso. ¿Debería preocuparme más?',
       sender: 'user',
       timestamp: '2024-10-15T09:17:00Z'
     }

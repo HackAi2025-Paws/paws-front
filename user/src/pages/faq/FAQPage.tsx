@@ -1,11 +1,15 @@
-import React, { useState } from 'react'
-import { Header } from '../../components/layout/Header.js'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card.js'
-import { Input } from '../../components/ui/input.js'
-import { Badge } from '../../components/ui/badge.js'
-import { mockFAQs } from '../../data/mockData.js'
+import React, { useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
+import { Header } from '../../components/layout/Header'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Input } from '../../components/ui/input'
+import { Badge } from '../../components/ui/badge'
+import { Button } from '../../components/ui/button'
+import { mockFAQs } from '../../data/mockData'
+import { useAppSelector } from '../../hooks'
+import { detectPetSpecies, getSpeciesEmoji, getSpeciesLabel } from '../../lib/petUtils'
 import type { FAQ } from '../../types/index.js'
-import { Search, ChevronDown, ChevronUp, Heart, Utensils, Brain, Shield, AlertTriangle } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp, Heart, Utensils, Brain, Shield, AlertTriangle, Info, MessageCircle, ArrowRight } from 'lucide-react'
 
 const categoryIcons = {
   alimentacion: Utensils,
@@ -24,20 +28,40 @@ const categoryColors = {
 }
 
 export const FAQPage: React.FC = () => {
+  const { pets } = useAppSelector((state) => state.pets)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<FAQ['category'] | 'all'>('all')
+  const [selectedSpecies, setSelectedSpecies] = useState<'all' | 'perro' | 'gato' | 'general'>('all')
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+  const [showAllQuestions, setShowAllQuestions] = useState(false)
 
   const categories = ['all', 'alimentacion', 'salud', 'comportamiento', 'cuidados', 'emergencias'] as const
 
-  const filteredFAQs = mockFAQs.filter(faq => {
+  // Detectar qué tipos de mascotas tiene el usuario
+  const userPetSpecies = useMemo(() => detectPetSpecies(pets), [pets])
+
+  // Filtrar FAQs basándose en las mascotas del usuario
+  const relevantFAQs = useMemo(() => {
+    if (showAllQuestions) {
+      return mockFAQs // Mostrar todas las preguntas si el usuario lo solicita
+    }
+
+    return mockFAQs.filter(faq => {
+      // Mostrar preguntas que coincidan con las especies de mascotas del usuario
+      return faq.species.some(species => userPetSpecies.includes(species))
+    })
+  }, [userPetSpecies, showAllQuestions])
+
+  const filteredFAQs = relevantFAQs.filter(faq => {
     const matchesSearch = searchQuery === '' || 
       faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
     
     const matchesCategory = selectedCategory === 'all' || faq.category === selectedCategory
     
-    return matchesSearch && matchesCategory
+    const matchesSpecies = selectedSpecies === 'all' || faq.species.includes(selectedSpecies)
+
+    return matchesSearch && matchesCategory && matchesSpecies
   })
 
   const toggleExpanded = (id: string) => {
@@ -55,6 +79,55 @@ export const FAQPage: React.FC = () => {
       <Header title="Preguntas Frecuentes" showBack={false} />
       
       <div className="p-4 space-y-6">
+        {/* Información personalizada */}
+        {pets.length > 0 && !showAllQuestions && (
+          <Card className="border-blue-200 bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-medium text-blue-900 mb-1">
+                    Preguntas personalizadas para tus mascotas
+                  </h3>
+                  <p className="text-sm text-blue-800 mb-3">
+                    Mostrando preguntas relevantes para: {' '}
+                    {userPetSpecies.filter(s => s !== 'general').map(species =>
+                      `${getSpeciesEmoji(species)} ${getSpeciesLabel(species)}`
+                    ).join(', ')}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowAllQuestions(true)}
+                    className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                  >
+                    Ver todas las preguntas
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {showAllQuestions && (
+          <Card className="border-gray-200">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">
+                  Mostrando todas las preguntas disponibles
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAllQuestions(false)}
+                >
+                  Ver solo mis mascotas
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Buscador */}
         <Card>
           <CardContent className="p-4">
@@ -70,31 +143,70 @@ export const FAQPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Filtros por categoría */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Categorías</h3>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => {
-              const isSelected = selectedCategory === category
-              const Icon = category !== 'all' ? categoryIcons[category as keyof typeof categoryIcons] : null
-              
-              return (
+        {/* Filtros */}
+        <div className="space-y-4">
+          {/* Filtros por tipo de mascota */}
+          {(showAllQuestions || userPetSpecies.length > 2) && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Tipo de mascota</h3>
+              <div className="flex flex-wrap gap-2">
                 <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => setSelectedSpecies('all')}
                   className={`
                     flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-colors
-                    ${isSelected 
+                    ${selectedSpecies === 'all'
                       ? 'bg-primary text-primary-foreground' 
                       : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
                     }
                   `}
                 >
-                  {Icon && <Icon className="h-4 w-4" />}
-                  {category === 'all' ? 'Todas' : category.charAt(0).toUpperCase() + category.slice(1)}
+                  🐾 Todas
                 </button>
-              )
-            })}
+                {(showAllQuestions ? ['perro', 'gato', 'general'] as const : userPetSpecies).map((species) => (
+                  <button
+                    key={species}
+                    onClick={() => setSelectedSpecies(species)}
+                    className={`
+                      flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-colors
+                      ${selectedSpecies === species
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    {getSpeciesEmoji(species)} {getSpeciesLabel(species)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Filtros por categoría */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Categorías</h3>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => {
+                const isSelected = selectedCategory === category
+                const Icon = category !== 'all' ? categoryIcons[category as keyof typeof categoryIcons] : null
+
+                return (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`
+                      flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-colors
+                      ${isSelected 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    {Icon && <Icon className="h-4 w-4" />}
+                    {category === 'all' ? 'Todas' : category.charAt(0).toUpperCase() + category.slice(1)}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
 
@@ -111,9 +223,19 @@ export const FAQPage: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
                   No se encontraron resultados
                 </h3>
-                <p className="text-gray-600 text-center">
+                <p className="text-gray-600 text-center mb-6">
                   Intenta con otros términos de búsqueda o selecciona una categoría diferente
                 </p>
+
+                {/* Enlace al chat cuando no hay resultados */}
+                <Link
+                  to="/chat"
+                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  Chat con IA
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </CardContent>
             </Card>
           ) : (
@@ -137,12 +259,28 @@ export const FAQPage: React.FC = () => {
                                 {faq.question}
                               </h3>
                             </div>
-                            <Badge 
-                              variant="outline" 
-                              className={categoryColors[faq.category]}
-                            >
-                              {faq.category.charAt(0).toUpperCase() + faq.category.slice(1)}
-                            </Badge>
+                            <div className="flex flex-wrap gap-2">
+                              <Badge
+                                variant="outline"
+                                className={categoryColors[faq.category]}
+                              >
+                                {faq.category.charAt(0).toUpperCase() + faq.category.slice(1)}
+                              </Badge>
+                              {/* Mostrar badges de especies solo si no estamos en modo personalizado o hay múltiples especies */}
+                              {(showAllQuestions || faq.species.length > 1) && (
+                                <div className="flex gap-1">
+                                  {faq.species.filter(s => s !== 'general').map(species => (
+                                    <Badge
+                                      key={species}
+                                      variant="outline"
+                                      className="text-xs bg-gray-50"
+                                    >
+                                      {getSpeciesEmoji(species)} {getSpeciesLabel(species)}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                           
                           <div className="flex-shrink-0 ml-2">
@@ -173,21 +311,32 @@ export const FAQPage: React.FC = () => {
         </div>
 
         {/* Sección de ayuda adicional */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardHeader>
-            <CardTitle className="text-blue-900">¿No encontraste lo que buscabas?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-blue-800 mb-4">
-              Nuestro equipo veterinario está disponible para resolver tus dudas específicas.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                Chat con Veterinario
-              </button>
-              <button className="flex-1 bg-white text-blue-600 py-2 px-4 rounded-lg font-medium border border-blue-200 hover:bg-blue-50 transition-colors">
-                Programar Consulta
-              </button>
+        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-green-600" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                ¿No encontraste lo que buscabas?
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Consulta directamente con nuestra IA para obtener respuestas personalizadas sobre tu mascota.
+              </p>
+
+              <div className="flex justify-center">
+                <Link
+                  to="/chat"
+                  className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium text-lg"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  Chat con IA
+                </Link>
+              </div>
+
+              <div className="mt-4 flex items-center justify-center gap-6 text-sm text-gray-500">
+                <span className="flex items-center gap-1">💬 Respuestas inmediatas</span>
+                <span className="flex items-center gap-1">🩺 Consejos profesionales</span>
+                <span className="flex items-center gap-1">🐾 Personalizado</span>
+              </div>
             </div>
           </CardContent>
         </Card>

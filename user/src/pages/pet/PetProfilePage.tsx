@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import { Header } from '../../components/layout/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
@@ -7,12 +7,14 @@ import { Button } from '../../components/ui/button'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { setSelectedPet } from '../../store/petsSlice'
 import { calculateAge, formatDate } from '../../lib/utils'
-import { Calendar, Syringe, Stethoscope, Edit, Weight, Cake } from 'lucide-react'
+import { exportPetHistoryToPDF } from '../../lib/pdfExport'
+import { Calendar, Syringe, Stethoscope, Edit, Weight, Cake, Download, FileText } from 'lucide-react'
 
 export const PetProfilePage: React.FC = () => {
   const { petId } = useParams<{ petId: string }>()
   const dispatch = useAppDispatch()
   const { pets, selectedPet } = useAppSelector((state) => state.pets)
+  const [isExporting, setIsExporting] = useState(false)
 
   useEffect(() => {
     if (petId) {
@@ -44,6 +46,18 @@ export const PetProfilePage: React.FC = () => {
     vacc => vacc.nextDue && new Date(vacc.nextDue) > new Date()
   )
 
+  const handleExportPDF = async () => {
+    setIsExporting(true)
+    try {
+      await exportPetHistoryToPDF(selectedPet)
+    } catch (error) {
+      console.error('Error al exportar PDF:', error)
+      alert('Hubo un error al generar el PDF. Por favor, intenta de nuevo.')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header title={selectedPet.name} showBack />
@@ -68,10 +82,30 @@ export const PetProfilePage: React.FC = () => {
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <h1 className="text-2xl font-bold text-gray-900">{selectedPet.name}</h1>
-                  <Button size="sm" variant="outline">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={handleExportPDF}
+                      disabled={isExporting}
+                    >
+                      {isExporting ? (
+                        <>
+                          <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                          Generando...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          Exportar PDF
+                        </>
+                      )}
+                    </Button>
+                    <Button size="sm" variant="outline">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="mt-2 space-y-2">
@@ -86,7 +120,7 @@ export const PetProfilePage: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-1">
                       <Weight className="h-4 w-4" />
-                      <span>{selectedPet.weight} kg</span>
+                      <span>{selectedPet.weight.min}-{selectedPet.weight.max} {selectedPet.weight.unit}</span>
                     </div>
                   </div>
                 </div>
@@ -158,11 +192,6 @@ export const PetProfilePage: React.FC = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm">{formatDate(vacc.date)}</p>
-                      {vacc.nextDue && (
-                        <p className="text-xs text-gray-500">
-                          Próxima: {formatDate(vacc.nextDue)}
-                        </p>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -205,6 +234,51 @@ export const PetProfilePage: React.FC = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Registros de consultas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center">
+                <FileText className="h-5 w-5 mr-2" />
+                Historial de Consultas
+              </span>
+              <Link to="/consultations">
+                <Button variant="outline" size="sm">
+                  Ver Todo
+                </Button>
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {selectedPet.consultationRecords.length === 0 ? (
+              <p className="text-gray-600 text-center py-4">No hay consultas registradas</p>
+            ) : (
+              <div className="space-y-3">
+                {selectedPet.consultationRecords.slice(0, 3).map(record => (
+                  <div key={record.id} className="flex items-start justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <p className="font-medium">{record.title}</p>
+                      <p className="text-sm text-gray-600">{record.veterinarian || 'Sin veterinario'}</p>
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{record.diagnosis}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm">{new Date(record.date).toLocaleDateString('es-ES')}</p>
+                      {record.cost && (
+                        <p className="text-xs text-green-600">${record.cost}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {selectedPet.consultationRecords.length > 3 && (
+                  <p className="text-sm text-gray-500 text-center">
+                    Y {selectedPet.consultationRecords.length - 3} consulta{selectedPet.consultationRecords.length - 3 !== 1 ? 's' : ''} más...
+                  </p>
+                )}
               </div>
             )}
           </CardContent>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Calendar, MessageCircle, HelpCircle, User } from 'lucide-react'
+import { Home, Calendar, MessageCircle, FileText, User } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 const navigationItems = [
@@ -20,9 +20,9 @@ const navigationItems = [
     icon: MessageCircle,
   },
   {
-    name: 'FAQ',
-    href: '/faq',
-    icon: HelpCircle,
+    name: 'Consultas',
+    href: '/consultations',
+    icon: FileText,
   },
   {
     name: 'Perfil',

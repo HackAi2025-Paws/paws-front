@@ -15,13 +15,23 @@ interface ReminderListProps {
 
 const getIconForType = (type: Reminder['type']) => {
   switch (type) {
-    case 'vaccination':
+    case 'vacuna':
       return Syringe
-    case 'appointment':
+    case 'control':
+    case 'revision':
       return Stethoscope
-    case 'medication':
+    case 'tratamiento':
+    case 'medicacion':
       return Pill
-    case 'checkup':
+    case 'operacion':
+      return Calendar
+    case 'higiene':
+      return Clock
+    case 'desparasitacion':
+      return Pill
+    case 'estetica':
+      return Clock
+    case 'emergencia':
       return Calendar
     default:
       return Clock
@@ -30,17 +40,42 @@ const getIconForType = (type: Reminder['type']) => {
 
 const getColorForType = (type: Reminder['type']) => {
   switch (type) {
-    case 'vaccination':
+    case 'vacuna':
       return 'text-green-500'
-    case 'appointment':
+    case 'control':
+    case 'revision':
       return 'text-blue-500'
-    case 'medication':
+    case 'tratamiento':
+    case 'medicacion':
       return 'text-purple-500'
-    case 'checkup':
-      return 'text-orange-500'
+    case 'operacion':
+      return 'text-red-500'
+    case 'higiene':
+    case 'estetica':
+      return 'text-cyan-500'
+    case 'desparasitacion':
+      return 'text-yellow-500'
+    case 'emergencia':
+      return 'text-red-600'
     default:
       return 'text-gray-500'
   }
+}
+
+const getTypeLabel = (type: Reminder['type']) => {
+  const labels = {
+    'vacuna': '💉 Vacuna',
+    'tratamiento': '💊 Tratamiento',
+    'control': '🩺 Control',
+    'operacion': '⚕️ Operación',
+    'higiene': '🛁 Higiene',
+    'desparasitacion': '🐛 Desparasitación',
+    'revision': '🔍 Revisión',
+    'estetica': '✂️ Estética',
+    'emergencia': '🚨 Emergencia',
+    'medicacion': '💊 Medicación'
+  }
+  return labels[type] || type
 }
 
 export const ReminderList: React.FC<ReminderListProps> = ({ 
@@ -64,22 +99,7 @@ export const ReminderList: React.FC<ReminderListProps> = ({
   }
 
   if (filteredReminders.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Calendar className="h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {showCompleted ? 'No hay recordatorios completados' : '¡Todo al día!'}
-          </h3>
-          <p className="text-gray-600 text-center">
-            {showCompleted 
-              ? 'Cuando completes recordatorios aparecerán aquí'
-              : 'No tienes recordatorios pendientes en este momento'
-            }
-          </p>
-        </CardContent>
-      </Card>
-    )
+    return null
   }
 
   return (
@@ -107,13 +127,32 @@ export const ReminderList: React.FC<ReminderListProps> = ({
                 
                 <div className="flex-1 space-y-2">
                   <div>
-                    <h3 className={`font-medium ${reminder.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                      {reminder.title}
-                    </h3>
-                    <p className="text-sm text-gray-600">{reminder.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Para: {getPetName(reminder.petId)}
-                    </p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className={`font-medium ${reminder.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                        {reminder.title}
+                      </h3>
+                      <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                        {getTypeLabel(reminder.type)}
+                      </span>
+                    </div>
+                    {reminder.description && (
+                      <p className="text-sm text-gray-600">{reminder.description}</p>
+                    )}
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                      <span className="font-medium">
+                        🐕 {getPetName(reminder.petId)}
+                      </span>
+                      {reminder.time && (
+                        <span>
+                          🕐 {reminder.time}
+                        </span>
+                      )}
+                      {reminder.location && (
+                        <span>
+                          📍 {reminder.location}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between">

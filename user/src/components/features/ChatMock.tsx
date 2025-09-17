@@ -4,7 +4,7 @@ import { Input } from '../ui/input.js'
 import { Button } from '../ui/button.js'
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar.js'
 import type { ChatMessage, ChatConversation } from '../../types/index.js'
-import { Send, Phone, Video, MoreVertical } from 'lucide-react'
+import { Send, MoreVertical } from 'lucide-react'
 import { formatDateTime } from '../../lib/utils.js'
 
 interface ChatMockProps {
@@ -57,12 +57,6 @@ export const ChatMock: React.FC<ChatMockProps> = ({ conversation, onSendMessage 
           </div>
           
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Phone className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Video className="h-4 w-4" />
-            </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <MoreVertical className="h-4 w-4" />
             </Button>

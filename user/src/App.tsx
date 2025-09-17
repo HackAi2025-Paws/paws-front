@@ -6,6 +6,8 @@ import { Layout } from './components/layout/Layout'
 import { LoginPage } from './pages/auth/LoginPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { PetProfilePage } from './pages/pet/PetProfilePage'
+import { AddPetPage } from './pages/pet/AddPetPage'
+import { ConsultationsPage } from './pages/consultations/ConsultationsPage'
 import { RemindersPage } from './pages/reminders/RemindersPage'
 import { FAQPage } from './pages/faq/FAQPage'
 import { ChatPage } from './pages/chat/ChatPage'
@@ -31,6 +33,18 @@ function App() {
             <Route path="/pet/:petId" element={
               <ProtectedRoute>
                 <PetProfilePage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/pet/add" element={
+              <ProtectedRoute>
+                <AddPetPage />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/consultations" element={
+              <ProtectedRoute>
+                <ConsultationsPage />
               </ProtectedRoute>
             } />
             
