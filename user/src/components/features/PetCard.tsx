@@ -1,9 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { Card, CardContent } from '../ui/card'
-import { Badge } from '../ui/badge'
+import { Card, CardContent } from '../ui/card.js'
+import { Badge } from '../ui/badge.js'
 import type { Pet } from '../../types/index.js'
-import { calculateAge, isUpcoming } from '../../lib/utils'
+import { calculateAge, isUpcoming } from '../../lib/utils.js'
 import { Calendar, AlertCircle } from 'lucide-react'
 
 interface PetCardProps {
