@@ -73,3 +73,38 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Estilos para carrusel estilo billetera virtual */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* Efectos de profundidad para carrusel */
+.card-depth-active {
+  transform: translateZ(0) scale(1);
+  filter: brightness(1);
+}
+
+.card-depth-inactive {
+  transform: translateZ(-10px) scale(0.95);
+  filter: brightness(0.8);
+}
+
+/* Animaciones suaves */
+.smooth-transform {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
