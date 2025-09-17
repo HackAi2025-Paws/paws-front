@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
-import { Header } from '../../components/layout/Header'
-import { ChatMock } from '../../components/features/ChatMock'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { useAppDispatch, useAppSelector } from '../../hooks'
-import { setConversations, setActiveConversation, addMessage, simulateVetResponse } from '../../store/chatSlice'
-import { mockChatConversations } from '../../data/mockData'
+import { Header } from '../../components/layout/Header.js'
+import { ChatMock } from '../../components/features/ChatMock.js'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card.js'
+import { useAppDispatch, useAppSelector } from '../../hooks/index.js'
+import { setConversations, setActiveConversation, addMessage, simulateVetResponse } from '../../store/chatSlice.js'
+import { mockChatConversations } from '../../data/mockData.js'
 import type { ChatMessage } from '../../types/index.js'
 
 export const ChatPage: React.FC = () => {
