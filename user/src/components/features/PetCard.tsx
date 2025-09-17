@@ -55,7 +55,7 @@ export const PetCard: React.FC<PetCardProps> = ({ pet }) => {
             <div>
               <h3 className="font-semibold text-lg text-gray-900">{pet.name}</h3>
               <p className="text-sm text-gray-600">{pet.breed}</p>
-              <p className="text-xs text-gray-500">{age} • {pet.weight} kg</p>
+              <p className="text-xs text-gray-500">{age} • {pet.weight.min}-{pet.weight.max} {pet.weight.unit}</p>
             </div>
 
             {/* Próximos eventos */}

@@ -92,33 +92,6 @@ export const ProfilePage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Estadísticas */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-4">
-              <p className="text-2xl font-bold text-blue-600">{pets.length}</p>
-              <p className="text-xs text-gray-600 text-center">Mascotas</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-4">
-              <p className="text-2xl font-bold text-green-600">
-                {reminders.filter(r => r.isCompleted).length}
-              </p>
-              <p className="text-xs text-gray-600 text-center">Completados</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-4">
-              <p className="text-2xl font-bold text-orange-600">
-                {reminders.filter(r => !r.isCompleted).length}
-              </p>
-              <p className="text-xs text-gray-600 text-center">Pendientes</p>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Menú de opciones */}
         <Card>
