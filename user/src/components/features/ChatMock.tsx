@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Card } from '../ui/card'
-import { Input } from '../ui/input'
-import { Button } from '../ui/button'
-import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
+import { Card } from '../ui/card.js'
+import { Input } from '../ui/input.js'
+import { Button } from '../ui/button.js'
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar.js'
 import type { ChatMessage, ChatConversation } from '../../types/index.js'
 import { Send, Phone, Video, MoreVertical } from 'lucide-react'
-import { formatDateTime } from '../../lib/utils'
+import { formatDateTime } from '../../lib/utils.js'
 
 interface ChatMockProps {
   conversation: ChatConversation

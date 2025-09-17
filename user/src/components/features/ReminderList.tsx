@@ -1,11 +1,11 @@
 import React from 'react'
-import { Card, CardContent } from '../ui/card'
-import { Badge } from '../ui/badge'
-import { Button } from '../ui/button'
+import { Card, CardContent } from '../ui/card.js'
+import { Badge } from '../ui/badge.js'
+import { Button } from '../ui/button.js'
 import type { Reminder } from '../../types/index.js'
-import { useAppDispatch, useAppSelector } from '../../hooks'
-import { completeReminder } from '../../store/remindersSlice'
-import { formatDate, isUpcoming } from '../../lib/utils'
+import { useAppDispatch, useAppSelector } from '../../hooks/index.js'
+import { completeReminder } from '../../store/remindersSlice.js'
+import { formatDate, isUpcoming } from '../../lib/utils.js'
 import { Calendar, Syringe, Pill, Stethoscope, Check, Clock } from 'lucide-react'
 
 interface ReminderListProps {

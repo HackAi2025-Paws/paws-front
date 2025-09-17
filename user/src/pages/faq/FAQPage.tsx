@@ -36,16 +36,16 @@ export const FAQPage: React.FC = () => {
   const [showAllQuestions, setShowAllQuestions] = useState(false)
 
   const categories = ['all', 'alimentacion', 'salud', 'comportamiento', 'cuidados', 'emergencias'] as const
-  
+
   // Detectar qué tipos de mascotas tiene el usuario
   const userPetSpecies = useMemo(() => detectPetSpecies(pets), [pets])
-  
+
   // Filtrar FAQs basándose en las mascotas del usuario
   const relevantFAQs = useMemo(() => {
     if (showAllQuestions) {
       return mockFAQs // Mostrar todas las preguntas si el usuario lo solicita
     }
-    
+
     return mockFAQs.filter(faq => {
       // Mostrar preguntas que coincidan con las especies de mascotas del usuario
       return faq.species.some(species => userPetSpecies.includes(species))
@@ -60,7 +60,7 @@ export const FAQPage: React.FC = () => {
     const matchesCategory = selectedCategory === 'all' || faq.category === selectedCategory
     
     const matchesSpecies = selectedSpecies === 'all' || faq.species.includes(selectedSpecies)
-    
+
     return matchesSearch && matchesCategory && matchesSpecies
   })
 
@@ -91,7 +91,7 @@ export const FAQPage: React.FC = () => {
                   </h3>
                   <p className="text-sm text-blue-800 mb-3">
                     Mostrando preguntas relevantes para: {' '}
-                    {userPetSpecies.filter(s => s !== 'general').map(species => 
+                    {userPetSpecies.filter(s => s !== 'general').map(species =>
                       `${getSpeciesEmoji(species)} ${getSpeciesLabel(species)}`
                     ).join(', ')}
                   </p>
@@ -188,7 +188,7 @@ export const FAQPage: React.FC = () => {
               {categories.map((category) => {
                 const isSelected = selectedCategory === category
                 const Icon = category !== 'all' ? categoryIcons[category as keyof typeof categoryIcons] : null
-                
+
                 return (
                   <button
                     key={category}
@@ -226,9 +226,9 @@ export const FAQPage: React.FC = () => {
                 <p className="text-gray-600 text-center mb-6">
                   Intenta con otros términos de búsqueda o selecciona una categoría diferente
                 </p>
-                
+
                 {/* Enlace al chat cuando no hay resultados */}
-                <Link 
+                <Link
                   to="/chat"
                   className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium"
                 >
@@ -260,8 +260,8 @@ export const FAQPage: React.FC = () => {
                               </h3>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                              <Badge 
-                                variant="outline" 
+                              <Badge
+                                variant="outline"
                                 className={categoryColors[faq.category]}
                               >
                                 {faq.category.charAt(0).toUpperCase() + faq.category.slice(1)}
@@ -270,9 +270,9 @@ export const FAQPage: React.FC = () => {
                               {(showAllQuestions || faq.species.length > 1) && (
                                 <div className="flex gap-1">
                                   {faq.species.filter(s => s !== 'general').map(species => (
-                                    <Badge 
+                                    <Badge
                                       key={species}
-                                      variant="outline" 
+                                      variant="outline"
                                       className="text-xs bg-gray-50"
                                     >
                                       {getSpeciesEmoji(species)} {getSpeciesLabel(species)}
@@ -321,9 +321,9 @@ export const FAQPage: React.FC = () => {
               <p className="text-gray-600 mb-6">
                 Consulta directamente con nuestra IA para obtener respuestas personalizadas sobre tu mascota.
               </p>
-              
+
               <div className="flex justify-center">
-                <Link 
+                <Link
                   to="/chat"
                   className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium text-lg"
                 >
@@ -331,7 +331,7 @@ export const FAQPage: React.FC = () => {
                   Chat con IA
                 </Link>
               </div>
-              
+
               <div className="mt-4 flex items-center justify-center gap-6 text-sm text-gray-500">
                 <span className="flex items-center gap-1">💬 Respuestas inmediatas</span>
                 <span className="flex items-center gap-1">🩺 Consejos profesionales</span>
