@@ -29,7 +29,7 @@ export const mockPets: Pet[] = [
         name: 'Rabia',
         date: '2024-01-15',
         nextDue: '2025-01-15',
-        veterinarian: 'Dr. Martinez',
+        veterinarian: 'Clínica Veterinaria',
         notes: 'Sin reacciones adversas'
       },
       {
@@ -38,7 +38,7 @@ export const mockPets: Pet[] = [
         name: 'Múltiple (DHPP)',
         date: '2024-02-20',
         nextDue: '2025-02-20',
-        veterinarian: 'Dr. Martinez'
+        veterinarian: 'Clínica Veterinaria'
       }
     ],
     treatments: [
@@ -49,7 +49,7 @@ export const mockPets: Pet[] = [
         name: 'Desparasitante oral',
         date: '2024-10-01',
         dose: '1 pastilla',
-        veterinarian: 'Dr. Martinez'
+        veterinarian: 'Clínica Veterinaria'
       }
     ],
     appointments: [
@@ -58,7 +58,7 @@ export const mockPets: Pet[] = [
         petId: '1',
         type: 'control',
         date: '2024-12-15',
-        veterinarian: 'Dr. Martinez',
+        veterinarian: 'Clínica Veterinaria',
         notes: 'Control rutinario',
         status: 'programada'
       }
@@ -70,7 +70,7 @@ export const mockPets: Pet[] = [
         name: 'Certificado de vacunación',
         type: 'certificado',
         uploadDate: '2024-01-15',
-        veterinarian: 'Dr. Martinez'
+        veterinarian: 'Clínica Veterinaria'
       }
     ],
     consultationRecords: [
@@ -80,7 +80,7 @@ export const mockPets: Pet[] = [
         type: 'consulta',
         title: 'Revisión rutinaria y problema digestivo',
         date: '2024-10-15',
-        veterinarian: 'Dr. Martinez',
+        veterinarian: 'Clínica Veterinaria',
         clinicName: 'Veterinaria San Martín',
         diagnosis: 'Gastroenteritis leve. Se detectó sensibilidad alimentaria. Estado general bueno.',
         prescription: 'Dieta blanda por 3 días. Probióticos durante 1 semana.',
@@ -96,7 +96,7 @@ export const mockPets: Pet[] = [
         type: 'vacunacion',
         title: 'Vacuna antirrábica anual',
         date: '2024-01-15',
-        veterinarian: 'Dr. Martinez',
+        veterinarian: 'Clínica Veterinaria',
         clinicName: 'Veterinaria San Martín',
         diagnosis: 'Aplicación exitosa de vacuna antirrábica. Sin reacciones adversas.',
         notes: 'Max se comportó muy bien durante la aplicación. Peso: 29kg.',
@@ -183,7 +183,7 @@ export const mockPets: Pet[] = [
         name: 'Rabia',
         date: '2024-03-05',
         nextDue: '2025-03-05',
-        veterinarian: 'Dr. Martinez'
+        veterinarian: 'Clínica Veterinaria'
       }
     ],
     treatments: [],
@@ -196,7 +196,7 @@ export const mockPets: Pet[] = [
         type: 'control',
         title: 'Control respiratorio',
         date: '2024-08-10',
-        veterinarian: 'Dr. Martinez',
+        veterinarian: 'Clínica Veterinaria',
         clinicName: 'Veterinaria San Martín',
         diagnosis: 'Vías respiratorias ligeramente inflamadas. Típico de la raza. Recomendar evitar ejercicio intenso.',
         prescription: 'Antiinflamatorio suave por 5 días. Evitar calor excesivo.',
@@ -216,7 +216,7 @@ export const mockReminders: Reminder[] = [
     petId: '1',
     type: 'control',
     title: 'Control veterinario - Max',
-    description: 'Control rutinario programado con Dr. Martinez',
+    description: 'Control rutinario programado en clínica veterinaria',
     date: '2024-12-15',
     time: '14:30',
     location: 'Veterinaria San Martín',
@@ -404,24 +404,25 @@ export const mockFAQs: FAQ[] = [
 export const mockChatConversations: ChatConversation[] = [
   {
     id: '1',
-    participantName: 'Dr. Martinez',
+    participantName: 'Asistente IA',
+    participantAvatar: '/paws-ai-avatar.png',
     unreadCount: 2,
     messages: [
       {
         id: '1',
-        text: 'Hola! ¿En qué puedo ayudarte hoy?',
+        text: '¡Hola! Soy tu asistente de IA especializado en cuidado de mascotas. ¿En qué puedo ayudarte hoy?',
         sender: 'vet',
         timestamp: '2024-10-15T09:00:00Z'
       },
       {
         id: '2',
-        text: 'Hola Doctor, tengo una pregunta sobre Max. Ha estado un poco decaído últimamente.',
+        text: 'Hola, tengo una pregunta sobre Max. Ha estado un poco decaído últimamente.',
         sender: 'user',
         timestamp: '2024-10-15T09:05:00Z'
       },
       {
         id: '3',
-        text: '¿Desde cuándo notas este cambio? ¿Ha tenido cambios en su apetito o actividad?',
+        text: 'Entiendo tu preocupación. ¿Desde cuándo notas este cambio? ¿Ha tenido cambios en su apetito o actividad? Esta información me ayudará a darte mejor orientación.',
         sender: 'vet',
         timestamp: '2024-10-15T09:07:00Z'
       },
@@ -433,20 +434,20 @@ export const mockChatConversations: ChatConversation[] = [
       },
       {
         id: '5',
-        text: 'Te recomiendo que lo traigas para un chequeo. Podría ser algo menor, pero es mejor asegurarnos.',
+        text: 'Basándome en lo que describes, podría ser normal pero es recomendable observarlo. Te sugiero considerar una consulta veterinaria si continúa así. ¿Has notado otros síntomas?',
         sender: 'vet',
         timestamp: '2024-10-15T09:15:00Z'
       },
       {
         id: '6',
-        text: 'Perfecto, ¿tienes disponibilidad esta semana?',
+        text: 'No, solo eso. ¿Debería preocuparme más?',
         sender: 'user',
         timestamp: '2024-10-15T09:17:00Z'
       }
     ],
     lastMessage: {
       id: '6',
-      text: 'Perfecto, ¿tienes disponibilidad esta semana?',
+      text: 'No, solo eso. ¿Debería preocuparme más?',
       sender: 'user',
       timestamp: '2024-10-15T09:17:00Z'
     }

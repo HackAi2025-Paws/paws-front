@@ -28,8 +28,10 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
     date: new Date().toISOString().split('T')[0],
     veterinarian: '',
     clinicName: '',
+    findings: '',
     diagnosis: '',
     prescription: '',
+    nextSteps: '',
     notes: '',
     cost: '',
     nextAppointment: ''
@@ -68,8 +70,10 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
       date: formData.date,
       veterinarian: formData.veterinarian || undefined,
       clinicName: formData.clinicName || undefined,
+      findings: formData.findings || undefined,
       diagnosis: formData.diagnosis,
       prescription: formData.prescription || undefined,
+      nextSteps: formData.nextSteps || undefined,
       notes: formData.notes || undefined,
       cost: formData.cost ? parseFloat(formData.cost) : undefined,
       nextAppointment: formData.nextAppointment || undefined,
@@ -180,7 +184,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
                   type="text"
                   value={formData.veterinarian}
                   onChange={(e) => handleInputChange('veterinarian', e.target.value)}
-                  placeholder="Dr. Martínez"
+                  placeholder="Veterinario/a"
                 />
               </div>
 
@@ -198,43 +202,85 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
               </div>
             </div>
 
+            {/* Sección de hallazgos clínicos */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-blue-900 mb-3 flex items-center">
+                📝 Hallazgos Clínicos
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Hallazgos (opcional)
+                </label>
+                <Textarea
+                  value={formData.findings}
+                  onChange={(e) => handleInputChange('findings', e.target.value)}
+                  placeholder="Ej: Ligera inflamación en área metacarpiana. Respuesta de dolor al presionar. Sin heridas visibles."
+                  rows={3}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  📍 Observaciones físicas, respuestas al examen, hallazgos anormales, etc.
+                </p>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Diagnóstico *
+                ⚕️ Diagnóstico *
               </label>
               <Textarea
                 value={formData.diagnosis}
                 onChange={(e) => handleInputChange('diagnosis', e.target.value)}
-                placeholder="Describe el diagnóstico del veterinario o tus observaciones sobre el estado de salud de tu mascota..."
-                rows={3}
+                placeholder="Ej: Posible esguince o lesión tejidos blandos"
+                rows={2}
               />
               <p className="text-xs text-gray-500 mt-1">
-                💡 Incluye síntomas observados, resultado de exámenes, estado general, etc.
+                💡 Diagnóstico principal o sospecha diagnóstica
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prescripción/Tratamiento (opcional)
+                💊 Tratamiento/Prescripción (opcional)
               </label>
               <Textarea
                 value={formData.prescription}
                 onChange={(e) => handleInputChange('prescription', e.target.value)}
-                placeholder="Medicamentos recetados, dosis, duración del tratamiento..."
+                placeholder="Ej: Rimadyl 25mg (2 veces/día) + compresas frías"
                 rows={2}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                💊 Medicamentos, dosis, frecuencia y duración del tratamiento
+              </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notas adicionales (opcional)
+                📅 Próximos pasos (opcional)
+              </label>
+              <Textarea
+                value={formData.nextSteps}
+                onChange={(e) => handleInputChange('nextSteps', e.target.value)}
+                placeholder="Ej: Reposo 5-7 días, limitar actividad. Control en 1 semana si persiste."
+                rows={3}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                📋 Instrucciones de cuidado, seguimiento, restricciones, próximas citas
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ℹ️ Notas adicionales (opcional)
               </label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="Comportamiento durante la consulta, recomendaciones especiales, observaciones..."
+                placeholder="Ej: Jugó bruscamente con otro perro en el parque"
                 rows={2}
               />
+              <p className="text-xs text-gray-500 mt-1">
+                📓 Contexto, comportamiento, observaciones adicionales, circunstancias especiales
+              </p>
             </div>
 
             <div>

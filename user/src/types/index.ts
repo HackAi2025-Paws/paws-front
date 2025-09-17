@@ -71,8 +71,10 @@ export interface ConsultationRecord {
   date: string
   veterinarian?: string
   clinicName?: string
+  findings?: string
   diagnosis: string
   prescription?: string
+  nextSteps?: string
   notes?: string
   cost?: number
   nextAppointment?: string
