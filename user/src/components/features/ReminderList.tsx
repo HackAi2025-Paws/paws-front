@@ -99,22 +99,7 @@ export const ReminderList: React.FC<ReminderListProps> = ({
   }
 
   if (filteredReminders.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Calendar className="h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {showCompleted ? 'No hay recordatorios completados' : '¡Todo al día!'}
-          </h3>
-          <p className="text-gray-600 text-center">
-            {showCompleted 
-              ? 'Cuando completes recordatorios aparecerán aquí'
-              : 'No tienes recordatorios pendientes en este momento'
-            }
-          </p>
-        </CardContent>
-      </Card>
-    )
+    return null
   }
 
   return (

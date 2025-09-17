@@ -121,8 +121,26 @@ export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel }) =>
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor selecciona un archivo de imagen válido')
+        return
+      }
+      
+      // Validar tamaño (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('El archivo es demasiado grande. Máximo 5MB.')
+        return
+      }
+      
       setFormData(prev => ({ ...prev, photo: file }))
     }
+    // Reset input value para permitir seleccionar el mismo archivo nuevamente
+    e.target.value = ''
+  }
+
+  const removePhoto = () => {
+    setFormData(prev => ({ ...prev, photo: null }))
   }
 
   const addVaccination = () => {
@@ -187,6 +205,7 @@ export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel }) =>
         unit: formData.weightUnit
       },
       gender: formData.gender,
+      photo: formData.photo ? URL.createObjectURL(formData.photo) : undefined,
       notes: formData.notes,
       observations: formData.observations,
       ownerId: '1', // TODO: Get from auth state
@@ -219,7 +238,8 @@ export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel }) =>
           type: d.type as PetDocument['type'],
           uploadDate: new Date().toISOString(),
           fileSize: d.file?.size,
-        }))
+        })),
+      consultationRecords: []
     }
 
     onSubmit(pet)
@@ -260,30 +280,45 @@ export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel }) =>
                   Foto de la mascota
                 </label>
                 <div className="flex items-center gap-4">
-                  <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
+                  <div className="relative w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
                     {formData.photo ? (
-                      <img 
-                        src={URL.createObjectURL(formData.photo)} 
-                        alt="Preview" 
-                        className="w-full h-full object-cover rounded-lg"
-                      />
+                      <>
+                        <img 
+                          src={URL.createObjectURL(formData.photo)} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={removePhoto}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </>
                     ) : (
                       <Camera className="h-8 w-8 text-gray-400" />
                     )}
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoChange}
-                    className="hidden"
-                    id="photo-upload"
-                  />
-                  <label htmlFor="photo-upload">
-                    <Button type="button" variant="outline" className="cursor-pointer">
-                      <Upload className="h-4 w-4 mr-2" />
+                  <div className="flex flex-col gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                      id="photo-upload"
+                    />
+                    <label 
+                      htmlFor="photo-upload"
+                      className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary cursor-pointer transition-colors"
+                    >
+                      <Upload className="h-4 w-4" />
                       Subir Foto
-                    </Button>
-                  </label>
+                    </label>
+                    <p className="text-xs text-gray-500">
+                      Máximo 5MB. Formatos: JPG, PNG, GIF
+                    </p>
+                  </div>
                 </div>
               </div>
 

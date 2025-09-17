@@ -34,7 +34,7 @@ export const ChatPage: React.FC = () => {
       message: newMessage
     }))
 
-    // Simular respuesta del veterinario después de un delay
+    // Simular respuesta de la IA después de un delay
     setTimeout(() => {
       dispatch(simulateVetResponse(activeConversation.id))
     }, 1500 + Math.random() * 2000) // Entre 1.5 y 3.5 segundos
@@ -43,12 +43,12 @@ export const ChatPage: React.FC = () => {
   if (!activeConversation) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header title="Chat Veterinario" showBack={false} />
+        <Header title="Chat con IA" showBack={false} />
         
         <div className="p-4">
           <Card>
             <CardHeader>
-              <CardTitle>Chat Veterinario</CardTitle>
+              <CardTitle>Chat con IA</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <div className="text-6xl mb-4">💬</div>
@@ -56,7 +56,7 @@ export const ChatPage: React.FC = () => {
                 Inicia una conversación
               </h3>
               <p className="text-gray-600 text-center mb-4">
-                Conéctate con nuestro equipo veterinario para resolver tus dudas
+Chatea con nuestra IA especializada en cuidado de mascotas
               </p>
             </CardContent>
           </Card>
@@ -67,7 +67,7 @@ export const ChatPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header title="Chat Veterinario" showBack={false} />
+      <Header title="Chat con IA" showBack={false} />
       
       <div className="flex-1 flex flex-col">
         <ChatMock 
@@ -79,7 +79,7 @@ export const ChatPage: React.FC = () => {
       {/* Disclaimer */}
       <div className="bg-yellow-50 border-t border-yellow-200 p-3">
         <p className="text-xs text-yellow-800 text-center">
-          ⚠️ Este es un chat simulado para demostración. En un entorno real, estarías conectado con veterinarios profesionales.
+🤖 Este es un chat con IA simulado para demostración. Proporciona información general sobre cuidado de mascotas.
         </p>
       </div>
     </div>

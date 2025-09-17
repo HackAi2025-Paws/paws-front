@@ -19,11 +19,8 @@ const REMINDER_TYPES: { value: ReminderType; label: string; icon: string }[] = [
   { value: 'control', label: 'Control veterinario', icon: '🩺' },
   { value: 'operacion', label: 'Operación/Cirugía', icon: '⚕️' },
   { value: 'higiene', label: 'Higiene/Baño', icon: '🛁' },
-  { value: 'desparasitacion', label: 'Desparasitación', icon: '🐛' },
   { value: 'revision', label: 'Revisión general', icon: '🔍' },
-  { value: 'estetica', label: 'Estética/Corte', icon: '✂️' },
-  { value: 'emergencia', label: 'Emergencia', icon: '🚨' },
-  { value: 'medicacion', label: 'Medicación', icon: '💊' }
+  { value: 'estetica', label: 'Estética/Corte', icon: '✂️' }
 ]
 
 export const AddReminderForm: React.FC<AddReminderFormProps> = ({ 
