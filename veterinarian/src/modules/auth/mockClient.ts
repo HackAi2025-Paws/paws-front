@@ -1,4 +1,4 @@
-import type { AuthClient, AuthSession, LoginInput, RegisterInput, User } from './types'
+import type { AuthClient, AuthSession, LoginInput, PhoneLoginInput, OTPVerificationInput, RegisterInput, User } from './types'
 
 const STORAGE_KEY = 'vetcare.session'
 
@@ -29,6 +29,12 @@ function clearSession() {
 }
 
 const usersDb = new Map<string, User>()
+const phoneToUserMap = new Map<string, string>() // phone -> email mapping
+const otpStorage = new Map<string, { otp: string, timestamp: number }>() // phone -> otp data
+
+// Mock phone numbers with their corresponding user emails
+phoneToUserMap.set('+5491123456789', 'demo@vetcare.com')
+phoneToUserMap.set('+5491187654321', 'test@example.com')
 
 export const mockAuthClient: AuthClient = {
   async login({ email, password }: LoginInput): Promise<AuthSession> {
@@ -47,6 +53,80 @@ export const mockAuthClient: AuthClient = {
       }
       usersDb.set(email, user)
     }
+    const session = { user, token: makeToken(email) }
+    saveSession(session)
+    return session
+  },
+
+  async loginWithPhone({ phone }: PhoneLoginInput): Promise<{ success: boolean, message: string }> {
+    await delay(800)
+
+    if (!phone) {
+      throw new Error('Número de teléfono requerido')
+    }
+
+    // Check if phone exists in our system
+    if (!phoneToUserMap.has(phone)) {
+      throw new Error('Número de teléfono no registrado')
+    }
+
+    // Generate OTP (mock)
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    otpStorage.set(phone, { otp, timestamp: Date.now() })
+
+    // In real app, send SMS here
+    console.log(`OTP enviado a ${phone}: ${otp}`) // For testing
+
+    return {
+      success: true,
+      message: `Código OTP enviado a ${phone}`
+    }
+  },
+
+  async verifyOTP({ phone, otp }: OTPVerificationInput): Promise<AuthSession> {
+    await delay(600)
+
+    if (!phone || !otp) {
+      throw new Error('Teléfono y código OTP requeridos')
+    }
+
+    const storedOTP = otpStorage.get(phone)
+    if (!storedOTP) {
+      throw new Error('No se encontró código OTP para este número')
+    }
+
+    // Check if OTP expired (5 minutes)
+    if (Date.now() - storedOTP.timestamp > 5 * 60 * 1000) {
+      otpStorage.delete(phone)
+      throw new Error('El código OTP ha expirado')
+    }
+
+    if (storedOTP.otp !== otp) {
+      throw new Error('Código OTP incorrecto')
+    }
+
+    // Get user email from phone
+    const email = phoneToUserMap.get(phone)
+    if (!email) {
+      throw new Error('Usuario no encontrado')
+    }
+
+    // Clear used OTP
+    otpStorage.delete(phone)
+
+    // Get or create user
+    let user = usersDb.get(email)
+    if (!user) {
+      user = {
+        id: crypto.randomUUID(),
+        firstName: 'Usuario',
+        lastName: 'Demo',
+        email,
+        clinicName: 'Clínica Demo',
+      }
+      usersDb.set(email, user)
+    }
+
     const session = { user, token: makeToken(email) }
     saveSession(session)
     return session

@@ -1,0 +1,20 @@
+{
+  "short_name": "PawsCare",
+  "name": "PawsCare - Veterinary Management System",
+  "icons": [
+    {
+      "src": "icon-72x72.svg",
+      "sizes": "72x72",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "vite.svg",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#16a34a",
+  "background_color": "#f8fafc"
+}
