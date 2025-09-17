@@ -116,7 +116,7 @@ export default function PetDetailPage() {
               />
             </div>
 
-            <div className="recordList">
+            <div className="recordList historiaList">
               {recordsLoading && <div className="muted">Cargando…</div>}
               {!recordsLoading && filteredRecords.map((record: PatientRecord) => (
                 <div key={record.id} className="recordItem" onClick={() => setOpenRecordId(record.id)}>
@@ -140,7 +140,7 @@ export default function PetDetailPage() {
 
         {activeTab === 'vacunas' && (
           <div className="tabContent">
-            <div className="recordList">
+            <div className="recordList vacunasList">
               <div className="vaccineItem">
                 <div className="vaccineItem__icon">💉</div>
                 <div className="vaccineItem__body">
@@ -168,6 +168,72 @@ export default function PetDetailPage() {
                 <div className="vaccineItem__body">
                   <div className="vaccineItem__title">Tos de las perreras</div>
                   <div className="vaccineItem__meta">14/6/2023</div>
+                </div>
+                <div className="vaccineItem__right">
+                  <span className="vaccineBadge vaccineBadge--expired">Vencida</span>
+                </div>
+              </div>
+
+              <div className="vaccineItem">
+                <div className="vaccineItem__icon">💉</div>
+                <div className="vaccineItem__body">
+                  <div className="vaccineItem__title">Bordetella</div>
+                  <div className="vaccineItem__meta">15/8/2023</div>
+                </div>
+                <div className="vaccineItem__right">
+                  <span className="vaccineBadge vaccineBadge--current">Al día</span>
+                </div>
+              </div>
+
+              <div className="vaccineItem">
+                <div className="vaccineItem__icon">💉</div>
+                <div className="vaccineItem__body">
+                  <div className="vaccineItem__title">Leptospirosis</div>
+                  <div className="vaccineItem__meta">22/3/2023</div>
+                </div>
+                <div className="vaccineItem__right">
+                  <span className="vaccineBadge vaccineBadge--expired">Vencida</span>
+                </div>
+              </div>
+
+              <div className="vaccineItem">
+                <div className="vaccineItem__icon">💉</div>
+                <div className="vaccineItem__body">
+                  <div className="vaccineItem__title">Parvovirus</div>
+                  <div className="vaccineItem__meta">28/10/2023</div>
+                </div>
+                <div className="vaccineItem__right">
+                  <span className="vaccineBadge vaccineBadge--current">Al día</span>
+                </div>
+              </div>
+
+              <div className="vaccineItem">
+                <div className="vaccineItem__icon">💉</div>
+                <div className="vaccineItem__body">
+                  <div className="vaccineItem__title">Coronavirus</div>
+                  <div className="vaccineItem__meta">5/1/2023</div>
+                </div>
+                <div className="vaccineItem__right">
+                  <span className="vaccineBadge vaccineBadge--expired">Vencida</span>
+                </div>
+              </div>
+
+              <div className="vaccineItem">
+                <div className="vaccineItem__icon">💉</div>
+                <div className="vaccineItem__body">
+                  <div className="vaccineItem__title">Lyme</div>
+                  <div className="vaccineItem__meta">18/11/2023</div>
+                </div>
+                <div className="vaccineItem__right">
+                  <span className="vaccineBadge vaccineBadge--current">Al día</span>
+                </div>
+              </div>
+
+              <div className="vaccineItem">
+                <div className="vaccineItem__icon">💉</div>
+                <div className="vaccineItem__body">
+                  <div className="vaccineItem__title">Giardia</div>
+                  <div className="vaccineItem__meta">12/4/2023</div>
                 </div>
                 <div className="vaccineItem__right">
                   <span className="vaccineBadge vaccineBadge--expired">Vencida</span>

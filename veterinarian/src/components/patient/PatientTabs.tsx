@@ -7,7 +7,7 @@ export default function PatientTabs({ activeTab, onTabChange }: PatientTabsProps
   const tabs = [
     { id: 'historia', label: 'Historia Clínica' },
     { id: 'vacunas', label: 'Vacunas' },
-    { id: 'agregar', label: 'Agregar Datos' }
+    { id: 'agregar', label: 'Nueva Consulta' }
   ]
 
   return (

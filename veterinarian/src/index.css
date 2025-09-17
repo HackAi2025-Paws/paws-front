@@ -182,7 +182,7 @@ a:hover { text-decoration: underline; }
   display: grid;
   gap: 16px;
   overflow-y: auto;
-  max-height: 555px;
+  max-height: 505px;
   padding: 16px;
   background: #fff;
   border: 1px solid var(--border);
@@ -205,6 +205,14 @@ a:hover { text-decoration: underline; }
 
 .recordList::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+.historiaList {
+  max-height: 505px;
+}
+
+.vacunasList {
+  max-height: 555px;
 }
 
 .vaccineItem {
@@ -262,7 +270,7 @@ a:hover { text-decoration: underline; }
 .addFormLayout {
   display: flex;
   flex-direction: column;
-  height: 605px;
+  height: 555px;
 }
 
 .addFormContainer {
@@ -466,6 +474,7 @@ a:hover { text-decoration: underline; }
 
 /* Record Detail */
 .recordDetail { display: grid; gap: 16px; }
+.recordDetail--wide { max-width: 900px; }
 .recordDetail__header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .recordDetail__title { margin: 0; font-size: 18px; color: var(--text); }
 .recordDetail__badge { background: var(--brand-50); color: var(--brand-700); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
@@ -474,13 +483,31 @@ a:hover { text-decoration: underline; }
 .recordDetail__sectionTitle { margin: 0; font-size: 14px; font-weight: 600; color: var(--brand-700); }
 .recordDetail__text { margin: 0; line-height: 1.6; }
 .recordDetail__vitals { display: grid; gap: 6px; }
+.recordDetail__vital {
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  font-size: 14px;
+}
 .vital { display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg); border-radius: 8px; }
 .vital__label { color: var(--muted); }
 .vital__value { font-weight: 600; }
 
 /* Attachments */
 .attachments { display: grid; gap: 8px; }
-.attachment { display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--bg); border-radius: 8px; }
+.attachment { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; background: var(--bg); border-radius: 8px; }
+.attachment__download {
+  background: var(--brand-600);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+.attachment__download:hover {
+  background: var(--brand-700);
+}
 .attachment__icon { font-size: 16px; }
 .attachment__link { color: var(--brand-700); font-weight: 500; }
 .attachment__link:hover { text-decoration: underline; }
@@ -508,6 +535,139 @@ a:hover { text-decoration: underline; }
   .tabs { justify-content: flex-start; overflow-x: auto; }
   .tab { white-space: nowrap; padding: 10px 16px; }
   .search { max-width: 100%; }
+}
+
+/* File upload styles */
+.fileUploadSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileUploadButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f8fafc;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fileUploadButton:hover {
+  background: #f1f5f9;
+  border-color: var(--brand-400);
+}
+
+.fileUploadButton--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.fileName {
+  font-size: 14px;
+  color: var(--text);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.removeFileButton {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.removeFileButton:hover {
+  background: #fee2e2;
+}
+
+/* Read-only form styles */
+.fieldSelectReadonly {
+  padding: 10px 16px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.fieldTextareaReadonly {
+  padding: 10px 16px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 40px;
+}
+
+.fieldTextareaReadonly--multiline {
+  min-height: 80px;
+  white-space: pre-wrap;
+}
+
+.fileListReadonly {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fileItemReadonly {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.fileDownloadButton {
+  background: var(--brand-600);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.fileDownloadButton:hover {
+  background: var(--brand-700);
 }
 
 @media (max-width: 640px) {

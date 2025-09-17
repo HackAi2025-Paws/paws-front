@@ -12,7 +12,6 @@ export default function PatientSidebar({ patient, patientDetails, onExportClick 
       <img className="petPage__avatar" src={patient.avatarUrl} alt={patient.name} />
       <div className="petPage__nameRow">
         <h2 className="petPage__name">{patient.name}</h2>
-        <span className="badge badge--success">{patient.status}</span>
       </div>
       <div className="petPage__meta">{patient.breed ?? patient.species} · {patient.age}</div>
 
@@ -35,7 +34,6 @@ export default function PatientSidebar({ patient, patientDetails, onExportClick 
         <div className="owner__title">Propietario</div>
         <div className="owner__row">{patient.ownerName}</div>
         <div className="owner__row">{patientDetails?.ownerPhone || '+34 666 123 456'}</div>
-        <div className="owner__row">{patientDetails?.ownerEmail || 'maria.gonzalez@email.com'}</div>
       </div>
 
       <div className="centerRow">
