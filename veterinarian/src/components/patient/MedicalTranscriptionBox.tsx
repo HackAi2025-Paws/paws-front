@@ -187,11 +187,11 @@ export default function MedicalTranscriptionBox({
   return (
     <div style={{
       padding: '16px', // Better padding for container
-      backgroundColor: '#fff', // White background for the whole container
-      border: '1px solid var(--border)', // Add border back
+      backgroundColor: 'transparent', // Make container invisible
+      border: 'none', // Remove border
       borderRadius: '14px',
       marginBottom: '8px', // Reduced from 16px to 8px
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)' // Subtle shadow for depth
+      boxShadow: 'none' // Remove shadow
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}> {/* Reduced from 24px to 16px */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -302,7 +302,7 @@ export default function MedicalTranscriptionBox({
       <div style={{ position: 'relative' }}>
         <div style={{
           width: '100%',
-          minHeight: '100px', // Further reduced for more compact design
+          minHeight: 'auto', // Auto height to fit content
           padding: '16px', // Keep good padding for readability
           fontSize: '15px',
           lineHeight: '1.6',
@@ -315,7 +315,7 @@ export default function MedicalTranscriptionBox({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              height: '100px', // Further reduced to match new minHeight
+              minHeight: '60px', // Minimal height for loading state
               color: 'var(--muted)'
             }}>
               <Loader2 style={{ width: '24px', height: '24px', animation: 'spin 1s linear infinite', marginRight: '8px' }} />
@@ -338,7 +338,7 @@ export default function MedicalTranscriptionBox({
           ) : (
             <div style={{
               color: 'var(--muted)',
-              height: '100px', // Further reduced to match new minHeight
+              minHeight: '60px', // Minimal height for placeholder text
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

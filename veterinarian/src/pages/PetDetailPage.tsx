@@ -161,9 +161,10 @@ export default function PetDetailPage() {
           flexDirection: 'column',
           backgroundColor: 'transparent',
           border: 'none',
+          minHeight: 0,
           overflow: 'hidden',
           marginRight: isListening && activeTab === 'agregar' ? '16px' : '0',
-          maxHeight: isListening ? 'calc(55vh - 16px)' : 'calc(100vh - 32px)' // Further reduced to push transcription box down
+          maxHeight: isListening ? 'none' : 'calc(100vh - 32px)' // Allow section to use all available space when listening
         }}>
         <div style={{
           flexShrink: 0,
@@ -496,16 +497,21 @@ export default function PetDetailPage() {
               minHeight: 0 // Allow flex shrinking
             }}>
               <div style={{
-                flex: 1, // Take all available space
+                flex: isListening ? '0 1 auto' : 1, // Don't grow when listening, allow shrinking
                 minHeight: 0, // Allow flex shrinking
-                overflow: 'auto' // Scroll only if needed
+                ...(isListening && { maxHeight: 'calc(55vh - 60px)' }),// Limit height when listening
+                overflow: 'auto', // Scroll only if needed
+                marginBottom: isListening ? '16px' : '24px' // Reduced margin when listening
               }} className="recordList">
                 <AddRecordForm
                   onSave={handleSaveRecord}
                   onVoiceInput={handleVoiceInput}
                 />
               </div>
-              <div className="formActionsExternal">
+              <div className="formActionsExternal" style={{
+                height: '60px', // Fixed height to make it shorter
+                alignItems: 'center' // Center buttons vertically
+              }}>
                 <button
                   className={`btn ${isListening ? 'btn--danger' : 'btn--ghost'} voiceBtn`}
                   onClick={handleVoiceInput}
@@ -578,14 +584,16 @@ export default function PetDetailPage() {
 
       </div>
 
+
       {/* Section 4: Medical Transcription (horizontal, appears when listening) */}
       {isListening && (
         <div style={{
           width: '100%',
-          height: 'calc(28vh - 16px)', // Increased to compensate for the reduced main content height
+          height: 'auto', // Auto height to fit content
+          maxHeight: 'calc(28vh - 16px)', // Maximum height limit
           backgroundColor: 'transparent',
           border: 'none',
-          overflow: 'hidden',
+          overflow: 'auto', // Allow scrolling if content exceeds maxHeight
           flexShrink: 0
         }}>
           <MedicalTranscriptionBox
