@@ -55,15 +55,18 @@ export class DeepgramService {
 
   // Obtener token de acceso
     private async getAccessToken(): Promise<string> {
-    // esto es lo que hay que cambiar porque a alguien se le ocurrio usar vite en vez de next (ana)
-    const response = await apiClient.post<DeepgramAuthResponse>("/transcription/auth");
-    const data = response.data;
+    // COMMENTED OUT FOR UI/UX TESTING
+    // const response = await apiClient.post<DeepgramAuthResponse>("/transcription/auth");
+    // const data = response.data;
 
-    if (!response.success || response.error) {
-      throw new Error(response.error || "Failed to get access token");
-    }
+    // if (!response.success || response.error) {
+    //   throw new Error(response.error || "Failed to get access token");
+    // }
 
-    return data!.accessToken;
+    // return data!.accessToken;
+
+    // Mock token for UI testing
+    return "mock-access-token-for-testing";
   }
 
   // Configurar micrófono
@@ -96,17 +99,39 @@ export class DeepgramService {
 
   // Conectar con Deepgram
   private async connectToDeepgram(): Promise<DeepgramConnection> {
-    const accessToken = await this.getAccessToken();
-    const deepgram = createClient({ accessToken });
+    // COMMENTED OUT FOR UI/UX TESTING
+    // const accessToken = await this.getAccessToken();
+    // const deepgram = createClient({ accessToken });
 
-    const connection = deepgram.listen.live({
-      model: "nova-3",
-      language: "es",
-      smart_format: true,
-      interim_results: true,
-    });
+    // const connection = deepgram.listen.live({
+    //   model: "nova-3",
+    //   language: "es",
+    //   smart_format: true,
+    //   interim_results: true,
+    // });
 
-    return connection as DeepgramConnection;
+    // return connection as DeepgramConnection;
+
+    // Mock connection for UI testing
+    await this.getAccessToken(); // Keep this to simulate the async call
+
+    const mockConnection = {
+      on: (event: string, callback: (...args: unknown[]) => void) => {
+        // Simulate connection events for UI testing
+        if (event === 'open') {
+          setTimeout(() => callback(), 500);
+        }
+      },
+      getReadyState: () => 1, // WebSocket.OPEN
+      send: (data: Blob) => {
+        console.log('[DeepgramService] Mock: Received audio data', data.size, 'bytes');
+      },
+      finish: () => {
+        console.log('[DeepgramService] Mock: Connection finished');
+      }
+    };
+
+    return mockConnection as DeepgramConnection;
   }
 
   // Configurar eventos de conexión

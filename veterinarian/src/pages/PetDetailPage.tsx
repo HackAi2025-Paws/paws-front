@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePatientDetail } from '../hooks/usePatientDetail'
 import { usePatientExport } from '../hooks/usePatientExport'
@@ -6,7 +6,10 @@ import PatientSidebar from '../components/patient/PatientSidebar'
 import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
 import AddRecordForm from '../components/patient/AddRecordForm'
+import SuggestionsPanel from '../components/patient/suggestions/SuggestionsPanel'
+import MedicalTranscriptionBox from '../components/patient/MedicalTranscriptionBox'
 import type { PatientRecord } from '../modules/patients/types'
+import type { Suggestion } from '../types/suggestions'
 import { useSpeechToText } from '../hooks/useSpeechToText'
 
 export default function PetDetailPage() {
@@ -16,7 +19,12 @@ export default function PetDetailPage() {
   const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null)
   const [openExport, setOpenExport] = useState(false)
   const [activeTab, setActiveTab] = useState('resumen')
-  const { startListening } = useSpeechToText();
+  const speechToText = useSpeechToText()
+  const { finalText } = speechToText
+
+  // Mock listening state for UI/UX testing (not connected to Deepgram)
+  const [mockIsListening, setMockIsListening] = useState(false)
+  const isListening = mockIsListening // Use mock state instead of Deepgram state
 
   // Custom hooks for data and business logic
   const {
@@ -51,32 +59,29 @@ export default function PetDetailPage() {
   }
 
   const handleVoiceInput = async () => {
-    console.log('Iniciando dictado por voz')
-    // Aquí se implementaría la funcionalidad de dictado por voz
-    await startListening();
+    if (isListening) {
+      console.log('Parando dictado por voz')
+      // COMMENTED OUT FOR UI/UX TESTING - Don't actually stop Deepgram
+      // stopListening()
+
+      // Just toggle mock state for UI testing
+      setMockIsListening(false)
+    } else {
+      console.log('Iniciando dictado por voz')
+      // COMMENTED OUT FOR UI/UX TESTING - Don't actually start Deepgram
+      // await startListening()
+
+      // Just toggle mock state for UI testing
+      setMockIsListening(true)
+    }
   }
 
-  // Mock clinical summary - can be replaced with hook later
-  const mockClinicalSummary = {
-    keyFindings: [
-      "Peso estable en 28kg, dentro del rango ideal para la raza",
-      "Vacunación completa y al día según calendario",
-      "Sin antecedentes de enfermedades graves o crónicas",
-      "Respuesta positiva a tratamientos preventivos"
-    ],
-    recommendations: [
-      "Continuar con controles preventivos cada 6 meses",
-      "Mantener dieta balanceada y ejercicio regular",
-      "Actualizar vacunación antirrábica en marzo 2024",
-      "Monitorear peso durante controles de rutina"
-    ],
-    medicalHistory: "Golden Retriever de 3 años sin antecedentes médicos relevantes. Ha recibido todas las vacunas según calendario, incluyendo vacunas básicas (DHPP, antirrábica) y adicionales (Lyme, Bordetella). Último tratamiento antiparasitario en noviembre 2023. Procedimientos realizados incluyen limpieza dental y extracciones menores sin complicaciones.",
-    riskFactors: [
-      "Predisposición racial a displasia de cadera (monitoreado)",
-      "Tendencia al sobrepeso en la raza (peso controlado)",
-      "Riesgo de problemas cardíacos hereditarios (evaluación preventiva)"
-    ]
+  const handleSuggestionClick = (suggestion: Suggestion) => {
+    console.log('Sugerencia seleccionada:', suggestion)
+    // TODO: Implement logic to use the suggestion in the form
+    // This could copy the suggestion text to clipboard or trigger a form action
   }
+
 
   // Error handling
   if (error) {
@@ -106,100 +111,131 @@ export default function PetDetailPage() {
   )
 
   return (
-    <div className="petPage">
-      <div className="petPage__left">
-        <div className="petPage__nav">
-          <button className="backNavButton" onClick={() => navigate(-1)}>
-            ←
-          </button>
-          <div className="appTitle">PawsCare</div>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100vw',
+      height: '100vh',
+      overflow: 'hidden',
+      padding: isListening ? '8px' : '16px' // Reduce padding when listening to create more space
+    }}>
+
+      {/* Main horizontal container with sections 1, 2, and 3 */}
+      <div style={{
+        display: 'flex',
+        flex: isListening ? '1 1 0' : '1',
+        overflow: 'hidden',
+        marginBottom: isListening ? '32px' : '0' // Further increased separation to push transcription box down
+      }}>
+
+        {/* Section 1: Patient Record + Navigation */}
+        <div style={{
+          width: '320px',
+          flexShrink: 0,
+          backgroundColor: 'transparent',
+          border: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          marginRight: '16px'
+        }}>
+          <div className="petPage__nav" style={{ marginBottom: '16px' }}>
+            <button className="backNavButton" onClick={() => navigate(-1)}>
+              ←
+            </button>
+            <div className="appTitle">PawsCare</div>
+          </div>
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            <PatientSidebar
+              patient={patient}
+              patientDetails={patientDetails}
+              onExportClick={() => setOpenExport(true)}
+            />
+          </div>
         </div>
-        <PatientSidebar
-          patient={patient}
-          patientDetails={patientDetails}
-          onExportClick={() => setOpenExport(true)}
-        />
-      </div>
 
-      <div className="petPage__content">
+        {/* Section 2: Tabs + Content */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: 'transparent',
+          border: 'none',
+          overflow: 'hidden',
+          marginRight: isListening && activeTab === 'agregar' ? '16px' : '0',
+          maxHeight: isListening ? 'calc(55vh - 16px)' : 'calc(100vh - 32px)' // Further reduced to push transcription box down
+        }}>
+        <div style={{
+          flexShrink: 0,
+          borderBottom: '1px solid #e5e7eb',
+          marginBottom: '16px'
+        }}>
+          <PatientTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        </div>
 
-        <PatientTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+        <div style={{
+          flex: 1,
+          minHeight: 0, // Important for flex child to allow shrinking
+          overflow: 'hidden', // Prevent section 2 from growing beyond its bounds
+          paddingBottom: isListening ? '8px' : '20px' // Reduced padding when listening to maximize space
+        }}>
 
         {activeTab === 'resumen' && (
-          <div className="tabContent">
-            <div className="clinicalSummary">
+          <div style={{
+            minHeight: 'fit-content',
+            maxHeight: '100%',
+            overflow: 'auto',
+            padding: '0'
+          }}>
+            <div className="tabContent">
+              <div className="recordList">
+                <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text)', fontWeight: 600 }}>📋 Antecedentes Médicos</h2>
 
+                <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Vacunación y Desparasitación</h3>
+                <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Esquema completo de vacunación al día. Última vacuna DHPP y antirrábica aplicada en diciembre 2023. Tos de las perreras vencida desde junio 2023.</p>
 
+                <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Enfermedades Previas</h3>
+                <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Sin enfermedades graves previas. Historial de salud excelente desde cachorro.</p>
 
-              <div className="summaryGrid">
+                <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Cirugías</h3>
+                <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Sin cirugías previas registradas.</p>
 
-                <div className="summarySection">
-                  <h4 className="summarySection__title">📋 Historia Clínica</h4>
-                  <div className="summarySection__content">
-                    <p>{mockClinicalSummary.medicalHistory}</p>
-                  </div>
-                </div>
+                <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Alergias Conocidas</h3>
+                <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>No se han identificado alergias conocidas a medicamentos o alimentos.</p>
 
-                <div className="summarySection">
-                  <h4 className="summarySection__title">✅ Hallazgos Clave</h4>
-                  <div className="summarySection__content">
-                    <ul className="summaryList">
-                      {mockClinicalSummary.keyFindings.map((finding, index) => (
-                        <li key={index} className="summaryList__item">
-                          <span className="summaryList__icon">•</span>
-                          {finding}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+                <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Medicación Actual</h3>
+                <p style={{ margin: '0 0 24px 0', color: 'var(--text)', lineHeight: '1.4' }}>Sin medicación crónica. Tratamiento antiparasitario preventivo cada 3 meses.</p>
 
-                <div className="summarySection">
-                  <h4 className="summarySection__title">💡 Recomendaciones</h4>
-                  <div className="summarySection__content">
-                    <ul className="summaryList">
-                      {mockClinicalSummary.recommendations.map((rec, index) => (
-                        <li key={index} className="summaryList__item">
-                          <span className="summaryList__icon">→</span>
-                          {rec}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+                <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text)', fontWeight: 600 }}>🩺 Consulta último evento</h2>
 
-                <div className="summarySection">
-                  <h4 className="summarySection__title">⚠️ Factores de Riesgo</h4>
-                  <div className="summarySection__content">
-                    <ul className="summaryList">
-                      {mockClinicalSummary.riskFactors.map((risk, index) => (
-                        <li key={index} className="summaryList__item summaryList__item--risk">
-                          <span className="summaryList__icon">!</span>
-                          {risk}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+                <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Motivo de la consulta / síntomas observados</h3>
+                <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Control preventivo de rutina. Propietario refiere que el animal se encuentra en buen estado general, con apetito normal y actividad habitual. Sin síntomas aparentes de enfermedad.</p>
 
+                <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Hallazgos relevantes del examen clínico</h3>
+                <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Peso estable en 28kg, dentro del rango ideal para la raza. Mucosas rosadas y húmedas, hidratación adecuada. Auscultación cardiopulmonar normal. Temperatura corporal dentro de parámetros normales (38.5°C). Palpación abdominal sin alteraciones.</p>
+
+                <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Diagnóstico</h3>
+                <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Paciente en buen estado general de salud. Sin signos de enfermedad o malestar detectados. Todos los parámetros evaluados se encuentran dentro de los rangos normales para la especie y edad.</p>
+
+                <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Tratamiento indicado o recomendaciones</h3>
+                <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Continuar con dieta balanceada y ejercicio regular. Mantener rutina de cuidados preventivos. Próximo control programado en 6 meses. Actualizar vacunación antirrábica en marzo 2024. Monitorear peso durante controles de rutina.</p>
               </div>
-
-              <div className="summaryFooter">
-                <div className="summaryNote">
-                  🤖 <em>Resumen generado automáticamente basado en el historial clínico completo del paciente.</em>
-                </div>
-              </div>
-
             </div>
           </div>
         )}
 
         {activeTab === 'historia' && (
-          <div className="tabContent">
-            <div className="search">
+          <div style={{
+            minHeight: 'fit-content', // Shrink when content is small
+            maxHeight: '100%', // Can expand up to section 2 limit (minus padding)
+            overflow: 'auto', // Scroll when content exceeds maxHeight
+            padding: '0'
+          }}>
+            <div className="tabContent">
+              <div className="search">
               <span className="search__icon" aria-hidden>🔎</span>
               <input
                 className="search__input"
@@ -329,11 +365,18 @@ export default function PetDetailPage() {
               ))}
             </div>
           </div>
+          </div>
         )}
 
         {activeTab === 'vacunas' && (
-          <div className="tabContent">
-            <div className="recordList vacunasList">
+          <div style={{
+            minHeight: 'fit-content', // Shrink when content is small
+            maxHeight: '100%', // Can expand up to section 2 limit (minus padding)
+            overflow: 'auto', // Scroll when content exceeds maxHeight
+            padding: '0'
+          }}>
+            <div className="tabContent">
+              <div className="recordList vacunasList">
               <div className="vaccineItem">
                 <div className="vaccineItem__icon">💉</div>
                 <div className="vaccineItem__body">
@@ -434,27 +477,129 @@ export default function PetDetailPage() {
               </div>
             </div>
           </div>
+          </div>
         )}
 
         {activeTab === 'agregar' && (
-          <div className="tabContent addFormLayout">
-            <div className="recordList addFormContainer">
-              <AddRecordForm
-                onSave={handleSaveRecord}
-                onVoiceInput={handleVoiceInput}
-              />
-            </div>
-            <div className="formActionsExternal">
-              <button className="btn btn--ghost voiceBtn" onClick={handleVoiceInput}>
-                🎤 Dictar por voz
-              </button>
-              <button className="btn btn--primary" onClick={handleSaveRecord}>
-                Guardar Entrada
-              </button>
+          <div style={{
+            flex: 1, // Take all available space in the container
+            minHeight: 0, // Allow flex shrinking
+            overflow: 'auto', // Scroll only if content exceeds available space
+            padding: '0',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flex: 1, // Take all available space
+              minHeight: 0 // Allow flex shrinking
+            }}>
+              <div style={{
+                flex: 1, // Take all available space
+                minHeight: 0, // Allow flex shrinking
+                overflow: 'auto' // Scroll only if needed
+              }} className="recordList">
+                <AddRecordForm
+                  onSave={handleSaveRecord}
+                  onVoiceInput={handleVoiceInput}
+                />
+              </div>
+              <div className="formActionsExternal">
+                <button
+                  className={`btn ${isListening ? 'btn--danger' : 'btn--ghost'} voiceBtn`}
+                  onClick={handleVoiceInput}
+                  style={{
+                    backgroundColor: isListening ? '#ef4444' : undefined,
+                    color: isListening ? 'white' : undefined
+                  }}
+                >
+                  {isListening ? '⏹️ Parar grabación' : '🎤 Dictar por voz'}
+                </button>
+                <button className="btn btn--primary" onClick={handleSaveRecord}>
+                  Guardar Entrada
+                </button>
+              </div>
             </div>
           </div>
         )}
+
+        </div>
       </div>
+
+      {/* Section 3: Suggestions Panel (conditional) */}
+      {isListening && activeTab === 'agregar' && (
+        <div style={{
+          width: '400px',
+          flexShrink: 0,
+          backgroundColor: 'transparent',
+          border: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
+          {/* Invisible card matching tabs container for responsive alignment */}
+          <div style={{
+            flexShrink: 0,
+            marginBottom: '16px', // Exactly same margin as tabs (16px)
+            visibility: 'hidden', // Back to invisible now that alignment is confirmed
+            height: 'auto', // Let it auto-size like real tabs
+            minHeight: '48px', // Minimum height to match tabs
+            backgroundColor: 'transparent' // Transparent background
+          }}>
+            {/* Invisible tabs placeholder */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              paddingLeft: '16px',
+              paddingTop: '12px',
+              paddingBottom: '12px',
+              fontSize: '14px',
+              color: 'transparent', // Invisible text
+              fontStyle: 'italic'
+            }}>
+              Alignment Reference (same as tabs)
+            </div>
+          </div>
+
+          <div style={{
+            flex: 1,
+            overflow: 'auto',
+            padding: '0' // Same as tabs content containers (no padding in container)
+          }}>
+            <SuggestionsPanel
+              transcription={finalText}
+              onSuggestionClick={handleSuggestionClick}
+              className="suggestions-panel"
+            />
+          </div>
+        </div>
+      )}
+
+      </div>
+
+      {/* Section 4: Medical Transcription (horizontal, appears when listening) */}
+      {isListening && (
+        <div style={{
+          width: '100%',
+          height: 'calc(28vh - 16px)', // Increased to compensate for the reduced main content height
+          backgroundColor: 'transparent',
+          border: 'none',
+          overflow: 'hidden',
+          flexShrink: 0
+        }}>
+          <MedicalTranscriptionBox
+            transcription={finalText}
+            shouldProcess={false}
+            onProcessed={(processedText) => {
+              console.log('Medical transcription processed:', processedText)
+            }}
+            onError={(error) => {
+              console.error('Medical transcription error:', error)
+            }}
+          />
+        </div>
+      )}
 
       <PatientExportModal
         open={openExport}
@@ -464,7 +609,6 @@ export default function PetDetailPage() {
         onExport={handleExportClick}
         isLoading={isExporting}
       />
-
     </div>
   )
 }

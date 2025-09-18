@@ -79,6 +79,27 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
   const startListening = useCallback(async () => {
     try {
       await deepgramService.startListening();
+
+      // MOCK DATA FOR UI/UX TESTING - simulate transcription after 2 seconds
+      setTimeout(() => {
+        const mockTranscriptions = [
+          "El perro presenta síntomas de letargo desde hace dos días",
+          "Ha estado vomitando ocasionalmente y rechazando la comida",
+          "No ha tenido fiebre pero se muestra desanimado",
+          "La última vez que comió bien fue el martes por la mañana"
+        ];
+
+        let currentIndex = 0;
+        const interval = setInterval(() => {
+          if (currentIndex < mockTranscriptions.length && deepgramService.isListening()) {
+            setFinalText(prev => prev + (prev ? " " : "") + mockTranscriptions[currentIndex]);
+            currentIndex++;
+          } else {
+            clearInterval(interval);
+          }
+        }, 3000);
+      }, 2000);
+
     } catch (err) {
       console.error("[useSpeechToText] Error al iniciar escucha:", err);
     }
