@@ -1,4 +1,10 @@
 import { createClient, LiveTranscriptionEvents } from "@deepgram/sdk";
+import { apiClient } from "./apiClient";
+
+export type DeepgramAuthResponse = {
+    accessToken: string;
+    expiresIn: string;
+}
 
 // Estados de conexión
 export enum ConnectionState {
@@ -48,15 +54,16 @@ export class DeepgramService {
   }
 
   // Obtener token de acceso
-  private async getAccessToken(): Promise<string> {
-    const response = await fetch("/api/transcription/auth", { method: "POST" });
-    const data = await response.json();
+    private async getAccessToken(): Promise<string> {
+    // esto es lo que hay que cambiar porque a alguien se le ocurrio usar vite en vez de next (ana)
+    const response = await apiClient.post<DeepgramAuthResponse>("/transcription/auth");
+    const data = response.data;
 
-    if (!response.ok || data.error) {
-      throw new Error(data.error || "Failed to get access token");
+    if (!response.success || response.error) {
+      throw new Error(response.error || "Failed to get access token");
     }
 
-    return data.accessToken;
+    return data!.accessToken;
   }
 
   // Configurar micrófono

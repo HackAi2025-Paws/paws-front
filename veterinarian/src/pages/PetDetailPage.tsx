@@ -7,6 +7,7 @@ import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
 import AddRecordForm from '../components/patient/AddRecordForm'
 import type { PatientRecord } from '../modules/patients/types'
+import { useSpeechToText } from '../hooks/useSpeechToText'
 
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -15,6 +16,7 @@ export default function PetDetailPage() {
   const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null)
   const [openExport, setOpenExport] = useState(false)
   const [activeTab, setActiveTab] = useState('resumen')
+  const { startListening } = useSpeechToText();
 
   // Custom hooks for data and business logic
   const {
@@ -48,9 +50,10 @@ export default function PetDetailPage() {
     // Aquí se implementaría la lógica para guardar la entrada
   }
 
-  const handleVoiceInput = () => {
+  const handleVoiceInput = async () => {
     console.log('Iniciando dictado por voz')
     // Aquí se implementaría la funcionalidad de dictado por voz
+    await startListening();
   }
 
   // Mock clinical summary - can be replaced with hook later
