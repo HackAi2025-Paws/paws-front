@@ -1,5 +1,5 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
-import type { AuthClient, AuthSession, LoginInput, RegisterInput, User } from './types'
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import type { AuthClient, AuthSession, LoginInput, RegisterInput, PhoneRegisterInput, OTPVerificationInput, User } from './types'
 
 type AuthContextValue = {
   user: User | null
@@ -7,6 +7,8 @@ type AuthContextValue = {
   isLoading: boolean
   login: (input: LoginInput) => Promise<void>
   register: (input: RegisterInput) => Promise<void>
+  registerWithPhone: (input: PhoneRegisterInput) => Promise<{ success: boolean, message: string }>
+  verifyOTP: (input: OTPVerificationInput) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -49,6 +51,25 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
     }
   }
 
+  async function registerWithPhone(input: PhoneRegisterInput) {
+    setIsLoading(true)
+    try {
+      return await client.registerWithPhone(input)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  async function verifyOTP(input: OTPVerificationInput) {
+    setIsLoading(true)
+    try {
+      const s = await client.verifyOTP(input)
+      setSession(s)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   async function logout() {
     setIsLoading(true)
     try {
@@ -60,7 +81,7 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
   }
 
   const value: AuthContextValue = useMemo(
-    () => ({ user: session?.user ?? null, session, isLoading, login, register, logout }),
+    () => ({ user: session?.user ?? null, session, isLoading, login, register, registerWithPhone, verifyOTP, logout }),
     [session, isLoading]
   )
 

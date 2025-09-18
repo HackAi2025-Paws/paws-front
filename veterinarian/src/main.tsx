@@ -4,12 +4,12 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './modules/auth/AuthContext'
-import mockAuthClient from './modules/auth/mockClient'
+import httpAuthClient from './modules/auth/httpClient'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider client={mockAuthClient}>
+      <AuthProvider client={httpAuthClient}>
         <App />
       </AuthProvider>
     </BrowserRouter>

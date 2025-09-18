@@ -34,11 +34,17 @@ export type RegisterInput = {
   confirmPassword: string
 }
 
+export type PhoneRegisterInput = {
+  name: string
+  phone: string
+}
+
 export interface AuthClient {
   login(input: LoginInput): Promise<AuthSession>
   loginWithPhone(input: PhoneLoginInput): Promise<{ success: boolean, message: string }>
   verifyOTP(input: OTPVerificationInput): Promise<AuthSession>
   register(input: RegisterInput): Promise<AuthSession>
+  registerWithPhone(input: PhoneRegisterInput): Promise<{ success: boolean, message: string }>
   logout(): Promise<void>
   getCurrentSession(): Promise<AuthSession | null>
 }

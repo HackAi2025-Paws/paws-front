@@ -27,7 +27,7 @@ class HttpApiClient implements ApiClient {
   ): Promise<ApiResponse<T>> {
     try {
       const session = JSON.parse(localStorage.getItem("vetcare.session") ?? "{}");
-      const token = session.accessToken;
+      const token = session.token || session.accessToken;
       const url = `${this.baseUrl}/${endpoint.startsWith('/') ? endpoint.slice(1) : endpoint}`
 
       const response = await fetch(url, {

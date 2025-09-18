@@ -1,4 +1,4 @@
-import type { AuthClient, AuthSession, LoginInput, PhoneLoginInput, OTPVerificationInput, RegisterInput, User } from './types'
+import type { AuthClient, AuthSession, LoginInput, PhoneLoginInput, OTPVerificationInput, RegisterInput, PhoneRegisterInput, User } from './types'
 
 const STORAGE_KEY = 'vetcare.session'
 
@@ -155,6 +155,54 @@ export const mockAuthClient: AuthClient = {
     const session = { user, token: makeToken(email) }
     saveSession(session)
     return session
+  },
+
+  async registerWithPhone({ name, phone }: PhoneRegisterInput): Promise<{ success: boolean, message: string }> {
+    await delay(800)
+
+    if (!name || name.length < 2) {
+      throw new Error('Nombre completo requerido')
+    }
+
+    if (!phone || !/^\+?[0-9\s-()]{10,15}$/.test(phone.replace(/\s/g, ''))) {
+      throw new Error('Número de teléfono inválido')
+    }
+
+    // Check if phone already exists
+    if (phoneToUserMap.has(phone)) {
+      throw new Error('Este número de teléfono ya está registrado')
+    }
+
+    // Create a temporary email for this phone registration
+    const tempEmail = `${phone.replace(/[^0-9]/g, '')}@temp.pawscare.com`
+
+    // Store the phone-email mapping temporarily (will be completed after OTP verification)
+    phoneToUserMap.set(phone, tempEmail)
+
+    // Create user with the phone registration data
+    const [firstName, ...lastNameParts] = name.split(' ')
+    const lastName = lastNameParts.join(' ') || ''
+
+    const user: User = {
+      id: crypto.randomUUID(),
+      firstName,
+      lastName,
+      email: tempEmail,
+      clinicName: 'Nueva Clínica', // Default clinic name
+    }
+    usersDb.set(tempEmail, user)
+
+    // Generate and store OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    otpStorage.set(phone, { otp, timestamp: Date.now() })
+
+    // In real app, send SMS/WhatsApp here
+    console.log(`OTP enviado por WhatsApp a ${phone}: ${otp}`) // For testing
+
+    return {
+      success: true,
+      message: `Código de verificación enviado por WhatsApp a ${phone}`
+    }
   },
 
   async logout(): Promise<void> {

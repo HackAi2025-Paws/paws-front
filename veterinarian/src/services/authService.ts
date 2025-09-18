@@ -25,7 +25,7 @@ class ApiOTPService implements OTPService {
 
     return {
       success: true,
-      message: response.data?.message || `Código OTP enviado a ${input.phone}`
+      message: response.message || `Código OTP enviado a ${input.phone}`
     }
   }
 }
