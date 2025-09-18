@@ -930,6 +930,11 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
 }
 
+.deepgramResponse {
+  width: 100%;
+  padding: 8px;
+}
+
 @media (max-width: 768px) {
   .summaryGrid {
     grid-template-columns: 1fr;
