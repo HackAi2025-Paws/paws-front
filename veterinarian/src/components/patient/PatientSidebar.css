@@ -1,0 +1,122 @@
+/* PatientSidebar.css */
+.petPage__nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  height: 48px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0 16px;
+}
+
+.petPage__sidebar {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  text-align: center;
+}
+
+.petPage__avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  object-fit: cover;
+  margin: 0 auto;
+}
+
+.petPage__nameRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.petPage__name {
+  margin: 0;
+}
+
+.petPage__meta {
+  color: var(--muted);
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.infoBox {
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+
+.infoBox--full {
+  grid-column: 1 / -1;
+}
+
+.infoBox__label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.infoBox__value {
+  color: var(--brand-700);
+  font-weight: 700;
+}
+
+.owner {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+  text-align: left;
+}
+
+.owner__title {
+  color: #166534;
+  font-weight: 800;
+}
+
+.owner__row {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.backNavButton {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--brand-600);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.backNavButton:hover {
+  color: var(--brand-700);
+  background: var(--brand-50);
+}
+
+.appTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--brand-700);
+}

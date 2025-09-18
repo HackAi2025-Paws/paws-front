@@ -11,6 +11,12 @@ import MedicalTranscriptionBox from '../components/patient/MedicalTranscriptionB
 import type { PatientRecord } from '../modules/patients/types'
 import type { Suggestion } from '../types/suggestions'
 import { useSpeechToText } from '../hooks/useSpeechToText'
+import './PetDetailPage.css'
+import '../components/patient/PatientSidebar.css'
+import '../components/patient/PatientTabs.css'
+import '../components/patient/AddRecordForm.css'
+import '../components/common/RecordList.css'
+import '../components/patient/VaccinesList.css'
 
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -94,41 +100,33 @@ export default function PetDetailPage() {
     );
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100vw',
-      height: '100vh',
-      overflow: 'hidden',
-      padding: isListening ? '8px' : '16px' // Reduce padding when listening to create more space
-    }}>
+    <div className={`petDetailPage ${isListening ? 'petDetailPage--listening' : 'petDetailPage--normal'}`}>
 
-      {/* Main horizontal container with sections 1, 2, and 3 */}
-      <div style={{
+      {/* Main container with horizontal content and medical transcription box */}
+      <div className={`mainContainer ${isListening ? 'mainContainer--listening' : ''}`} style={{
         display: 'flex',
-        flex: isListening ? '1 1 0' : '1',
-        overflow: 'hidden',
-        marginBottom: isListening ? '32px' : '0' // Further increased separation to push transcription box down
+        flexDirection: 'column',
+        height: '100vh',
+        overflow: 'hidden'
       }}>
 
-        {/* Section 1: Patient Record + Navigation */}
+        {/* Horizontal content container with sections 1, 2, and 3 */}
         <div style={{
-          width: '320px',
-          flexShrink: 0,
-          backgroundColor: 'transparent',
-          border: 'none',
           display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          marginRight: '16px'
+          flex: '1',
+          minHeight: 0,
+          overflow: 'hidden'
         }}>
-          <div className="petPage__nav" style={{ marginBottom: '16px' }}>
+
+        {/* Section 1: Patient Record + Navigation */}
+        <div className="patientSection">
+          <div className="petPage__nav patientNavigation">
             <button className="backNavButton" onClick={() => navigate(-1)}>
               ←
             </button>
             <div className="appTitle">PawsCare</div>
           </div>
-          <div style={{ flex: 1, overflow: 'auto' }}>
+          <div className="patientSidebarContent">
             <PatientSidebar
               patient={patient}
               patientDetails={patientDetails}
@@ -138,41 +136,18 @@ export default function PetDetailPage() {
         </div>
 
         {/* Section 2: Tabs + Content */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: 'transparent',
-          border: 'none',
-          minHeight: 0,
-          overflow: 'hidden',
-          marginRight: isListening && activeTab === 'agregar' ? '16px' : '0',
-        }}>
-          <div style={{
-            flexShrink: 0,
-            borderBottom: '1px solid #e5e7eb',
-            marginBottom: '0'
-          }}>
+        <div className={`contentSection ${isListening && activeTab === 'agregar' ? 'contentSection--withSuggestions' : ''}`}>
+          <div className="tabsContainer">
             <PatientTabs
               activeTab={activeTab}
               onTabChange={setActiveTab}
             />
           </div>
 
-          <div style={{
-            flex: 1,
-            minHeight: 0, // Important for flex child to allow shrinking
-            overflow: 'hidden', // Prevent section 2 from growing beyond its bounds
-            paddingBottom: isListening ? '8px' : '20px' // Reduced padding when listening to maximize space
-          }}>
+          <div className={`contentBody ${isListening ? 'contentBody--listening' : 'contentBody--normal'}`}>
 
             {activeTab === 'resumen' && (
-              <div style={{
-                minHeight: 'fit-content',
-                maxHeight: '100%',
-                overflow: 'auto',
-                padding: '0'
-              }}>
+              <div className="tabContentContainer">
                 <div className="tabContent">
                   <div className="recordList">
                     <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text)', fontWeight: 600 }}>📋 Antecedentes Médicos</h2>
@@ -211,12 +186,7 @@ export default function PetDetailPage() {
             )}
 
             {activeTab === 'historia' && (
-              <div style={{
-                minHeight: 'fit-content', // Shrink when content is small
-                maxHeight: '100%', // Can expand up to section 2 limit (minus padding)
-                overflow: 'auto', // Scroll when content exceeds maxHeight
-                padding: '0'
-              }}>
+              <div className="tabContentContainer">
                 <div className="tabContent">
                   <div className="search">
                     <span className="search__icon" aria-hidden>🔎</span>
@@ -387,12 +357,7 @@ export default function PetDetailPage() {
             )}
 
             {activeTab === 'vacunas' && (
-              <div style={{
-                minHeight: 'fit-content', // Shrink when content is small
-                maxHeight: '100%', // Can expand up to section 2 limit (minus padding)
-                overflow: 'auto', // Scroll when content exceeds maxHeight
-                padding: '0'
-              }}>
+              <div className="tabContentContainer">
                 <div className="tabContent">
                   <div className="recordList vacunasList">
                     <div className="vaccineItem">
@@ -413,32 +378,6 @@ export default function PetDetailPage() {
                       <div className="vaccineItem__body">
                         <div className="vaccineItem__title">Antirrábica</div>
                         <div className="vaccineItem__meta">9/12/2023</div>
-                      </div>
-                      <div className="vaccineItem__right">
-                        <span className="vaccineBadge vaccineBadge--current">
-                          Al día
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="vaccineItem">
-                      <div className="vaccineItem__icon">💉</div>
-                      <div className="vaccineItem__body">
-                        <div className="vaccineItem__title">Tos de las perreras</div>
-                        <div className="vaccineItem__meta">14/6/2023</div>
-                      </div>
-                      <div className="vaccineItem__right">
-                        <span className="vaccineBadge vaccineBadge--expired">
-                          Vencida
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="vaccineItem">
-                      <div className="vaccineItem__icon">💉</div>
-                      <div className="vaccineItem__body">
-                        <div className="vaccineItem__title">Bordetella</div>
-                        <div className="vaccineItem__meta">15/8/2023</div>
                       </div>
                       <div className="vaccineItem__right">
                         <span className="vaccineBadge vaccineBadge--current">
@@ -515,36 +454,41 @@ export default function PetDetailPage() {
             )}
 
             {activeTab === 'agregar' && (
-
-
               <div style={{
-                flex: isListening ? '0 1 auto' : 1, // Don't grow when listening, allow shrinking
-                overflow: 'auto', // Scroll only if needed
-                height: "100vh",
-              }} className="recordList">
-                <AddRecordForm
-                  onSave={handleSaveRecord}
-                  onVoiceInput={handleVoiceInput}
-                />
-                <div className="flex flex-col">
-                  <div className="formActionsExternal" style={{
-                    height: '60px', // Fixed height to make it shorter
-                    alignItems: 'center' // Center buttons vertically
-                  }}>
-                    <button
-                      className={`btn ${isListening ? 'btn--danger' : 'btn--ghost'} voiceBtn`}
-                      onClick={handleVoiceInput}
-                      style={{
-                        backgroundColor: isListening ? '#ef4444' : undefined,
-                        color: isListening ? 'white' : undefined
-                      }}
-                    >
-                      {isListening ? '⏹️ Parar grabación' : '🎤 Dictar por voz'}
-                    </button>
-                    <button className="btn btn--primary" onClick={handleSaveRecord}>
-                      Guardar Entrada
-                    </button>
-                  </div>
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%'
+              }}>
+                <div style={{
+                  flex: isListening ? '0 1 auto' : 1, // Don't grow when listening, allow shrinking
+                  overflow: 'auto', // Scroll only if needed
+                  marginBottom: '16px' // Space between form and buttons
+                }} className="recordList">
+                  <AddRecordForm
+                    onSave={handleSaveRecord}
+                    onVoiceInput={handleVoiceInput}
+                  />
+                </div>
+
+                {/* Buttons bar outside container */}
+                <div className="formActionsExternal" style={{
+                  height: '60px', // Fixed height to make it shorter
+                  alignItems: 'center', // Center buttons vertically
+                  marginTop: 'auto' // Push to bottom
+                }}>
+                  <button
+                    className={`btn ${isListening ? 'btn--danger' : 'btn--ghost'} voiceBtn`}
+                    onClick={handleVoiceInput}
+                    style={{
+                      backgroundColor: isListening ? '#ef4444' : undefined,
+                      color: isListening ? 'white' : undefined
+                    }}
+                  >
+                    {isListening ? '⏹️ Parar grabación' : '🎤 Dictar por voz'}
+                  </button>
+                  <button className="btn btn--primary" onClick={handleSaveRecord}>
+                    Guardar Entrada
+                  </button>
                 </div>
               </div>
             )}
@@ -563,29 +507,6 @@ export default function PetDetailPage() {
             flexDirection: 'column',
             overflow: 'hidden'
           }}>
-            {/* Invisible card matching tabs container for responsive alignment */}
-            <div style={{
-              flexShrink: 0,
-              marginBottom: '16px', // Exactly same margin as tabs (16px)
-              visibility: 'hidden', // Back to invisible now that alignment is confirmed
-              height: 'auto', // Let it auto-size like real tabs
-              minHeight: '48px', // Minimum height to match tabs
-              backgroundColor: 'transparent' // Transparent background
-            }}>
-              {/* Invisible tabs placeholder */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                paddingLeft: '16px',
-                paddingTop: '12px',
-                paddingBottom: '12px',
-                fontSize: '14px',
-                color: 'transparent', // Invisible text
-                fontStyle: 'italic'
-              }}>
-                Alignment Reference (same as tabs)
-              </div>
-            </div>
 
             <div style={{
               flex: 1,
@@ -601,32 +522,30 @@ export default function PetDetailPage() {
           </div>
         )}
 
-      </div>
-
-
-      {/* Section 4: Medical Transcription (horizontal, appears when listening) */}
-      {isListening && (
-        <div style={{
-          width: '100%',
-          height: 'auto', // Auto height to fit content
-          maxHeight: 'calc(28vh - 16px)', // Maximum height limit
-          backgroundColor: 'transparent',
-          border: 'none',
-          overflow: 'auto', // Allow scrolling if content exceeds maxHeight
-          flexShrink: 0
-        }}>
-          <MedicalTranscriptionBox
-            transcription={finalText}
-            shouldProcess={false}
-            onProcessed={(processedText) => {
-              console.log('Medical transcription processed:', processedText)
-            }}
-            onError={(error) => {
-              console.error('Medical transcription error:', error)
-            }}
-          />
         </div>
-      )}
+
+        {/* Medical Transcription Box (appears when listening) */}
+        {isListening && (
+          <div style={{
+            flexShrink: 0,
+            height: 'auto',
+            maxHeight: '20vh',
+            overflow: 'auto'
+          }}>
+            <MedicalTranscriptionBox
+              transcription={finalText}
+              shouldProcess={false}
+              onProcessed={(processedText) => {
+                console.log('Medical transcription processed:', processedText)
+              }}
+              onError={(error) => {
+                console.error('Medical transcription error:', error)
+              }}
+            />
+          </div>
+        )}
+
+      </div>
 
       <PatientExportModal
         open={openExport}

@@ -1,6 +1,6 @@
 'use client ???';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Simple inline icons to replace lucide-react dependencies
 const Loader2 = ({ style, size = 24 }: { style?: React.CSSProperties; size?: number }) => (
@@ -82,17 +82,54 @@ interface MedicalTranscriptionBoxProps {
   onError?: (error: string) => void;
 }
 
-export default function MedicalTranscriptionBox({ 
-  transcription, 
-  shouldProcess, 
+export default function MedicalTranscriptionBox({
+  transcription,
+  shouldProcess,
   onProcessed,
-  onError 
+  onError
 }: MedicalTranscriptionBoxProps) {
   const [medicalResponse, setMedicalResponse] = useState<MedicalTranscriptionResponse | null>(null);
   const [medications, setMedications] = useState<IdentifiedMedication[]>([]);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [lastProcessedAt, setLastProcessedAt] = useState<Date | null>(null);
   const [showMedicationsList, setShowMedicationsList] = useState<boolean>(true);
+  const [displayText, setDisplayText] = useState<string>('');
+
+  // Simple text management - show only current line, replace when overflow
+  const manageText = (fullText: string) => {
+    if (!fullText.trim()) {
+      setDisplayText('');
+      return;
+    }
+
+    const maxCharsPerLine = 80; // Approximate characters that fit in one line
+    const words = fullText.split(' ');
+    let currentLine = '';
+
+    // Build current line until it would overflow
+    for (const word of words) {
+      const testLine = currentLine + (currentLine ? ' ' : '') + word;
+      if (testLine.length <= maxCharsPerLine) {
+        currentLine = testLine;
+      } else {
+        // If we already have text and adding this word would overflow,
+        // keep only the new word and start fresh
+        currentLine = word;
+        break;
+      }
+    }
+
+    setDisplayText(currentLine);
+  };
+
+  // Effect to handle transcription changes
+  useEffect(() => {
+    if (transcription && !medicalResponse && !isProcessing) {
+      manageText(transcription);
+    } else if (!transcription) {
+      setDisplayText('');
+    }
+  }, [transcription, medicalResponse, isProcessing]);
 
   // Función para manejar confirmación de medicamentos
   const handleMedicationConfirm = (event: MedicationConfirmationEvent) => {
@@ -302,49 +339,51 @@ export default function MedicalTranscriptionBox({
       <div style={{ position: 'relative' }}>
         <div style={{
           width: '100%',
-          minHeight: 'auto', // Auto height to fit content
-          padding: '16px', // Keep good padding for readability
+          height: '50px', // Fixed single line height
+          padding: '14px 16px', // Vertical padding for single line
           fontSize: '15px',
-          lineHeight: '1.6',
+          lineHeight: '1.4',
           borderRadius: '12px',
           border: '1px solid var(--border)',
-          backgroundColor: isProcessing ? 'var(--brand-50)' : 'var(--bg)' // Light background for content area
+          backgroundColor: isProcessing ? 'var(--brand-50)' : 'var(--bg)',
+          display: 'flex',
+          alignItems: 'center',
+          overflow: 'hidden', // Hide overflow to keep single line
+          whiteSpace: 'nowrap', // Prevent text wrapping
         }}>
           {isProcessing ? (
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '60px', // Minimal height for loading state
               color: 'var(--muted)'
             }}>
-              <Loader2 style={{ width: '24px', height: '24px', animation: 'spin 1s linear infinite', marginRight: '8px' }} />
+              <Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite', marginRight: '8px' }} />
               Procesando con IA médica especializada...
             </div>
           ) : medicalResponse ? (
             medicalResponse.corrected.startsWith('❌') ? (
               <div style={{
                 color: '#b91c1c',
-                whiteSpace: 'pre-wrap'
+                overflow: 'hidden',
+                whiteSpace: 'nowrap'
               }}>
                 {medicalResponse.corrected}
               </div>
             ) : (
-              <HighlightedMedicalText
-                text={medicalResponse.corrected}
-                medications={medications}
-              />
+              <div style={{
+                overflow: 'hidden',
+                whiteSpace: 'nowrap'
+              }}>
+                {medicalResponse.corrected}
+              </div>
             )
           ) : (
             <div style={{
               color: 'var(--muted)',
-              minHeight: '60px', // Minimal height for placeholder text
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center'
+              overflow: 'hidden',
+              whiteSpace: 'nowrap'
             }}>
-              {transcription}
+              {displayText || 'La transcripción aparecerá aquí...'}
             </div>
           )}
         </div>
