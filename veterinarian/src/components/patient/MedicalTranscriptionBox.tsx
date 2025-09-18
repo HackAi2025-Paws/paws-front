@@ -1,6 +1,6 @@
 'use client ???';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 // Simple inline icons to replace lucide-react dependencies
 const Loader2 = ({ style, size = 24 }: { style?: React.CSSProperties; size?: number }) => (
@@ -57,11 +57,6 @@ interface MedicationConfirmationEvent {
   confirmed: boolean;
 }
 
-// Simple replacements for missing components
-const HighlightedMedicalText = ({ text }: { text: string; medications: IdentifiedMedication[] }) => (
-  <div style={{ whiteSpace: 'pre-wrap' }}>{text}</div>
-);
-
 const MedicationsList = ({ medications }: { medications: IdentifiedMedication[]; onMedicationConfirm: (event: MedicationConfirmationEvent) => void }) => (
   <div style={{ padding: '16px', backgroundColor: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
     <h4 style={{ margin: '0 0 12px 0', color: 'var(--text)' }}>Medicamentos identificados:</h4>
@@ -93,43 +88,6 @@ export default function MedicalTranscriptionBox({
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [lastProcessedAt, setLastProcessedAt] = useState<Date | null>(null);
   const [showMedicationsList, setShowMedicationsList] = useState<boolean>(true);
-  const [displayText, setDisplayText] = useState<string>('');
-
-  // Simple text management - show only current line, replace when overflow
-  const manageText = (fullText: string) => {
-    if (!fullText.trim()) {
-      setDisplayText('');
-      return;
-    }
-
-    const maxCharsPerLine = 80; // Approximate characters that fit in one line
-    const words = fullText.split(' ');
-    let currentLine = '';
-
-    // Build current line until it would overflow
-    for (const word of words) {
-      const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      if (testLine.length <= maxCharsPerLine) {
-        currentLine = testLine;
-      } else {
-        // If we already have text and adding this word would overflow,
-        // keep only the new word and start fresh
-        currentLine = word;
-        break;
-      }
-    }
-
-    setDisplayText(currentLine);
-  };
-
-  // Effect to handle transcription changes
-  useEffect(() => {
-    if (transcription && !medicalResponse && !isProcessing) {
-      manageText(transcription);
-    } else if (!transcription) {
-      setDisplayText('');
-    }
-  }, [transcription, medicalResponse, isProcessing]);
 
   // Función para manejar confirmación de medicamentos
   const handleMedicationConfirm = (event: MedicationConfirmationEvent) => {
@@ -143,7 +101,7 @@ export default function MedicalTranscriptionBox({
   };
 
   // Función para procesar transcripción médica con IA
-  const processMedicalTranscription = async (textToProcess: string) => {
+  const processMedicalTranscription = useCallback(async (textToProcess: string) => {
     if (!textToProcess.trim()) return;
 
     setIsProcessing(true);
@@ -200,14 +158,14 @@ export default function MedicalTranscriptionBox({
       onError?.(error instanceof Error ? error.message : 'Error desconocido');
       // En caso de error, no se devuelve texto procesado
     }
-  };
+  }, [onError, onProcessed]);
 
   // Efecto para procesar cuando shouldProcess cambia a true
   useEffect(() => {
     if (shouldProcess && transcription.trim()) {
       processMedicalTranscription(transcription);
     }
-  }, [shouldProcess, transcription]);
+  }, [processMedicalTranscription, shouldProcess, transcription]);
 
   const clearContent = () => {
     setMedicalResponse(null);
@@ -378,12 +336,8 @@ export default function MedicalTranscriptionBox({
               </div>
             )
           ) : (
-            <div style={{
-              color: 'var(--muted)',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap'
-            }}>
-              {displayText || 'La transcripción aparecerá aquí...'}
+            <div className='last-line-only'>
+              {transcription || 'La transcripción aparecerá aquí...'}
             </div>
           )}
         </div>
