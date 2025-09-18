@@ -210,62 +210,7 @@ export const mockPets: Pet[] = [
   }
 ]
 
-export const mockReminders: Reminder[] = [
-  {
-    id: '1',
-    petId: '1',
-    type: 'control',
-    title: 'Control veterinario - Max',
-    description: 'Control rutinario programado en clínica veterinaria',
-    date: '2024-12-15',
-    time: '14:30',
-    location: 'Veterinaria San Martín',
-    isCompleted: false
-  },
-  {
-    id: '2',
-    petId: '2',
-    type: 'vacuna',
-    title: 'Vacuna Triple Felina - Luna',
-    description: 'Vacuna anual con Dra. Rodriguez',
-    date: '2024-11-20',
-    time: '10:00',
-    location: 'Clínica Veterinaria del Centro',
-    isCompleted: false
-  },
-  {
-    id: '3',
-    petId: '1',
-    type: 'desparasitacion',
-    title: 'Desparasitación - Max',
-    description: 'Administrar desparasitante mensual',
-    date: '2024-10-30',
-    time: '16:00',
-    isCompleted: true
-  },
-  {
-    id: '4',
-    petId: '3',
-    type: 'higiene',
-    title: 'Baño y corte de uñas - Rocky',
-    description: 'Sesión de higiene mensual',
-    date: '2024-11-25',
-    time: '11:30',
-    location: 'Pet Spa Las Flores',
-    isCompleted: false
-  },
-  {
-    id: '5',
-    petId: '2',
-    type: 'estetica',
-    title: 'Corte y cepillado - Luna',
-    description: 'Mantenimiento del pelaje largo',
-    date: '2024-11-18',
-    time: '15:00',
-    location: 'Peluquería Canina Premium',
-    isCompleted: false
-  }
-]
+export const mockReminders: Reminder[] = []
 
 export const mockFAQs: FAQ[] = [
   // Preguntas específicas para PERROS

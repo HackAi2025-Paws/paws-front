@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Header } from '../../components/layout/Header'
 import { ReminderList } from '../../components/features/ReminderList'
 import { AddReminderForm } from '../../components/forms/AddReminderForm'
@@ -7,19 +7,42 @@ import { Select } from '../../components/ui/select'
 import { Input } from '../../components/ui/input'
 import { Card, CardContent } from '../../components/ui/card'
 import { useAppDispatch, useAppSelector } from '../../hooks'
-import { addReminder } from '../../store/remindersSlice'
+import { addReminder, setLoading, setReminders } from '../../store/remindersSlice'
+import { petService } from '../../services/petService'
 import { Plus, Search, Filter } from 'lucide-react'
 import type { Reminder } from '../../types/index.js'
 
 export const RemindersPage: React.FC = () => {
   const dispatch = useAppDispatch()
-  const { reminders } = useAppSelector((state) => state.reminders)
+  const { reminders, isLoading } = useAppSelector((state) => state.reminders)
   const { pets } = useAppSelector((state) => state.pets)
   
   const [showCompleted, setShowCompleted] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedPetFilter, setSelectedPetFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Cargar recordatorios cuando el componente se monta
+  useEffect(() => {
+    const loadReminders = async () => {
+      try {
+        dispatch(setLoading(true))
+        console.log('🔄 Loading reminders on page mount...')
+        
+        // Usar un petId dummy para activar la carga
+        const reminders = await petService.getPetReminders('dummy')
+        dispatch(setReminders(reminders))
+        
+        console.log('✅ Reminders loaded successfully:', reminders)
+      } catch (error) {
+        console.error('❌ Error loading reminders:', error)
+      } finally {
+        dispatch(setLoading(false))
+      }
+    }
+
+    loadReminders()
+  }, [dispatch])
 
   // Filtrar recordatorios
   const filteredReminders = reminders.filter(reminder => {
@@ -32,13 +55,34 @@ export const RemindersPage: React.FC = () => {
     return statusMatch && petMatch && searchMatch
   })
 
-  const handleAddReminder = (reminderData: Omit<Reminder, 'id'>) => {
-    const newReminder: Reminder = {
-      ...reminderData,
-      id: Date.now().toString()
+  const handleAddReminder = async (reminderData: Omit<Reminder, 'id'>) => {
+    try {
+      dispatch(setLoading(true))
+      
+      // Call the backend API through pet service
+      const newReminder = await petService.createReminder(reminderData)
+      
+      // Update Redux state with the new reminder
+      dispatch(addReminder(newReminder))
+      setShowAddForm(false)
+      
+      console.log('✅ Recordatorio creado exitosamente:', newReminder)
+    } catch (error) {
+      console.error('❌ Error creating reminder:', error)
+      
+      // Fallback: still create the reminder locally if API fails
+      const fallbackReminder: Reminder = {
+        ...reminderData,
+        id: Date.now().toString()
+      }
+      dispatch(addReminder(fallbackReminder))
+      setShowAddForm(false)
+      
+      // You might want to show a toast notification here
+      alert('El recordatorio se creó localmente. Verifique la conexión con el backend.')
+    } finally {
+      dispatch(setLoading(false))
     }
-    dispatch(addReminder(newReminder))
-    setShowAddForm(false)
   }
 
   return (
@@ -190,6 +234,7 @@ export const RemindersPage: React.FC = () => {
           pets={pets}
           onSubmit={handleAddReminder}
           onCancel={() => setShowAddForm(false)}
+          isLoading={isLoading}
         />
       )}
     </>

@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent } from '../ui/card.js'
 import { Badge } from '../ui/badge.js'
 import { Button } from '../ui/button.js'
 import type { Reminder } from '../../types/index.js'
 import { useAppDispatch, useAppSelector } from '../../hooks/index.js'
-import { completeReminder } from '../../store/remindersSlice.js'
+import { completeReminder, updateReminder } from '../../store/remindersSlice.js'
+import { petService } from '../../services/petService'
 import { formatDate, isUpcoming } from '../../lib/utils.js'
 import { Calendar, Syringe, Pill, Stethoscope, Check, Clock } from 'lucide-react'
 
@@ -84,13 +85,44 @@ export const ReminderList: React.FC<ReminderListProps> = ({
 }) => {
   const dispatch = useAppDispatch()
   const { pets } = useAppSelector((state) => state.pets)
+  const [completingIds, setCompletingIds] = useState<Set<string>>(new Set())
 
   const filteredReminders = reminders.filter(r => 
     showCompleted || !r.isCompleted
   )
 
-  const handleCompleteReminder = (reminderId: string) => {
-    dispatch(completeReminder(reminderId))
+  const handleCompleteReminder = async (reminderId: string) => {
+    try {
+      // Evitar doble click
+      if (completingIds.has(reminderId)) return
+      
+      setCompletingIds(prev => new Set(prev).add(reminderId))
+      console.log(`🔄 Marking reminder ${reminderId} as completed...`)
+
+      // Llamar al backend para actualizar
+      const updatedReminder = await petService.updateReminder(reminderId, {
+        isCompleted: true
+      })
+
+      // Actualizar Redux con los datos del backend
+      dispatch(updateReminder(updatedReminder))
+      
+      console.log(`✅ Reminder ${reminderId} marked as completed successfully`)
+    } catch (error) {
+      console.error('❌ Error completing reminder:', error)
+      
+      // Fallback: actualizar solo Redux si falla el backend
+      dispatch(completeReminder(reminderId))
+      
+      // Notificar al usuario (opcional)
+      alert('Recordatorio marcado localmente. Error de conexión con el servidor.')
+    } finally {
+      setCompletingIds(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(reminderId)
+        return newSet
+      })
+    }
   }
 
   const getPetName = (petId: string) => {
@@ -181,10 +213,20 @@ export const ReminderList: React.FC<ReminderListProps> = ({
                         size="sm"
                         variant="outline"
                         onClick={() => handleCompleteReminder(reminder.id)}
-                        className="gap-1"
+                        disabled={completingIds.has(reminder.id)}
+                        className="gap-1 min-w-[80px]"
                       >
-                        <Check className="h-3 w-3" />
-                        Marcar
+                        {completingIds.has(reminder.id) ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600"></div>
+                            Marcando...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="h-3 w-3" />
+                            Marcar
+                          </>
+                        )}
                       </Button>
                     )}
                   </div>

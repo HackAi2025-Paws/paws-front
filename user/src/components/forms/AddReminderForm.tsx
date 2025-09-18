@@ -9,8 +9,9 @@ import type { Reminder, ReminderType, Pet } from '../../types/index.js'
 
 interface AddReminderFormProps {
   pets: Pet[]
-  onSubmit: (reminder: Omit<Reminder, 'id'>) => void
+  onSubmit: (reminder: Omit<Reminder, 'id'>) => Promise<void>
   onCancel: () => void
+  isLoading?: boolean
 }
 
 const REMINDER_TYPES: { value: ReminderType; label: string; icon: string }[] = [
@@ -26,7 +27,8 @@ const REMINDER_TYPES: { value: ReminderType; label: string; icon: string }[] = [
 export const AddReminderForm: React.FC<AddReminderFormProps> = ({ 
   pets, 
   onSubmit, 
-  onCancel 
+  onCancel,
+  isLoading = false
 }) => {
   const [formData, setFormData] = useState({
     title: '',
@@ -40,8 +42,10 @@ export const AddReminderForm: React.FC<AddReminderFormProps> = ({
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (isLoading) return // Prevent double submission
     
     // Validaciones
     const newErrors: Record<string, string> = {}
@@ -79,7 +83,7 @@ export const AddReminderForm: React.FC<AddReminderFormProps> = ({
       isCompleted: false
     }
 
-    onSubmit(reminder)
+    await onSubmit(reminder)
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -143,6 +147,7 @@ export const AddReminderForm: React.FC<AddReminderFormProps> = ({
                 className={errors.petId ? 'border-red-500' : ''}
               >
                 <option value="">Seleccionar mascota</option>
+                <option value="max">Max</option>
                 {pets.map(pet => (
                   <option key={pet.id} value={pet.id}>
                     {pet.name} ({pet.breed})
@@ -278,11 +283,27 @@ export const AddReminderForm: React.FC<AddReminderFormProps> = ({
 
             {/* Botones */}
             <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onCancel}
+                disabled={isLoading}
+              >
                 Cancelar
               </Button>
-              <Button type="submit">
-                Crear Recordatorio
+              <Button 
+                type="submit"
+                disabled={isLoading}
+                className="min-w-[140px]"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Creando...
+                  </>
+                ) : (
+                  'Crear Recordatorio'
+                )}
               </Button>
             </div>
           </form>

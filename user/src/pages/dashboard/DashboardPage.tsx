@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { setPets } from '../../store/petsSlice'
 import { setReminders } from '../../store/remindersSlice'
-import { mockPets, mockReminders } from '../../data/mockData'
+import { mockPets } from '../../data/mockData'
+import { petService } from '../../services/petService'
 import { Calendar, AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -17,9 +18,27 @@ export const DashboardPage: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth)
 
   useEffect(() => {
-    // Cargar datos mock
-    dispatch(setPets(mockPets))
-    dispatch(setReminders(mockReminders))
+    const loadDashboardData = async () => {
+      try {
+        console.log('🏠 Loading dashboard data...')
+        
+        // Cargar pets (mock por ahora)
+        dispatch(setPets(mockPets))
+        
+        // Cargar recordatorios reales del backend
+        const reminders = await petService.getPetReminders('dummy')
+        dispatch(setReminders(reminders))
+        
+        console.log('✅ Dashboard data loaded successfully')
+      } catch (error) {
+        console.error('❌ Error loading dashboard data:', error)
+        // En caso de error, al menos cargar los pets
+        dispatch(setPets(mockPets))
+        dispatch(setReminders([])) // Array vacío en lugar de mock
+      }
+    }
+
+    loadDashboardData()
   }, [dispatch])
 
   const upcomingReminders = reminders.filter(r => !r.isCompleted).slice(0, 3)
