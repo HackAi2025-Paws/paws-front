@@ -10,18 +10,24 @@ import { AddPetPage } from './pages/pet/AddPetPage'
 import { ConsultationsPage } from './pages/consultations/ConsultationsPage'
 import { RemindersPage } from './pages/reminders/RemindersPage'
 import { FAQPage } from './pages/faq/FAQPage'
-import { ChatPage } from './pages/chat/ChatPage'
 import { ProfilePage } from './pages/profile/ProfilePage'
+import { RegisterPage } from './pages/auth/RegisterPage'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { AuthProvider } from './modules/auth/AuthContext'
+import { mockAuthClient } from './modules/auth/mockClient'
+import { useSessionSync } from './hooks/useSessionSync'
 
-function App() {
+function AppContent() {
+  // Sincronizar sesión al inicializar
+  useSessionSync()
+
   return (
-    <Provider store={store}>
-      <Router>
+    <Router>
         <Routes>
           <Route path="/" element={<Layout />}>
             {/* Rutas públicas */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             
             {/* Rutas protegidas */}
             <Route path="/dashboard" element={
@@ -60,11 +66,6 @@ function App() {
               </ProtectedRoute>
             } />
             
-            <Route path="/chat" element={
-              <ProtectedRoute>
-                <ChatPage />
-              </ProtectedRoute>
-            } />
             
             <Route path="/profile" element={
               <ProtectedRoute>
@@ -77,7 +78,16 @@ function App() {
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>
-      </Router>
+    </Router>
+  )
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <AuthProvider client={mockAuthClient}>
+        <AppContent />
+      </AuthProvider>
     </Provider>
   )
 }

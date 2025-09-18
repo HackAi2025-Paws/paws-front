@@ -1,4 +1,4 @@
-import type { Pet, FAQ, ChatConversation, User, Reminder, ConsultationRecord } from '../types/index.js'
+import type { Pet, FAQ, User, Reminder, ConsultationRecord } from '../types/index.js'
 
 export const mockUser: User = {
   id: '1',
@@ -401,55 +401,3 @@ export const mockFAQs: FAQ[] = [
   }
 ]
 
-export const mockChatConversations: ChatConversation[] = [
-  {
-    id: '1',
-    participantName: 'Asistente IA',
-    participantAvatar: '/paws-ai-avatar.png',
-    unreadCount: 2,
-    messages: [
-      {
-        id: '1',
-        text: '¡Hola! Soy tu asistente de IA especializado en cuidado de mascotas. ¿En qué puedo ayudarte hoy?',
-        sender: 'vet',
-        timestamp: '2024-10-15T09:00:00Z'
-      },
-      {
-        id: '2',
-        text: 'Hola, tengo una pregunta sobre Max. Ha estado un poco decaído últimamente.',
-        sender: 'user',
-        timestamp: '2024-10-15T09:05:00Z'
-      },
-      {
-        id: '3',
-        text: 'Entiendo tu preocupación. ¿Desde cuándo notas este cambio? ¿Ha tenido cambios en su apetito o actividad? Esta información me ayudará a darte mejor orientación.',
-        sender: 'vet',
-        timestamp: '2024-10-15T09:07:00Z'
-      },
-      {
-        id: '4',
-        text: 'Desde hace unos 3 días. Come normal pero no quiere jugar tanto como antes.',
-        sender: 'user',
-        timestamp: '2024-10-15T09:10:00Z'
-      },
-      {
-        id: '5',
-        text: 'Basándome en lo que describes, podría ser normal pero es recomendable observarlo. Te sugiero considerar una consulta veterinaria si continúa así. ¿Has notado otros síntomas?',
-        sender: 'vet',
-        timestamp: '2024-10-15T09:15:00Z'
-      },
-      {
-        id: '6',
-        text: 'No, solo eso. ¿Debería preocuparme más?',
-        sender: 'user',
-        timestamp: '2024-10-15T09:17:00Z'
-      }
-    ],
-    lastMessage: {
-      id: '6',
-      text: 'No, solo eso. ¿Debería preocuparme más?',
-      sender: 'user',
-      timestamp: '2024-10-15T09:17:00Z'
-    }
-  }
-]
