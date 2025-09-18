@@ -1,4 +1,4 @@
-'use client';
+'use client ???';
 
 import { useState, useEffect } from 'react';
 
@@ -212,7 +212,7 @@ export default function MedicalTranscriptionBox({
               alignItems: 'center',
               gap: '12px'
             }}>
-              Corrección Médica IA
+              Transcripción
               {isProcessing && (
                 <Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite', color: 'var(--brand-600)' }} />
               )}
@@ -223,7 +223,7 @@ export default function MedicalTranscriptionBox({
               fontWeight: 500,
               margin: 0
             }}>
-              Optimización automática de terminología médica
+              A medida que vayas hablando, la transcripción se irá actualizando
             </p>
           </div>
         </div>
@@ -344,7 +344,7 @@ export default function MedicalTranscriptionBox({
               justifyContent: 'center',
               textAlign: 'center'
             }}>
-              La IA médica procesará y corregirá la transcripción con terminología médica apropiada...
+              {transcription}
             </div>
           )}
         </div>

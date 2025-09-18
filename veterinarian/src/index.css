@@ -185,7 +185,7 @@ a:hover { text-decoration: underline; }
   overflow-y: auto;
   width: 100%;
   max-width: none;
-  max-height: calc(100vh - 224px);
+  max-height: 90vh;
   padding: 8px;
   background: #fff;
   border: 1px solid var(--border);
