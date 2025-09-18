@@ -143,19 +143,3 @@ export interface FAQ {
   species: ('perro' | 'gato' | 'general')[]
 }
 
-export interface ChatMessage {
-  id: string
-  text: string
-  sender: 'user' | 'vet'
-  timestamp: string
-  type?: 'text' | 'image'
-}
-
-export interface ChatConversation {
-  id: string
-  participantName: string
-  participantAvatar?: string
-  messages: ChatMessage[]
-  lastMessage?: ChatMessage
-  unreadCount: number
-}

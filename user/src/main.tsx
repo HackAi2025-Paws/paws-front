@@ -2,6 +2,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { env, logEnvConfig, validateEnvConfig } from './config/env'
+
+// Validar e inicializar configuración
+validateEnvConfig()
+logEnvConfig()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

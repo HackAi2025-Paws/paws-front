@@ -9,7 +9,7 @@ import { mockFAQs } from '../../data/mockData'
 import { useAppSelector } from '../../hooks'
 import { detectPetSpecies, getSpeciesEmoji, getSpeciesLabel } from '../../lib/petUtils'
 import type { FAQ } from '../../types/index.js'
-import { Search, ChevronDown, ChevronUp, Heart, Utensils, Brain, Shield, AlertTriangle, Info, MessageCircle, ArrowRight } from 'lucide-react'
+import { Search, ChevronDown, ChevronUp, Heart, Utensils, Brain, Shield, AlertTriangle, Info } from 'lucide-react'
 
 const categoryIcons = {
   alimentacion: Utensils,
@@ -227,15 +227,10 @@ export const FAQPage: React.FC = () => {
                   Intenta con otros términos de búsqueda o selecciona una categoría diferente
                 </p>
 
-                {/* Enlace al chat cuando no hay resultados */}
-                <Link
-                  to="/chat"
-                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  Chat con IA
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+                {/* Mensaje adicional cuando no hay resultados */}
+                <p className="text-sm text-gray-500">
+                  💡 Intenta buscar palabras clave específicas como "vacuna", "alimentación" o "comportamiento"
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -311,31 +306,21 @@ export const FAQPage: React.FC = () => {
         </div>
 
         {/* Sección de ayuda adicional */}
-        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
           <CardContent className="p-6">
             <div className="text-center">
-              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-green-600" />
+              <Info className="h-12 w-12 mx-auto mb-4 text-blue-600" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                ¿No encontraste lo que buscabas?
+                ¿Necesitas más información?
               </h3>
               <p className="text-gray-600 mb-6">
-                Consulta directamente con nuestra IA para obtener respuestas personalizadas sobre tu mascota.
+                Si no encuentras la respuesta que buscas, te recomendamos consultar con tu veterinario de confianza.
               </p>
 
-              <div className="flex justify-center">
-                <Link
-                  to="/chat"
-                  className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium text-lg"
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  Chat con IA
-                </Link>
-              </div>
-
               <div className="mt-4 flex items-center justify-center gap-6 text-sm text-gray-500">
-                <span className="flex items-center gap-1">💬 Respuestas inmediatas</span>
-                <span className="flex items-center gap-1">🩺 Consejos profesionales</span>
-                <span className="flex items-center gap-1">🐾 Personalizado</span>
+                <span className="flex items-center gap-1">🩺 Consulta profesional</span>
+                <span className="flex items-center gap-1">📋 Registra en consultas</span>
+                <span className="flex items-center gap-1">📅 Programa recordatorios</span>
               </div>
             </div>
           </CardContent>
