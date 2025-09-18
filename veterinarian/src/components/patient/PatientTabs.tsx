@@ -5,9 +5,10 @@ interface PatientTabsProps {
 
 export default function PatientTabs({ activeTab, onTabChange }: PatientTabsProps) {
   const tabs = [
+    { id: 'resumen', label: 'Resumen Clínico' },
+    { id: 'agregar', label: 'Nueva Consulta' },
     { id: 'historia', label: 'Historia Clínica' },
-    { id: 'vacunas', label: 'Vacunas' },
-    { id: 'agregar', label: 'Nueva Consulta' }
+    { id: 'vacunas', label: 'Vacunas' }
   ]
 
   return (

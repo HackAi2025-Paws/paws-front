@@ -17,11 +17,12 @@
 
 * { box-sizing: border-box; }
 
-html, body, #root { height: 100%; }
+html, body, #root { height: 100%; width: 100%; margin: 0; padding: 0; }
 
 body {
   margin: 0;
   background: radial-gradient(1300px 600px at 50% -200px, var(--brand-50), transparent), var(--bg);
+  overflow-x: hidden;
 }
 
 a { color: var(--brand-700); text-decoration: none; }
@@ -131,13 +132,13 @@ a:hover { text-decoration: underline; }
 .grid--2 { grid-template-columns: 1fr 1fr; }
 
 /* Dashboard */
-.dashboard { padding: 24px; max-width: 1120px; margin: 0 auto; }
+.dashboard { padding: 20px; min-height: 100vh; }
 .dashboard__header { display: grid; gap: 16px; margin-bottom: 20px; }
 .dashboard__title { margin: 0; font-size: 28px; }
 .dashboard__subtitle { color: var(--muted); margin: 0; }
 .brandRow__brand { color: var(--brand-700); font-weight: 800; }
 
-.search { display: grid; grid-template-columns: 18px 1fr; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; background: #fff; height: 36px; margin-bottom: 0; transition: border-color 0.2s ease; }
+.search { display: grid; grid-template-columns: 18px 1fr; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: #fff; height: 44px; margin-bottom: 0; transition: border-color 0.2s ease; }
 .search:hover, .search:focus-within { border-color: var(--brand-600); }
 .search__icon { color: var(--muted); }
 .search__input { border: 0; outline: none; font-size: 14px; padding: 0; line-height: 1; }
@@ -151,7 +152,7 @@ a:hover { text-decoration: underline; }
 .linkButton { background: transparent; border: 0; color: var(--brand-700); cursor: pointer; font-weight: 600; }
 
 .patientList { display: grid; gap: 18px; }
-.patientItem { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; transition: box-shadow .15s ease, border-color .15s ease, background-color .15s ease; cursor: pointer; }
+.patientItem { display: flex; justify-content: space-between; align-items: center; backgnoround: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; transition: box-shadow .15s ease, border-color .15s ease, background-color .15s ease; cursor: pointer; }
 .patientItem:hover { border-color: var(--brand-600); box-shadow: 0 0 0 2px color-mix(in oklab, var(--brand-600) 20%, white); background: color-mix(in oklab, var(--brand-50) 60%, #fff); }
 .patientItem__left { display: flex; gap: 14px; align-items: center; justify-content: flex-start; }
 .patientItem__text { display: grid; gap: 4px; text-align: left; }
@@ -164,8 +165,8 @@ a:hover { text-decoration: underline; }
 .patientItem__status { color: var(--muted); font-size: 12px; }
 
 /* Pet detail */
-.petPage { display: grid; grid-template-columns: 320px 1fr; gap: 20px; max-width: 1120px; margin: 0 auto; padding: 24px; }
-.petPage__left { display: flex; flex-direction: column; gap: 16px; }
+.petPage { display: grid; align-items: start; grid-template-columns: 400px 1fr; gap: 20px; padding: 0 0 24px 0; height: 100vh; width: 100%; margin: 0; justify-content: start; }
+.petPage__left { display: flex; flex-direction: column; gap: 16px; padding: 24px 0 24px 24px; }
 .petPage__nav { display: flex; align-items: center; justify-content: flex-start; gap: 12px; height: 48px; background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 0 16px; }
 .petPage__sidebar { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: grid; gap: 12px; align-content: start; text-align: center; }
 .petPage__avatar { width: 96px; height: 96px; border-radius: 999px; object-fit: cover; margin: 0 auto; }
@@ -174,16 +175,18 @@ a:hover { text-decoration: underline; }
 .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #eef2f7; color: #334155; font-size: 12px; }
 .badge--success { background: #dcfce7; color: #166534; }
 .petPage__meta { color: var(--muted); }
-.petPage__content { display: flex; flex-direction: column; gap: 16px; }
-.tabs { display: flex; justify-content: center; gap: 6px; background: #e2e8f0; border-radius: 10px; padding: 6px 4px; height: 48px; align-items: center; }
+.petPage__content { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: none; padding: 24px 24px 24px 0; }
+.tabs { display: flex; justify-content: center; gap: 6px; background: #e2e8f0; border-radius: 10px; padding: 6px 4px; height: 48px; align-items: center; width: 100%; }
 .tab { background: transparent; border: 0; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s ease; flex: 1; text-align: center; }
 .tab--active { background: #fff; border: 1px solid var(--border); color: var(--brand-700); font-weight: 600; }
 .recordList {
   display: grid;
   gap: 16px;
   overflow-y: auto;
-  max-height: 505px;
-  padding: 16px;
+  width: 100%;
+  max-width: none;
+  max-height: calc(100vh - 224px);
+  padding: 8px;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -207,12 +210,10 @@ a:hover { text-decoration: underline; }
   background: #a8a8a8;
 }
 
-.historiaList {
-  max-height: 505px;
-}
 
 .vacunasList {
-  max-height: 555px;
+  max-height: calc(100vh - 224px);
+  overflow-y: auto;
 }
 
 .vaccineItem {
@@ -270,7 +271,7 @@ a:hover { text-decoration: underline; }
 .addFormLayout {
   display: flex;
   flex-direction: column;
-  height: 555px;
+  height: calc(100vh - 224px);
 }
 
 .addFormContainer {
@@ -421,7 +422,7 @@ a:hover { text-decoration: underline; }
 .appTitle { font-size: 20px; font-weight: 700; color: var(--brand-700); }
 
 /* Tab Content */
-.tabContent { display: flex; flex-direction: column; gap: 16px; min-height: 450px; }
+.tabContent { display: flex; flex-direction: column; gap: 16px; min-height: calc(100vh - 200px); width: 100%; max-width: none; }
 .recordItem { display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 12px; background: color-mix(in oklab, var(--brand-50) 60%, #fff); border: 1px solid var(--border); border-radius: 12px; padding: 12px; transition: border-color 0.2s ease; cursor: pointer; }
 .recordItem:hover { border-color: var(--brand-600); }
 .recordItem__icon { font-size: 18px; }
@@ -670,9 +671,286 @@ a:hover { text-decoration: underline; }
   background: var(--brand-700);
 }
 
+/* Expandable Record Styles */
+.expandableRecord {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.expandableRecord:not(.expandableRecord--expanded):hover {
+  background: #f8fafc;
+}
+
+.recordItem {
+  cursor: pointer;
+}
+
+.recordItem__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.expandIcon {
+  color: var(--muted);
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.recordExpansion {
+  background: #fafbfc;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+.recordExpansion__content {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  max-width: none;
+  width: 100%;
+}
+
+.recordExpansion__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.recordExpansion__clinic,
+.recordExpansion__date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recordExpansion__section {
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+
+.recordExpansion__sectionTitle {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recordExpansion__text {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.recordExpansion__footer {
+  background: #fff8dc;
+  border: 1px solid #ffd700;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.recordExpansion__attachments {
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+
+.recordExpansion__attachments h5 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.recordExpansion__attachments .attachment__link {
+  display: block;
+  padding: 8px 0;
+  color: var(--brand-700);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.recordExpansion__attachments .attachment__link:hover {
+  text-decoration: underline;
+}
+
+/* Clinical Summary Styles */
+.clinicalSummary {
+  display: grid;
+  gap: 24px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: none;
+  height: calc(100vh - 224px);
+  overflow-y: auto;
+}
+
+.summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+}
+
+.summaryTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summaryTitle h3 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.summaryStatus {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.summaryStatus--excellent {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.summaryLastVisit {
+  color: var(--muted);
+  font-size: 14px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 6px;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.summarySection {
+  background: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.summarySection__title {
+  margin: 0;
+  padding: 16px 20px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summarySection__content {
+  padding: 20px;
+}
+
+.summarySection__content p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.summaryList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.summaryList__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.summaryList__icon {
+  color: var(--brand-600);
+  font-weight: bold;
+  min-width: 16px;
+}
+
+.summaryList__item--risk .summaryList__icon {
+  color: #dc2626;
+}
+
+.summaryFooter {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.summaryNote {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
 @media (max-width: 640px) {
   .grid--2 { grid-template-columns: 1fr; }
   .authLayout { padding-top: 32px; }
   .dashboard { padding: 16px; }
   .tab { padding: 8px 12px; font-size: 14px; }
+
+  .recordExpansion__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
