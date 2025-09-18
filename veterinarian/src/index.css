@@ -812,7 +812,7 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--border);
   width: 100%;
   max-width: none;
-  height: calc(100vh - 224px);
+  height: calc(100vh - 84px);
   overflow-y: auto;
 }
 
