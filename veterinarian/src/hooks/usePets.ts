@@ -124,52 +124,46 @@ export function usePetById(id: number | null) {
   const [pet, setPet] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
-  useEffect(() => {
+  const fetchPet = async () => {
     if (!id) {
       setPet(null)
       return
     }
 
-    let mounted = true
+    console.log('🐾 usePetById - Starting fetch for ID:', id)
+    setLoading(true)
+    setError(null)
 
-    const fetchPet = async () => {
-      console.log('🐾 usePetById - Starting fetch for ID:', id)
-      setLoading(true)
-      setError(null)
+    try {
+      const petData = await petsService.getPetById(id)
+      console.log('🐾 usePetById - Pet detail received:', petData)
 
-      try {
-        const petData = await petsService.getPetById(id)
-        console.log('🐾 usePetById - Pet detail received:', petData)
-
-        if (mounted) {
-          setPet(petData)
-          console.log('🐾 usePetById - Pet state updated')
-        }
-      } catch (err) {
-        console.error('🐾 usePetById - Error:', err)
-        if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load pet')
-          setPet(null)
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false)
-          console.log('🐾 usePetById - Loading finished')
-        }
-      }
+      setPet(petData)
+      console.log('🐾 usePetById - Pet state updated')
+    } catch (err) {
+      console.error('🐾 usePetById - Error:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load pet')
+      setPet(null)
+    } finally {
+      setLoading(false)
+      console.log('🐾 usePetById - Loading finished')
     }
+  }
 
+  const refetch = () => {
+    setRefreshTrigger(prev => prev + 1)
+  }
+
+  useEffect(() => {
     fetchPet()
-
-    return () => {
-      mounted = false
-    }
-  }, [id])
+  }, [id, refreshTrigger])
 
   return {
     pet,
     loading,
-    error
+    error,
+    refetch
   }
 }

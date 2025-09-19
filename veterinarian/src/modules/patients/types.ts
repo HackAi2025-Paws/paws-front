@@ -53,6 +53,7 @@ export type ExportOptions = {
   historia: boolean
   vacunas: boolean
   resumen: boolean
+  tratamientos: boolean
 }
 
 

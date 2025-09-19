@@ -119,7 +119,7 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
 
-      <footer className="authLayout__footer">© 2024 PetLink. Plataforma profesional para veterinarias.</footer>
+      <footer className="authLayout__footer">© 2025 PetLink. Plataforma profesional para veterinarias.</footer>
     </div>
   )
 }

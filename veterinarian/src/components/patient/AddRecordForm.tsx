@@ -5,6 +5,7 @@ import type { Consultation } from '../../types/consultations'
 
 export interface AddRecordFormRef {
   submitForm: () => void
+  resetForm: () => void
 }
 
 interface AddRecordFormProps {
@@ -139,8 +140,27 @@ const AddRecordForm = forwardRef<AddRecordFormRef, AddRecordFormProps>(({ onSave
     onSave(allData)
   }
 
+  const resetForm = () => {
+    setEntryType('consulta')
+    setFormData({
+      motivo: '',
+      hallazgos: '',
+      diagnostico: '',
+      tratamiento: '',
+      proximosPasos: '',
+      notas: '',
+      fechaConsulta: new Date().toISOString().split('T')[0],
+      proximaConsulta: ''
+    })
+    setFiles([])
+    setVaccines([])
+    setTreatments([])
+    setValidationError('')
+  }
+
   useImperativeHandle(ref, () => ({
-    submitForm: handleSubmit
+    submitForm: handleSubmit,
+    resetForm: resetForm
   }))
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

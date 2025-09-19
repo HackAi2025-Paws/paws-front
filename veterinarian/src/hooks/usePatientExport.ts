@@ -16,7 +16,8 @@ export function usePatientExport(
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     historia: true,
     vacunas: true,
-    resumen: false
+    resumen: false,
+    tratamientos: false
   })
   const [isExporting, setIsExporting] = useState(false)
 
