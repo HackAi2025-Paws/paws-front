@@ -7,7 +7,7 @@ export interface PatientService {
   getPatient(id: string): Promise<Patient | null>
   getPatientRecords(patientId: string): Promise<PatientRecord[]>
   getPatientDetails(patientId: string): Promise<PatientDetails | undefined>
-  searchRecords(records: PatientRecord[], query: string): PatientRecord[]
+  searchRecords(records: PatientRecord[], query: string, filter?: 'all' | 'owner' | 'pet' | 'breed', patient?: Patient | null, patientDetails?: PatientDetails): PatientRecord[]
   exportPatientData(patientId: string, options: string[]): Promise<void>
 }
 
@@ -27,33 +27,54 @@ export class MockPatientService implements PatientService {
     return MOCK_PATIENT_DETAILS[patientId]
   }
 
-  searchRecords(records: PatientRecord[], query: string): PatientRecord[] {
+  searchRecords(
+    records: PatientRecord[],
+    query: string,
+    filter: 'all' | 'owner' | 'pet' | 'breed' = 'all',
+    patient?: Patient | null,
+    patientDetails?: PatientDetails
+  ): PatientRecord[] {
     if (!query.trim()) return records
 
     const q = query.toLowerCase().trim()
     return records.filter((record) => {
-      const basicMatch = (
-        record.title.toLowerCase().includes(q) ||
-        record.doctor.toLowerCase().includes(q) ||
-        record.type.toLowerCase().includes(q)
-      )
+      // Default search behavior (when filter is 'all' or when no specific data available)
+      if (filter === 'all' || !patient || !patientDetails) {
+        const basicMatch = (
+          record.title.toLowerCase().includes(q) ||
+          record.doctor.toLowerCase().includes(q) ||
+          record.type.toLowerCase().includes(q)
+        )
 
-      const recordDate = new Date(record.date)
-      const dateMatches = [
-        recordDate.toLocaleDateString('es-ES'),
-        recordDate.toLocaleDateString('es-ES', {
-          year: '2-digit',
-          month: '2-digit',
-          day: '2-digit'
-        }),
-        recordDate.getFullYear().toString(),
-        (recordDate.getMonth() + 1).toString().padStart(2, '0'),
-        recordDate.toLocaleDateString('es-ES', { month: 'long' }),
-        recordDate.toLocaleDateString('es-ES', { month: 'short' }),
-        recordDate.getDate().toString().padStart(2, '0')
-      ].some(dateFormat => dateFormat.toLowerCase().includes(q))
+        const recordDate = new Date(record.date)
+        const dateMatches = [
+          recordDate.toLocaleDateString('es-ES'),
+          recordDate.toLocaleDateString('es-ES', {
+            year: '2-digit',
+            month: '2-digit',
+            day: '2-digit'
+          }),
+          recordDate.getFullYear().toString(),
+          (recordDate.getMonth() + 1).toString().padStart(2, '0'),
+          recordDate.toLocaleDateString('es-ES', { month: 'long' }),
+          recordDate.toLocaleDateString('es-ES', { month: 'short' }),
+          recordDate.getDate().toString().padStart(2, '0')
+        ].some(dateFormat => dateFormat.toLowerCase().includes(q))
 
-      return basicMatch || dateMatches
+        return basicMatch || dateMatches
+      }
+
+      // Filtered search behavior
+      switch (filter) {
+        case 'owner':
+          return patientDetails.ownerName?.toLowerCase().includes(q) || false
+        case 'pet':
+          return patient.name.toLowerCase().includes(q)
+        case 'breed':
+          return patient.breed?.toLowerCase().includes(q) || false
+        default:
+          return false
+      }
     })
   }
 
@@ -86,9 +107,15 @@ export class ApiPatientService implements PatientService {
     return response.json()
   }
 
-  searchRecords(records: PatientRecord[], query: string): PatientRecord[] {
+  searchRecords(
+    records: PatientRecord[],
+    query: string,
+    filter: 'all' | 'owner' | 'pet' | 'breed' = 'all',
+    patient?: Patient | null,
+    patientDetails?: PatientDetails
+  ): PatientRecord[] {
     // Client-side filtering (could be moved to server-side)
-    return new MockPatientService().searchRecords(records, query)
+    return new MockPatientService().searchRecords(records, query, filter, patient, patientDetails)
   }
 
   async exportPatientData(patientId: string, options: string[]): Promise<void> {

@@ -23,6 +23,42 @@ import { apiClient } from '../services/apiClient'
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+
+  // Early validation - ID is required
+  if (!id || id.trim() === '') {
+    return (
+      <div className="petPage">
+        <div className="petPage__content" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            backgroundColor: '#fee2e2',
+            color: '#ef4444',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #fecaca',
+            maxWidth: '400px'
+          }}>
+            <h2>ID de mascota inválido</h2>
+            <p>No se pudo encontrar el ID de la mascota en la URL.</p>
+            <button
+              className="btn btn--primary"
+              onClick={() => navigate(-1)}
+              style={{ marginTop: '16px' }}
+            >
+              ← Volver
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const [search, setSearch] = useState('')
   const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null)
   const [openExport, setOpenExport] = useState(false)
@@ -488,6 +524,7 @@ export default function PetDetailPage() {
                   <AddRecordForm
                     onSave={handleSaveRecord}
                     onVoiceInput={handleVoiceInput}
+                    petId={id}
                   />
                 </div>
 

@@ -15,7 +15,7 @@ export function usePatientsSearch(client: PatientsClient, input: PatientSearchIn
     return () => {
       active = false
     }
-  }, [client, input.query])
+  }, [client, input.query, input.filter])
 
   return { results, loading }
 }

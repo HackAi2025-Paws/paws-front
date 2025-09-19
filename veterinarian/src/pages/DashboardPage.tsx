@@ -6,9 +6,10 @@ import mockPatientsClient from '../modules/patients/mockClient'
 
 export default function DashboardPage() {
   const [query, setQuery] = useState('')
+  const [searchFilter, setSearchFilter] = useState<'owner' | 'pet' | 'breed'>('pet')
   const client = useMemo(() => mockPatientsClient, [])
   const { results: recent, loading: loadingRecent } = useRecentPatients(client)
-  const { results: searchResults, loading: loadingSearch } = usePatientsSearch(client, { query })
+  const { results: searchResults, loading: loadingSearch } = usePatientsSearch(client, { query, filter: searchFilter })
 
   const showingSearch = query.trim().length > 0
   const list = showingSearch ? searchResults : recent
@@ -22,7 +23,13 @@ export default function DashboardPage() {
         </div>
         <h1 className="dashboard__title">Bienvenido, Dr. Rodríguez</h1>
         <p className="dashboard__subtitle">Consulta las historias clínicas de tus pacientes</p>
-        <SearchBar value={query} onChange={setQuery} aria-label="Buscar mascotas" />
+        <SearchBar
+          value={query}
+          onChange={setQuery}
+          searchFilter={searchFilter}
+          onFilterChange={setSearchFilter}
+          aria-label="Buscar mascotas"
+        />
       </header>
 
       <section className="dashboard__panel">
