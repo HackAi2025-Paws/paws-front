@@ -7,6 +7,7 @@ import { useUser } from '../hooks/useUser'
 import { consultationService } from '../services/consultationService'
 import { PDFService } from '../services/pdfService'
 import { formatDateSafe, dateInputToISO } from '../utils/dateUtils'
+import { getAnimalAvatar } from '../utils/animalUtils'
 import PatientSidebar from '../components/patient/PatientSidebar'
 import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
@@ -365,7 +366,7 @@ export default function PetDetailPage() {
               patient={{
                 ...patient,
                 ownerName: patient.owners?.[0]?.name || 'No especificado',
-                avatarUrl: patient.profileImageUrl || `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${patient.name}&backgroundColor=c0aede`,
+                avatarUrl: getAnimalAvatar(patient.species, patient.name, patient.profileImageUrl),
                 age: patient.age || '5 años'
               }}
               patientDetails={patientDetails}
