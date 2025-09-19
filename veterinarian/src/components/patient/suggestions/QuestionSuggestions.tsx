@@ -18,25 +18,6 @@ export default function QuestionSuggestions({
   onSuggestionClick,
   onRetry
 }: QuestionSuggestionsProps) {
-
-  const getPriorityDotColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-amber-500';
-      case 'low': return 'bg-blue-500';
-      default: return 'bg-blue-500';
-    }
-  };
-
-  const getPriorityTextColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'text-red-600';
-      case 'medium': return 'text-amber-600';
-      case 'low': return 'text-blue-600';
-      default: return 'text-blue-600';
-    }
-  };
-
   const handleSuggestionClick = (suggestion: Suggestion) => {
     console.log('[QuestionSuggestions] 💡 Sugerencia de pregunta seleccionada:', suggestion);
     if (onSuggestionClick) {
@@ -88,7 +69,7 @@ export default function QuestionSuggestions({
   if (suggestions.length > 0) {
     return (
       <div style={{ display: 'grid', gap: '12px' }}>
-        {suggestions.map((suggestion, index) => (
+        {suggestions.map((suggestion) => (
           <div
             key={suggestion.id}
             style={{
