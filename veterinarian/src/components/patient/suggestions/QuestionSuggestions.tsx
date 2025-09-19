@@ -1,4 +1,3 @@
-import React from 'react';
 import { MedicalIcons } from '../MedicalIcons';
 import type { Suggestion } from '../../../types/suggestions';
 
@@ -19,20 +18,6 @@ export default function QuestionSuggestions({
   onSuggestionClick,
   onRetry
 }: QuestionSuggestionsProps) {
-  
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-50 border-red-200';
-      case 'medium':
-        return 'bg-yellow-50 border-yellow-200';
-      case 'low':
-        return 'bg-gray-50 border-gray-200';
-      default:
-        return 'bg-gray-50 border-gray-200';
-    }
-  };
-
   const getPriorityDotColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'bg-red-500';
@@ -133,7 +118,7 @@ export default function QuestionSuggestions({
                 flexShrink: 0,
                 marginTop: '2px'
               }}>
-                <MedicalIcons.MedicalQuestion size={16} style={{ color: 'var(--brand-700)' }} />
+                <MedicalIcons.MedicalQuestion size={16} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -221,7 +206,7 @@ export default function QuestionSuggestions({
           borderRadius: '50%',
           marginBottom: '16px'
         }}>
-          <MedicalIcons.MedicalMicrophone size={32} style={{ color: 'var(--muted)' }} />
+          <MedicalIcons.MedicalMicrophone size={32} />
         </div>
         <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Esperando transcripción</p>
         <p style={{ fontSize: '12px', maxWidth: '280px' }}>
@@ -276,7 +261,7 @@ export default function QuestionSuggestions({
           borderRadius: '50%',
           marginBottom: '16px'
         }}>
-          <MedicalIcons.MedicalSuggestions size={32} style={{ color: 'var(--muted)' }} />
+          <MedicalIcons.MedicalSuggestions size={32} />
         </div>
         <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>No hay preguntas disponibles</p>
         <p style={{ fontSize: '12px', marginBottom: '16px', maxWidth: '280px' }}>

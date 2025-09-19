@@ -1,4 +1,4 @@
-import type { AuthClient, AuthSession, LoginInput, PhoneLoginInput, OTPVerificationInput, RegisterInput, PhoneRegisterInput, User } from './types'
+import type { AuthClient, AuthSession, LoginInput, PhoneLoginInput, OTPVerificationInput, RegisterInput, PhoneRegisterInput } from './types'
 import { apiClient } from '../../services/apiClient'
 import { otpService, loginService } from '../../services/authService'
 

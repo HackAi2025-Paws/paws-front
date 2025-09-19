@@ -7,6 +7,8 @@ export type Patient = {
   avatarUrl?: string
   summary: string
   age: string
+  lastVisitAgo: string;
+  status: string;
 }
 
 export type PatientSearchInput = {

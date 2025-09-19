@@ -128,7 +128,7 @@ export default function SuggestionsPanel({
               backgroundColor: 'var(--brand-600)',
               borderRadius: '8px'
             }}>
-              <MedicalIcons.MedicalSuggestions size={20} style={{ color: 'white' }} />
+              <MedicalIcons.MedicalSuggestions size={20} />
             </div>
             <div>
               <h3 style={{
@@ -166,9 +166,6 @@ export default function SuggestionsPanel({
           >
             <MedicalIcons.Refresh
               size={14}
-              style={{
-                animation: isLoading ? 'spin 1s linear infinite' : 'none'
-              }}
             />
             <span>Actualizar</span>
           </button>
