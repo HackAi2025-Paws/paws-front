@@ -81,8 +81,20 @@ export const DashboardPage: React.FC = () => {
 
         {/* Sección de mascotas */}
         <div>
-          <div className="mb-4">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold banking-text-secondary">Mis Mascotas</h2>
+            <Link to="/pet/add">
+              <button 
+                className="flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                style={{ 
+                  backgroundColor: '#e25d39',
+                  color: 'white'
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Agregar
+              </button>
+            </Link>
           </div>
           
           {pets.length === 0 ? (
