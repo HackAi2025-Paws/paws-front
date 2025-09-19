@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { Pet } from '../../services/petsService'
-import { getAnimalAvatar } from '../../utils/animalUtils'
+import SafeImage from '../ui/SafeImage'
 
 interface PatientListItemProps {
   pet: Pet
@@ -40,9 +40,11 @@ export default function PatientListItem({ pet }: PatientListItemProps) {
       onKeyDown={(e) => { if (e.key === 'Enter') handleClick() }}
     >
       <div className="patientItem__left">
-        <img
+        <SafeImage
           className="patientItem__avatar"
-          src={getAnimalAvatar(displaySpecies, pet.name, pet.profileImageUrl)}
+          src={pet.profileImageUrl}
+          fallbackSpecies={displaySpecies}
+          fallbackName={pet.name}
           alt={pet.name}
         />
         <div className="patientItem__text">

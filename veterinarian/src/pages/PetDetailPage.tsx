@@ -366,7 +366,7 @@ export default function PetDetailPage() {
               patient={{
                 ...patient,
                 ownerName: patient.owners?.[0]?.name || 'No especificado',
-                avatarUrl: getAnimalAvatar(patient.species, patient.name, patient.profileImageUrl),
+                avatarUrl: patient.profileImageUrl,
                 age: patient.age || '5 años'
               }}
               patientDetails={patientDetails}
