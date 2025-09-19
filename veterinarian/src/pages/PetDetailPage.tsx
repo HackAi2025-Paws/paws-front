@@ -6,6 +6,7 @@ import { useClinicalSummary } from '../hooks/useClinicalSummary'
 import { useUser } from '../hooks/useUser'
 import { consultationService } from '../services/consultationService'
 import { PDFService } from '../services/pdfService'
+import { formatDateSafe, dateInputToISO } from '../utils/dateUtils'
 import PatientSidebar from '../components/patient/PatientSidebar'
 import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
@@ -110,11 +111,7 @@ export default function PetDetailPage() {
   const patientDetails = patient ? {
     weight: patient.weight ? `${patient.weight}kg` : 'Peso no registrado',
     sex: patient.sex === 'MALE' ? 'Macho' : patient.sex === 'FEMALE' ? 'Hembra' : 'No especificado',
-    birthDate: patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }) : 'No especificado',
+    birthDate: formatDateSafe(patient.dateOfBirth),
     ownerPhone: patient.owners && patient.owners.length > 0 ? patient.owners[0].phone : 'Sin teléfono',
     ownerEmail: 'No disponible'
   } : undefined
@@ -150,7 +147,8 @@ export default function PetDetailPage() {
       findings: consultation.findings,
       diagnosis: consultation.diagnosis,
       nextSteps: consultation.nextSteps,
-      additionalNotes: consultation.additionalNotes
+      additionalNotes: consultation.additionalNotes,
+      nextConsultation: consultation.nextConsultation
     })) : []
 
 
@@ -230,22 +228,22 @@ export default function PetDetailPage() {
         petId: parseInt(id),
         userId: userData.id,
         consultationType: entryTypeMap[data.entryType] || 'Consulta General',
-        date: data.fechaConsulta ? new Date(data.fechaConsulta).toISOString() : new Date().toISOString(),
+        date: data.fechaConsulta ? dateInputToISO(data.fechaConsulta) : dateInputToISO(new Date().toISOString().split('T')[0]),
         chiefComplaint: data.motivo || 'Sin especificar',
         findings: data.hallazgos,
         diagnosis: data.diagnostico,
         nextSteps: data.proximosPasos,
         additionalNotes: data.notas,
-        nextConsultation: data.proximaConsulta ? new Date(data.proximaConsulta).toISOString() : undefined,
+        nextConsultation: data.proximaConsulta ? dateInputToISO(data.proximaConsulta) : undefined,
         vaccines: data.vaccines?.map((vaccine: any) => ({
           catalogId: parseInt(vaccine.vaccineId),
-          applicationDate: new Date(vaccine.date).toISOString(),
-          expirationDate: vaccine.expirationDate ? new Date(vaccine.expirationDate).toISOString() : undefined
+          applicationDate: dateInputToISO(vaccine.date),
+          expirationDate: vaccine.expirationDate ? dateInputToISO(vaccine.expirationDate) : undefined
         })),
         treatment: data.treatments?.map((treatment: any) => ({
           name: treatment.name,
-          startDate: new Date(treatment.startDate).toISOString(),
-          endDate: treatment.endDate ? new Date(treatment.endDate).toISOString() : undefined
+          startDate: dateInputToISO(treatment.startDate),
+          endDate: treatment.endDate ? dateInputToISO(treatment.endDate) : undefined
         }))
       }
 
@@ -599,7 +597,7 @@ export default function PetDetailPage() {
                           <div className="recordItem__body">
                             <div className="recordItem__title">{record.title}</div>
                             <div className="recordItem__meta">
-                              {new Date(record.date).toLocaleDateString()}
+                              {formatDateSafe(record.date)}
                             </div>
                           </div>
                           <div className="recordItem__actions">
@@ -640,6 +638,13 @@ export default function PetDetailPage() {
                                   <p className="recordExpansion__text">{record.additionalNotes}</p>
                                 </div>
                               )}
+
+                              {record.nextConsultation && (
+                                <div className="recordExpansion__section">
+                                  <h4 className="recordExpansion__sectionTitle">📅 Próxima consulta</h4>
+                                  <p className="recordExpansion__text">{formatDateSafe(record.nextConsultation)}</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
@@ -663,7 +668,7 @@ export default function PetDetailPage() {
                           <div className="vaccineItem__body">
                             <div className="vaccineItem__title">{vaccine.vaccine.name}</div>
                             <div className="vaccineItem__meta">
-                              {new Date(vaccine.applicationDate).toLocaleDateString()}
+                              {formatDateSafe(vaccine.applicationDate)}
                             </div>
                           </div>
                           <div className="vaccineItem__right">
@@ -700,9 +705,9 @@ export default function PetDetailPage() {
                           <div className="vaccineItem__body">
                             <div className="vaccineItem__title">{treatment.name}</div>
                             <div className="vaccineItem__meta">
-                              Inicio: {new Date(treatment.startDate).toLocaleDateString()}
+                              Inicio: {formatDateSafe(treatment.startDate)}
                               {treatment.endDate && (
-                                <> • Fin: {new Date(treatment.endDate).toLocaleDateString()}</>
+                                <> • Fin: {formatDateSafe(treatment.endDate)}</>
                               )}
                             </div>
                           </div>
