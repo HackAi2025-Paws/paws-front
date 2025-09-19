@@ -132,7 +132,7 @@ a:hover { text-decoration: underline; }
 .grid--2 { grid-template-columns: 1fr 1fr; }
 
 /* Dashboard */
-.dashboard { padding: 20px; min-height: 100vh; }
+.dashboard { padding: 20px; height: 100vh; display: flex; flex-direction: column; }
 .dashboard__header { display: grid; gap: 16px; margin-bottom: 20px; }
 .dashboard__title { margin: 0; font-size: 28px; }
 .dashboard__subtitle { color: var(--muted); margin: 0; }

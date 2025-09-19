@@ -148,7 +148,7 @@ export default function RegisterPage() {
         </CardFooter>
       </Card>
 
-      <footer className="authLayout__footer">© 2024 PetLink. Sistema de gestión veterinaria.</footer>
+      <footer className="authLayout__footer">© 2025 PetLink. Sistema de gestión veterinaria.</footer>
     </div>
   )
 }
