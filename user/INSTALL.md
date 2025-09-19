@@ -17,7 +17,7 @@
 
 ### En Chrome (Android):
 1. Abre la aplicación en Chrome
-2. abre
+2. abre n
 2. Toca el menú de tres puntos
 3. Selecciona "Agregar a la pantalla de inicio"
 4. Confirma el nombre "Paws"
