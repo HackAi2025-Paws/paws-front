@@ -110,6 +110,21 @@ export default function PetDetailPage() {
     ownerEmail: 'No disponible'
   } : undefined
 
+  // Map consultation types from backend to UI
+  const getConsultationType = (consultationType: string) => {
+    const typeMap: Record<string, string> = {
+      'GENERAL_CONSULTATION': 'Consulta General',
+      'VACCINATION': 'Vacunación',
+      'TREATMENT': 'Tratamiento',
+      'CHECKUP': 'Control',
+      'EMERGENCY': 'Emergencia',
+      'SURGERY': 'Cirugía',
+      'AESTHETIC': 'Estética',
+      'REVIEW': 'Revisión'
+    }
+    return typeMap[consultationType] || 'Consulta General'
+  }
+
   // Transform consultations to records format
   const filteredRecords = patient?.consultations ? patient.consultations
     .filter((consultation: any) => {
@@ -122,8 +137,7 @@ export default function PetDetailPage() {
       title: consultation.chiefComplaint,
       date: consultation.date,
       doctor: consultation.user?.name || 'Dr. Desconocido',
-      type: consultation.consultationType === 'VACCINATION' ? 'Vacunación' :
-            consultation.consultationType === 'TREATMENT' ? 'Tratamiento' : 'Consulta',
+      type: getConsultationType(consultation.consultationType),
       findings: consultation.findings,
       diagnosis: consultation.diagnosis,
       nextSteps: consultation.nextSteps,
@@ -535,7 +549,13 @@ export default function PetDetailPage() {
                           onClick={() => toggleRecordExpansion(record.id)}
                         >
                           <div className="recordItem__icon">
-                            {record.type === "Vacunación" ? "💉" : record.type === "Tratamiento" ? "🧪" : "🩺"}
+                            {record.type === "Vacunación" ? "💉" :
+                             record.type === "Tratamiento" ? "💊" :
+                             record.type === "Control" ? "📋" :
+                             record.type === "Emergencia" ? "🚨" :
+                             record.type === "Cirugía" ? "🔪" :
+                             record.type === "Estética" ? "✂️" :
+                             record.type === "Revisión" ? "🔍" : "🩺"}
                           </div>
                           <div className="recordItem__body">
                             <div className="recordItem__title">{record.title}</div>
@@ -617,6 +637,50 @@ export default function PetDetailPage() {
                                 {new Date(vaccine.expirationDate) > new Date()
                                   ? 'Al día'
                                   : 'Vencida'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'tratamientos' && (
+              <div className="tabContentContainer">
+                <div className="tabContent">
+                  <div className="recordList vacunasList">
+                    {!patient.treatments || patient.treatments.length === 0 ? (
+                      <div className="muted">No hay tratamientos registrados.</div>
+                    ) : (
+                      patient.treatments.map((treatment: any) => (
+                        <div key={treatment.id} className="vaccineItem">
+                          <div className="vaccineItem__icon">💊</div>
+                          <div className="vaccineItem__body">
+                            <div className="vaccineItem__title">{treatment.name}</div>
+                            <div className="vaccineItem__meta">
+                              Inicio: {new Date(treatment.startDate).toLocaleDateString()}
+                              {treatment.endDate && (
+                                <> • Fin: {new Date(treatment.endDate).toLocaleDateString()}</>
+                              )}
+                            </div>
+                          </div>
+                          <div className="vaccineItem__right">
+                            {treatment.endDate ? (
+                              <span className={`vaccineBadge ${
+                                new Date(treatment.endDate) > new Date()
+                                  ? 'vaccineBadge--current'
+                                  : 'vaccineBadge--expired'
+                              }`}>
+                                {new Date(treatment.endDate) > new Date()
+                                  ? 'En curso'
+                                  : 'Finalizado'}
+                              </span>
+                            ) : (
+                              <span className="vaccineBadge vaccineBadge--current">
+                                En curso
                               </span>
                             )}
                           </div>

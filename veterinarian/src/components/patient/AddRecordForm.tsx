@@ -35,35 +35,6 @@ interface TreatmentEntry {
   endDate: string
 }
 
-// Backend API interfaces
-interface BackendVaccine {
-  catalogId: number
-  applicationDate: string // ISO date string
-  expirationDate?: string // ISO date string
-  petId: number
-}
-
-interface BackendTreatment {
-  name: string
-  startDate: string // ISO date string
-  endDate?: string // ISO date string
-  petId: number
-}
-
-interface BackendConsultation {
-  petId: number
-  chiefComplaint: string
-  consultationType: string
-  date: string // ISO date string
-  findings?: string
-  diagnosis?: string
-  treatment: BackendTreatment[]
-  vaccines: BackendVaccine[]
-  nextSteps?: string
-  additionalNotes?: string
-  nextConsultation?: string // ISO date string
-}
-
 const AddRecordForm = forwardRef<AddRecordFormRef, AddRecordFormProps>(({ onSave, onVoiceInput, petId, initialData }, ref) => {
   // Early validation - petId is required
   if (!petId || petId.trim() === '') {

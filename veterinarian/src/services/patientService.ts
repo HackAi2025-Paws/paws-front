@@ -67,7 +67,7 @@ export class MockPatientService implements PatientService {
       // Filtered search behavior
       switch (filter) {
         case 'owner':
-          return patientDetails.ownerName?.toLowerCase().includes(q) || false
+          return patient.ownerName?.toLowerCase().includes(q) || false
         case 'pet':
           return patient.name.toLowerCase().includes(q)
         case 'breed':

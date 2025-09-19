@@ -8,7 +8,8 @@ export default function PatientTabs({ activeTab, onTabChange }: PatientTabsProps
     { id: 'resumen', label: 'Resumen Clínico' },
     { id: 'agregar', label: 'Nueva Consulta' },
     { id: 'historia', label: 'Historia Clínica' },
-    { id: 'vacunas', label: 'Vacunas' }
+    { id: 'vacunas', label: 'Vacunas' },
+    { id: 'tratamientos', label: 'Tratamientos' }
   ]
 
   return (
