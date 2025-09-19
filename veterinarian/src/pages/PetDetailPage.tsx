@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePetById } from '../hooks/usePets'
+import { useClinicalSummary } from '../hooks/useClinicalSummary'
 import PatientSidebar from '../components/patient/PatientSidebar'
 import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
@@ -61,6 +62,7 @@ export default function PetDetailPage() {
 
   const petId = parseInt(id)
   const { pet: patient, loading, error } = usePetById(petId)
+  const { summary: clinicalSummary, loading: summaryLoading, error: summaryError } = useClinicalSummary(petId)
 
 
   const [search, setSearch] = useState('')
@@ -255,51 +257,53 @@ export default function PetDetailPage() {
               <div className="tabContentContainer">
                 <div className="tabContent">
                   <div className="recordList">
-                    <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text)', fontWeight: 600 }}>📋 Información General</h2>
+                    <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text)', fontWeight: 600 }}>📋 Resumen Clínico</h2>
 
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Datos Básicos</h3>
-                    <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>
-                      {patient.name} es {patient.species === 'CAT' ? 'un gato' : 'un perro'}.
-                      {patient.breed && ` Es de raza ${patient.breed}.`}
-                      {patient.weight && ` Pesa ${patient.weight}kg.`}
-                      {patient.owners && patient.owners.length > 0 && ` Su propietario es ${patient.owners[0].name}.`}
-                    </p>
+                    {summaryLoading && (
+                      <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                        <Spinner size="medium" text="Generando resumen clínico..." />
+                      </div>
+                    )}
 
-                    {patient.consultations && patient.consultations.length > 0 && (
+                    {summaryError && (
+                      <div style={{
+                        padding: '20px',
+                        backgroundColor: '#fee2e2',
+                        color: '#ef4444',
+                        borderRadius: '8px',
+                        marginBottom: '16px'
+                      }}>
+                        Error al cargar el resumen clínico: {summaryError}
+                      </div>
+                    )}
+
+                    {!summaryLoading && !summaryError && clinicalSummary && (
                       <>
-                        <h2 style={{ marginTop: 24, marginBottom: '16px', color: 'var(--text)', fontWeight: 600 }}>🩺 Última Consulta</h2>
-                        <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Motivo de consulta</h3>
-                        <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>
-                          {patient.consultations[0].chiefComplaint}
+                        <h3 style={{ margin: '0 0 8px 0', color: 'var(--brand-600)', fontWeight: 600 }}>📋 Información Básica</h3>
+                        <p style={{ margin: '0 0 24px 0', color: 'var(--text)', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+                          {clinicalSummary.basic_information}
                         </p>
 
-                        {patient.consultations[0].findings && (
-                          <>
-                            <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Hallazgos</h3>
-                            <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>
-                              {patient.consultations[0].findings}
-                            </p>
-                          </>
-                        )}
+                        <h3 style={{ margin: '0 0 8px 0', color: 'var(--brand-600)', fontWeight: 600 }}>📚 Historial</h3>
+                        <p style={{ margin: '0 0 24px 0', color: 'var(--text)', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+                          {clinicalSummary.history}
+                        </p>
 
-                        {patient.consultations[0].diagnosis && (
-                          <>
-                            <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Diagnóstico</h3>
-                            <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>
-                              {patient.consultations[0].diagnosis}
-                            </p>
-                          </>
-                        )}
-
-                        {patient.consultations[0].nextSteps && (
-                          <>
-                            <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Próximos pasos</h3>
-                            <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>
-                              {patient.consultations[0].nextSteps}
-                            </p>
-                          </>
-                        )}
+                        <h3 style={{ margin: '0 0 8px 0', color: 'var(--brand-600)', fontWeight: 600 }}>🩺 Última Consulta</h3>
+                        <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
+                          {clinicalSummary.last_consultation}
+                        </p>
                       </>
+                    )}
+
+                    {!summaryLoading && !summaryError && !clinicalSummary && (
+                      <div style={{
+                        padding: '20px',
+                        textAlign: 'center',
+                        color: 'var(--muted)'
+                      }}>
+                        No hay resumen clínico disponible para esta mascota.
+                      </div>
                     )}
                   </div>
                 </div>
