@@ -30,7 +30,7 @@ export const RemindersPage: React.FC = () => {
         console.log('🔄 Loading reminders on page mount...')
         
         // Usar un petId dummy para activar la carga
-        const reminders = await petService.getPetReminders('dummy')
+        const reminders = await petService.getPetReminders()
         dispatch(setReminders(reminders))
         
         console.log('✅ Reminders loaded successfully:', reminders)

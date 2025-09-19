@@ -1,7 +1,7 @@
 import apiClient from './apiClient'
 import { env } from '../config/env'
 import { mockPets } from '../data/mockData'
-import type { Pet, Reminder, ConsultationRecord, ReminderType } from '../types'
+import type { Pet, Reminder, ConsultationRecord, ReminderType, VaccinationType } from '../types'
 
 // Tipos para el backend
 interface BackendPet {
@@ -54,6 +54,8 @@ interface BackendConsultation {
   nextConsultation?: string
   createdAt?: string
   cost?: number
+  veterinarian?: string
+  clinicName?: string
   user?: { id: number; name: string; phone?: string }
   pet?: { id: number; name: string; dateOfBirth?: string; species?: string; owners?: Array<{ id: number; name: string; phone: string }> }
   treatment?: BackendTreatment[]
@@ -76,6 +78,26 @@ interface ApiResponse<T> {
   success: boolean
   data?: T
   error?: string
+}
+
+// Interfaces para parámetros de formularios
+interface VaccinationFormData {
+  type?: string
+  date?: string
+  expirationDate?: string
+  batchNumber?: string
+  veterinarian?: string
+  notes?: string
+}
+
+interface TreatmentFormData {
+  name: string
+  type?: string
+  startDate?: string
+  endDate?: string
+  dosage?: string
+  instructions?: string
+  veterinarian?: string
 }
 
 // Mapeo de tipos de recordatorio frontend a categorías backend
@@ -138,6 +160,50 @@ const formatBackendDate = (dateString: string): string => {
   return `${year}-${month}-${day}`
 }
 
+// Helper para mapear nombres de vacunas del backend a VaccinationType
+const mapVaccineNameToType = (backendName: string): VaccinationType => {
+  const normalizedName = backendName.toLowerCase().trim()
+  
+  // Mapeo de nombres comunes del backend a tipos frontend
+  const mapping: Record<string, VaccinationType> = {
+    'rabia': 'Rabia',
+    'dhpp': 'DHPP (Múltiple)',
+    'múltiple': 'DHPP (Múltiple)',
+    'parvovirus': 'Parvovirus',
+    'moquillo': 'Moquillo',
+    'hepatitis': 'Hepatitis',
+    'parainfluenza': 'Parainfluenza',
+    'bordetella': 'Bordetella',
+    'leptospirosis': 'Leptospirosis',
+    'lyme': 'Lyme',
+    'fvrcp': 'Triple Felina (FVRCP)',
+    'triple felina': 'Triple Felina (FVRCP)',
+    'coronavirus': 'Coronavirus',
+    'giardia': 'Giardia',
+    'leishmaniosis': 'Leishmaniosis',
+    'pentavalente': 'Pentavalente',
+    'quintuple': 'Pentavalente',
+    'quíntuple': 'Pentavalente',
+    'sextuple': 'Sextuple',
+    'séxtuple': 'Sextuple',
+    'leucemia felina': 'Leucemia Felina (FeLV)',
+    'felv': 'Leucemia Felina (FeLV)',
+    'panleucopenia': 'Panleucopenia',
+    'rinotraqueitis': 'Rinotraqueitis',
+    'calicivirus': 'Calicivirus'
+  }
+  
+  // Buscar coincidencia exacta o parcial
+  for (const [key, value] of Object.entries(mapping)) {
+    if (normalizedName.includes(key)) {
+      return value
+    }
+  }
+  
+  // Si no se encuentra coincidencia, retornar 'Otra'
+  return 'Otra'
+}
+
 export interface PetService {
   getAllPets(): Promise<Pet[]>
   getPetById(id: string): Promise<Pet>
@@ -149,7 +215,7 @@ export interface PetService {
   updateReminder(id: string, reminder: Partial<Reminder>): Promise<Reminder>
   deleteReminder(id: string): Promise<void>
   createConsultation(consultation: Omit<ConsultationRecord, 'id' | 'createdAt'>): Promise<ConsultationRecord>
-  createConsultationWithVaccinesAndTreatments(consultation: Omit<ConsultationRecord, 'id' | 'createdAt'>, vaccinations?: unknown[], treatments?: unknown[]): Promise<ConsultationRecord>
+  createConsultationWithVaccinesAndTreatments(consultation: Omit<ConsultationRecord, 'id' | 'createdAt'>, vaccinations?: VaccinationFormData[], treatments?: TreatmentFormData[]): Promise<ConsultationRecord>
   getConsultations(petId?: string): Promise<ConsultationRecord[]>
   // Deprecated methods - keeping for compatibility
   addConsultationRecord(record: Omit<ConsultationRecord, 'id' | 'createdAt'>): Promise<ConsultationRecord>
@@ -215,7 +281,7 @@ class PetServiceImpl implements PetService {
         name: pet.name,
         breed: pet.breed || 'Raza no especificada',
         birthDate: pet.dateOfBirth ? new Date(pet.dateOfBirth).toISOString().split('T')[0] : '',
-        age: this.calculateAge(pet.dateOfBirth),
+        age: this.calculateAge(pet.dateOfBirth || ''),
         species: pet.species ? (pet.species.toLowerCase() === 'dog' ? 'perro' : 'gato') : 'perro',
         weight: pet.weight ? { min: pet.weight, max: pet.weight, unit: 'kg' } : { min: 0, max: 0, unit: 'kg' },
         color: '',
@@ -267,7 +333,7 @@ class PetServiceImpl implements PetService {
         name: petData.name,
         breed: petData.breed || 'Raza no especificada',
         birthDate: petData.dateOfBirth ? new Date(petData.dateOfBirth).toISOString().split('T')[0] : '',
-        age: petData.age || this.calculateAge(petData.dateOfBirth),
+        age: this.calculateAge(petData.dateOfBirth || ''),
         species: petData.species ? (petData.species.toLowerCase() === 'dog' ? 'perro' : 'gato') : 'perro',
         weight: petData.weight ? { min: petData.weight, max: petData.weight, unit: 'kg' } : { min: 0, max: 0, unit: 'kg' },
         color: '',
@@ -280,7 +346,7 @@ class PetServiceImpl implements PetService {
         vaccinations: petData.vaccines ? petData.vaccines.map((vaccine: BackendVaccine) => ({
           id: vaccine.id.toString(),
           petId: petData.id.toString(),
-          name: vaccine.vaccine?.name || 'Vacuna',
+          name: mapVaccineNameToType(vaccine.catalog?.name || 'Otra'),
           date: vaccine.applicationDate ? new Date(vaccine.applicationDate).toISOString().split('T')[0] : '',
           nextDue: vaccine.expirationDate ? new Date(vaccine.expirationDate).toISOString().split('T')[0] : '',
           veterinarian: 'Veterinario',
@@ -301,17 +367,18 @@ class PetServiceImpl implements PetService {
           id: consultation.id.toString(),
           petId: petData.id.toString(),
           type: consultationTypeToFrontend(consultation.consultationType), // Mapear tipo correcto
-          title: consultation.chiefComplaint,
+          title: consultation.chiefComplaint || 'Consulta',
           date: formatBackendDate(consultation.date),
           veterinarian: consultation.user?.name || 'Veterinario',
           clinicName: '',
           findings: consultation.findings,
-          diagnosis: consultation.diagnosis,
+          diagnosis: consultation.diagnosis || '',
+          prescription: undefined, // Campo requerido pero no disponible en backend
           nextSteps: consultation.nextSteps,
           notes: consultation.additionalNotes,
           cost: consultation.cost,
           nextAppointment: consultation.nextConsultation ? formatBackendDate(consultation.nextConsultation) : undefined,
-          createdBy: 'owner',
+          createdBy: 'owner' as const,
           createdAt: consultation.createdAt || new Date().toISOString()
         })) : [],
         appointments: [],
@@ -388,7 +455,7 @@ class PetServiceImpl implements PetService {
       const frontendPet: Pet = {
         id: createdPet.id.toString(),
         name: createdPet.name,
-        breed: createdPet.breed,
+        breed: createdPet.breed || 'Raza no especificada',
         species: petData.species,
         birthDate: petData.birthDate,
         age: petData.age || this.calculateAge(petData.birthDate),
@@ -644,13 +711,10 @@ class PetServiceImpl implements PetService {
 
   // Método auxiliar para obtener un recordatorio específico
   private async getReminder(id: string): Promise<Reminder> {
-    // Implementación simple que busca en todas las mascotas
-    const allPets = await this.getAllPets()
-    for (const pet of allPets) {
-      const reminders = await this.getPetReminders(pet.id)
-      const reminder = reminders.find(r => r.id === id)
-      if (reminder) return reminder
-    }
+    // Implementación simple que busca en todos los recordatorios del usuario
+    const reminders = await this.getPetReminders()
+    const reminder = reminders.find(r => r.id === id)
+    if (reminder) return reminder
     throw new Error('Reminder not found')
   }
 
@@ -734,23 +798,23 @@ class PetServiceImpl implements PetService {
       }
 
       // Convertir respuesta del backend al formato frontend
-      const backendConsultation = response.data as any
+      const backendConsultation = (response as ApiResponse<BackendConsultation>).data!
       const newConsultation: ConsultationRecord = {
         id: backendConsultation.id.toString(),
         petId: backendConsultation.petId.toString(),
         type: consultationData.type,
-        title: consultationData.title,
+        title: consultationData.title || 'Consulta',
         date: consultationData.date,
-        veterinarian: consultationData.veterinarian,
-        clinicName: consultationData.clinicName,
+        veterinarian: consultationData.veterinarian || 'Veterinario',
+        clinicName: consultationData.clinicName || '',
         findings: backendConsultation.findings,
-        diagnosis: backendConsultation.diagnosis,
+        diagnosis: backendConsultation.diagnosis || '',
         prescription: consultationData.prescription,
         nextSteps: backendConsultation.nextSteps,
         notes: backendConsultation.additionalNotes,
         cost: consultationData.cost,
         nextAppointment: consultationData.nextAppointment,
-        createdBy: 'owner',
+        createdBy: 'owner' as const,
         createdAt: backendConsultation.createdAt || new Date().toISOString()
       }
 
@@ -808,16 +872,17 @@ class PetServiceImpl implements PetService {
           type: mappedType, // Mapear tipo correcto
           title: consultation.chiefComplaint || 'Consulta',
           date: formatBackendDate(consultation.date),
-          veterinarian: consultation.user?.name || consultation.veterinarian, // Usar nombre del usuario
-          clinicName: consultation.clinicName,
+          veterinarian: consultation.user?.name || consultation.veterinarian || 'Veterinario',
+          clinicName: consultation.clinicName || '',
           findings: consultation.findings,
-          diagnosis: consultation.diagnosis,
+          diagnosis: consultation.diagnosis || '',
+          prescription: undefined, // Campo requerido pero no disponible en backend
           nextSteps: consultation.nextSteps,
           notes: consultation.additionalNotes,
           cost: consultation.cost,
           nextAppointment: consultation.nextConsultation ? formatBackendDate(consultation.nextConsultation) : undefined,
-          createdBy: 'owner',
-          createdAt: consultation.createdAt
+          createdBy: 'owner' as const,
+          createdAt: consultation.createdAt || new Date().toISOString()
         }
       })
 
@@ -830,8 +895,8 @@ class PetServiceImpl implements PetService {
 
   async createConsultationWithVaccinesAndTreatments(
     consultationData: Omit<ConsultationRecord, 'id' | 'createdAt'>, 
-    vaccinations?: any[], 
-    treatments?: any[]
+    vaccinations?: VaccinationFormData[], 
+    treatments?: TreatmentFormData[]
   ): Promise<ConsultationRecord> {
     if (env.MOCK_API) {
       const newRecord: ConsultationRecord = {
@@ -914,23 +979,23 @@ class PetServiceImpl implements PetService {
       }
 
       // Convertir respuesta del backend al formato frontend
-      const backendConsultation = response.data as any
+      const backendConsultation = (response as ApiResponse<BackendConsultation>).data!
       const newConsultation: ConsultationRecord = {
         id: backendConsultation.id.toString(),
         petId: backendConsultation.petId.toString(),
         type: consultationData.type,
-        title: consultationData.title,
+        title: consultationData.title || 'Consulta',
         date: consultationData.date,
-        veterinarian: consultationData.veterinarian,
-        clinicName: consultationData.clinicName,
+        veterinarian: consultationData.veterinarian || 'Veterinario',
+        clinicName: consultationData.clinicName || '',
         findings: backendConsultation.findings,
-        diagnosis: backendConsultation.diagnosis,
+        diagnosis: backendConsultation.diagnosis || '',
         prescription: consultationData.prescription,
         nextSteps: backendConsultation.nextSteps,
         notes: backendConsultation.additionalNotes,
         cost: consultationData.cost,
         nextAppointment: consultationData.nextAppointment,
-        createdBy: 'owner',
+        createdBy: 'owner' as const,
         createdAt: backendConsultation.createdAt || new Date().toISOString()
       }
 
@@ -953,7 +1018,7 @@ class PetServiceImpl implements PetService {
   }
 
   // Nuevos métodos para obtener vacunas y tratamientos
-  async getPetVaccines(petId: string): Promise<any[]> {
+  async getPetVaccines(petId: string): Promise<BackendVaccine[]> {
     if (env.MOCK_API) {
       return Promise.resolve([])
     }
@@ -978,7 +1043,7 @@ class PetServiceImpl implements PetService {
     }
   }
 
-  async getPetTreatments(petId: string): Promise<any[]> {
+  async getPetTreatments(petId: string): Promise<BackendTreatment[]> {
     if (env.MOCK_API) {
       return Promise.resolve([])
     }

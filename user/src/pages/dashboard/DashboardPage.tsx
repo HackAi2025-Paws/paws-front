@@ -26,7 +26,7 @@ export const DashboardPage: React.FC = () => {
         }
         
         // Cargar recordatorios reales del backend
-        const reminders = await petService.getPetReminders('dummy')
+        const reminders = await petService.getPetReminders()
         dispatch(setReminders(reminders))
         
         console.log('✅ Dashboard data loaded successfully')
