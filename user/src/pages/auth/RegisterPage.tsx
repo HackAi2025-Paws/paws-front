@@ -8,6 +8,7 @@ import { useAppDispatch } from '../../hooks'
 import { loginSuccess } from '../../store/authSlice'
 import { useAuth } from '../../modules/auth/AuthContext'
 import { Heart, UserPlus } from 'lucide-react'
+import Logo from '../../components/ui/Logo'
 
 export const RegisterPage: React.FC = () => {
   const { register, isLoading } = useAuth()
@@ -54,10 +55,10 @@ export const RegisterPage: React.FC = () => {
         {/* Logo y bienvenida */}
         <div className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-            <Heart className="h-8 w-8 text-white" />
+            <Logo />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Paws</h1>
+            <h1 className="text-3xl font-bold text-gray-900">PetLink</h1>
             <p className="text-gray-600">Únete y cuida a tus mascotas</p>
           </div>
         </div>
