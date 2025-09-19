@@ -10,7 +10,8 @@ import { mockUser } from '../../data/mockData'
 import { useAuth } from '../../modules/auth/AuthContext'
 import { useAuthFlow } from '../../hooks/useAuth'
 import { env } from '../../config/env'
-import { Heart, Phone, Shield } from 'lucide-react'
+import { Phone, Shield } from 'lucide-react'
+import Logo from '../../components/ui/Logo'
 
 export const LoginPage: React.FC = () => {
   const { /* login, */ isLoading: authLoading } = useAuth()
@@ -76,10 +77,10 @@ export const LoginPage: React.FC = () => {
         {/* Logo y bienvenida */}
         <div className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-            <Heart className="h-8 w-8 text-white" />
+            <Logo />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Paws</h1>
+            <h1 className="text-3xl font-bold text-gray-900">PetLink</h1>
             <p className="text-gray-600">Cuidando a tus mascotas con amor</p>
           </div>
         </div>
