@@ -1,4 +1,4 @@
-import newLogo from "../../../public/new_logo.jpg";
+import newLogo from "../../assets/new_logo.jpg";
 
 export function Logo({ size = 44 }: { size?: number }) {
   return (

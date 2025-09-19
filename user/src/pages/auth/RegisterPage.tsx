@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { useAppDispatch } from '../../hooks'
 import { loginSuccess } from '../../store/authSlice'
 import { useAuth } from '../../modules/auth/AuthContext'
-import { Heart, UserPlus } from 'lucide-react'
+import { UserPlus } from 'lucide-react'
 import Logo from '../../components/ui/Logo'
 
 export const RegisterPage: React.FC = () => {

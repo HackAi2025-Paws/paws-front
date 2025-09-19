@@ -10,7 +10,7 @@ import { mockUser } from '../../data/mockData'
 import { useAuth } from '../../modules/auth/AuthContext'
 import { useAuthFlow } from '../../hooks/useAuth'
 import { env } from '../../config/env'
-import { Heart, Phone, Shield } from 'lucide-react'
+import { Phone, Shield } from 'lucide-react'
 import Logo from '../../components/ui/Logo'
 
 export const LoginPage: React.FC = () => {
