@@ -10,7 +10,8 @@ export const MOCK_PATIENTS: Patient[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=120&h=120&fit=crop&auto=format',
     summary: 'Revisión general completada',
     age: '3 años',
-    status: 'Saludable',
+    lastVisitAgo: "1 day",
+    status: "hola"
   },
   {
     id: 'p2',
@@ -21,7 +22,8 @@ export const MOCK_PATIENTS: Patient[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=120&h=120&fit=crop&auto=format',
     summary: 'Medicación para infección ocular',
     age: '2 años',
-    status: 'En tratamiento',
+    lastVisitAgo: "1 day",
+    status: "hola"
   },
   {
     id: 'p3',
@@ -32,7 +34,8 @@ export const MOCK_PATIENTS: Patient[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=120&h=120&fit=crop&auto=format',
     summary: 'Vacunación anual aplicada',
     age: '5 años',
-    status: 'Saludable',
+    lastVisitAgo: "1 day",
+    status: "hola"
   },
   {
     id: 'p4',
@@ -43,7 +46,8 @@ export const MOCK_PATIENTS: Patient[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=120&h=120&fit=crop&auto=format',
     summary: 'Post-cirugía, evolución favorable',
     age: '4 años',
-    status: 'Recuperándose',
+    lastVisitAgo: "1 day",
+    status: "hola"
   },
   {
     id: 'p5',
@@ -54,7 +58,8 @@ export const MOCK_PATIENTS: Patient[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=120&h=120&fit=crop&auto=format',
     summary: 'Control de peso exitoso',
     age: '6 años',
-    status: 'Saludable',
+    lastVisitAgo: "1 day",
+    status: "hola"
   },
   {
     id: 'p6',
@@ -65,7 +70,8 @@ export const MOCK_PATIENTS: Patient[] = [
     avatarUrl: 'https://images.unsplash.com/photo-1507149833265-60c372daea22?w=120&h=120&fit=crop&auto=format',
     summary: 'Control cardiológico rutinario',
     age: '8 años',
-    status: 'En seguimiento',
+    lastVisitAgo: "1 day",
+    status: "hola"
   },
 ]
 

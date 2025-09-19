@@ -1,0 +1,53 @@
+/* VaccinesList.css */
+.vacunasList {
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.vaccineItem {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  background: color-mix(in oklab, var(--brand-50) 60%, #fff);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.vaccineItem__body {
+  text-align: left;
+}
+
+.vaccineItem__icon {
+  font-size: 18px;
+}
+
+.vaccineItem__title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.vaccineItem__meta {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.vaccineBadge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.vaccineBadge--current {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.vaccineBadge--expired {
+  background: #fee2e2;
+  color: #b91c1c;
+}

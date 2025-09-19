@@ -7,7 +7,8 @@ export type Patient = {
   avatarUrl?: string
   summary: string
   age: string
-  status: 'Saludable' | 'En tratamiento' | 'Recuperándose' | 'En seguimiento'
+  lastVisitAgo: string;
+  status: string;
 }
 
 export type PatientSearchInput = {

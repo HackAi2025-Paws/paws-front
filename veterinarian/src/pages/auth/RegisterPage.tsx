@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../modules/auth/AuthContext'
 import Logo from '../../components/ui/Logo'
@@ -6,18 +6,16 @@ import Card, { CardContent, CardFooter, CardHeader } from '../../components/ui/C
 import Button from '../../components/ui/Button'
 import TextInput from '../../components/ui/TextInput'
 
-type FieldErrors = Partial<Record<'firstName' | 'lastName' | 'email' | 'clinicName' | 'password' | 'confirmPassword', string>>
+type FieldErrors = Partial<Record<'fullName' | 'phone' | 'otp', string>>
 
 export default function RegisterPage() {
-  const { register, isLoading } = useAuth()
+  const { registerWithPhone, verifyOTP, isLoading } = useAuth()
   const navigate = useNavigate()
+  const [step, setStep] = useState<'register' | 'otp'>('register')
   const [values, setValues] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    clinicName: '',
-    password: '',
-    confirmPassword: '',
+    fullName: '',
+    phone: '',
+    otp: '',
   })
   const [errors, setErrors] = useState<FieldErrors>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -29,12 +27,12 @@ export default function RegisterPage() {
 
   function validate(): boolean {
     const err: FieldErrors = {}
-    if (!values.firstName) err.firstName = 'Requerido'
-    if (!values.lastName) err.lastName = 'Requerido'
-    if (!values.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(values.email)) err.email = 'Email inválido'
-    if (!values.clinicName) err.clinicName = 'Requerido'
-    if (!values.password || values.password.length < 6) err.password = 'Mínimo 6 caracteres'
-    if (values.password !== values.confirmPassword) err.confirmPassword = 'No coincide'
+    if (step === 'register') {
+      if (!values.fullName || values.fullName.length < 2) err.fullName = 'Nombre completo requerido'
+      if (!values.phone || !/^\+?[0-9\s-()]{10,15}$/.test(values.phone.replace(/\s/g, ''))) err.phone = 'Teléfono inválido'
+    } else if (step === 'otp') {
+      if (!values.otp || values.otp.length !== 6) err.otp = 'Código de 6 dígitos requerido'
+    }
     setErrors(err)
     return Object.keys(err).length === 0
   }
@@ -43,9 +41,26 @@ export default function RegisterPage() {
     e.preventDefault()
     setSubmitError(null)
     if (!validate()) return
+
     try {
-      await register(values)
-      navigate('/dashboard')
+      if (step === 'register') {
+        const result = await registerWithPhone({
+          name: values.fullName,
+          phone: values.phone
+        })
+        if (result.success) {
+          setStep('otp')
+          setSubmitError(null)
+        } else {
+          setSubmitError(result.message || 'Error al enviar código')
+        }
+      } else if (step === 'otp') {
+        await verifyOTP({
+          phone: values.phone,
+          otp: values.otp
+        })
+        navigate('/dashboard')
+      }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Error al registrar')
     }
@@ -56,81 +71,73 @@ export default function RegisterPage() {
       <div className="authLayout__header">
         <Logo />
         <div className="brand">
-          <div className="brand__title">VetCare Digital</div>
-          <div className="brand__subtitle">Crea tu cuenta profesional</div>
+          <div className="brand__title">PawsCare</div>
+          <div className="brand__subtitle">{step === 'register' ? 'Crear cuenta' : 'Verificar teléfono'}</div>
         </div>
       </div>
 
       <Card className="authCard">
         <CardHeader>
-          <h1 className="authCard__title">Registro</h1>
-          <p className="authCard__subtitle">Completa tus datos para crear tu cuenta</p>
+          <h1 className="authCard__title">
+            {step === 'register' ? 'Registro' : 'Código de verificación'}
+          </h1>
+          <p className="authCard__subtitle">
+            {step === 'register'
+              ? 'Ingresa tu nombre completo y teléfono'
+              : `Ingresa el código de 6 dígitos enviado a ${values.phone}`
+            }
+          </p>
         </CardHeader>
         <CardContent>
           <form className="form" onSubmit={handleSubmit}>
-            <div className="grid grid--2">
+            {step === 'register' ? (
+              <>
+                <TextInput
+                  label="Nombre completo"
+                  name="fullName"
+                  placeholder="Juan Carlos Pérez"
+                  value={values.fullName}
+                  onChange={handleChange}
+                  error={errors.fullName}
+                  required
+                />
+                <TextInput
+                  label="Teléfono"
+                  name="phone"
+                  type="tel"
+                  placeholder="+54 9 11 1234-5678"
+                  value={values.phone}
+                  onChange={handleChange}
+                  error={errors.phone}
+                  required
+                />
+              </>
+            ) : (
               <TextInput
-                label="Nombre"
-                name="firstName"
-                placeholder="Juan"
-                value={values.firstName}
+                label="Código de verificación"
+                name="otp"
+                placeholder="123456"
+                value={values.otp}
                 onChange={handleChange}
-                error={errors.firstName}
+                error={errors.otp}
+                maxLength={6}
                 required
               />
-              <TextInput
-                label="Apellido"
-                name="lastName"
-                placeholder="Pérez"
-                value={values.lastName}
-                onChange={handleChange}
-                error={errors.lastName}
-                required
-              />
-            </div>
-            <TextInput
-              label="Email Profesional"
-              name="email"
-              type="email"
-              placeholder="dr.perez@clinicaveterinaria.com"
-              value={values.email}
-              onChange={handleChange}
-              error={errors.email}
-              required
-            />
-            <TextInput
-              label="Nombre de la Clínica"
-              name="clinicName"
-              placeholder="Clínica Veterinaria San Martín"
-              value={values.clinicName}
-              onChange={handleChange}
-              error={errors.clinicName}
-              required
-            />
-            <TextInput
-              label="Contraseña"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              value={values.password}
-              onChange={handleChange}
-              error={errors.password}
-              required
-            />
-            <TextInput
-              label="Confirmar Contraseña"
-              name="confirmPassword"
-              type="password"
-              placeholder="••••••••"
-              value={values.confirmPassword}
-              onChange={handleChange}
-              error={errors.confirmPassword}
-              required
-            />
+            )}
             {submitError && <div className="form__error">{submitError}</div>}
-            <Button type="submit" fullWidth isLoading={isLoading} aria-label="Crear Cuenta">
-              Crear Cuenta
+            <Button type="submit" fullWidth isLoading={isLoading}>
+              {step === 'register' ? 'Enviar código' : 'Verificar y crear cuenta'}
             </Button>
+            {step === 'otp' && (
+              <Button
+                type="button"
+                variant="ghost"
+                fullWidth
+                onClick={() => setStep('register')}
+              >
+                Cambiar teléfono
+              </Button>
+            )}
           </form>
         </CardContent>
         <CardFooter>
@@ -140,7 +147,7 @@ export default function RegisterPage() {
         </CardFooter>
       </Card>
 
-      <footer className="authLayout__footer">© 2024 VetCare Digital. Plataforma profesional para veterinarias.</footer>
+      <footer className="authLayout__footer">© 2024 PawsCare. Sistema de gestión veterinaria.</footer>
     </div>
   )
 }
