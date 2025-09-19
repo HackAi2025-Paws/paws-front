@@ -38,12 +38,18 @@ export interface Vaccination {
   id: string
   petId: string
   name: VaccinationType
+  displayName?: string // Nombre completo del catálogo para mostrar
   date: string
   nextDue?: string
   expirationDate?: string
   batchNumber?: string
   veterinarian: string
   notes?: string
+  // Backend compatibility fields
+  applicationDate?: string
+  vaccine?: { name: string; description?: string }
+  catalog?: { name: string; description?: string }
+  author?: { id: number; name: string }
 }
 
 export interface Treatment {
@@ -161,5 +167,34 @@ export interface FAQ {
   answer: string
   category: 'alimentacion' | 'salud' | 'comportamiento' | 'cuidados' | 'emergencias'
   species: ('perro' | 'gato' | 'general')[]
+}
+
+// Form data interfaces
+export interface VaccinationFormData {
+  type: string
+  date: string
+  expirationDate?: string
+  batchNumber?: string
+  veterinarian?: string
+  notes?: string
+}
+
+export interface TreatmentFormData {
+  type: string
+  name: string
+  medication?: string
+  startDate?: string
+  endDate?: string
+  dosage?: string
+  instructions?: string
+  veterinarian?: string
+  notes?: string
+}
+
+export interface VaccineCatalog {
+  id: number
+  name: string
+  description?: string
+  species?: 'DOG' | 'CAT' | 'BOTH'
 }
 

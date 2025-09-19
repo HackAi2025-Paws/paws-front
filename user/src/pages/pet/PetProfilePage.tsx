@@ -9,8 +9,8 @@ import { setSelectedPet } from '../../store/petsSlice'
 import { calculateAge } from '../../lib/utils'
 import { exportPetHistoryToPDF } from '../../lib/pdfExport'
 import { petService } from '../../services/petService'
-import type { ConsultationRecord } from '../../types/index.js'
-import { Syringe, Edit, Weight, Cake, Download, FileText } from 'lucide-react'
+import type { ConsultationRecord, Vaccination, Treatment } from '../../types'
+import { Syringe, Edit, Weight, Cake, Download, FileText, Pill } from 'lucide-react'
 
 export const PetProfilePage: React.FC = () => {
   const { petId } = useParams<{ petId: string }>()
@@ -18,8 +18,10 @@ export const PetProfilePage: React.FC = () => {
   const { selectedPet } = useAppSelector((state) => state.pets)
   const [isExporting, setIsExporting] = useState(false)
   const [consultations, setConsultations] = useState<ConsultationRecord[]>([])
-  const [vaccines, setVaccines] = useState<any[]>([])
+  const [vaccines, setVaccines] = useState<Vaccination[]>([])
+  const [treatments, setTreatments] = useState<Treatment[]>([])
   const [isLoadingPet, setIsLoadingPet] = useState(false)
+  const [isLoadingTreatments, setIsLoadingTreatments] = useState(true)
   const [isLoadingVaccines, setIsLoadingVaccines] = useState(false)
 
   // Cargar información completa de la mascota desde backend (GET /pets)
@@ -78,6 +80,31 @@ export const PetProfilePage: React.FC = () => {
     }
 
     loadPetVaccines()
+  }, [petId])
+
+  // Cargar tratamientos específicos de esta mascota desde endpoint /treatment
+  useEffect(() => {
+    const loadPetTreatments = async () => {
+      if (!petId) return
+      
+      setIsLoadingTreatments(true)
+      try {
+        console.log('📥 Loading treatments for pet:', petId)
+        
+        // Obtener tratamientos específicos de la mascota
+        const petTreatments = await petService.getPetTreatments(petId)
+        setTreatments(petTreatments)
+        
+        console.log('✅ Pet treatments loaded:', petTreatments)
+      } catch (error) {
+        console.error('❌ Error loading pet treatments:', error)
+        setTreatments([])
+      } finally {
+        setIsLoadingTreatments(false)
+      }
+    }
+
+    loadPetTreatments()
   }, [petId])
 
   if (!selectedPet) {
@@ -203,7 +230,19 @@ export const PetProfilePage: React.FC = () => {
                   <div className="flex items-center space-x-3">
                     <Syringe className="h-4 w-4 text-green-500" />
                     <div>
-                      <p className="font-medium text-green-900">{vaccine.catalog?.name || 'Vacuna'}</p>
+                      <p className="font-medium text-green-900">
+                        {(() => {
+                          // Extraer el tipo real de vacuna del notes si existe
+                          const notes = vaccine.notes || ''
+                          const vaccineTypeMatch = notes.match(/^([^-]+)/)
+                          const extractedType = vaccineTypeMatch ? vaccineTypeMatch[1].trim() : null
+                          
+                          // Si el tipo extraído es diferente al catálogo, usar el tipo extraído
+                          const catalogName = vaccine.vaccine?.name || vaccine.catalog?.name || 'Vacuna'
+                          
+                          return extractedType && extractedType !== catalogName ? extractedType : catalogName
+                        })()}
+                      </p>
                       <p className="text-sm text-green-700">Próxima a vencer</p>
                     </div>
                   </div>
@@ -236,7 +275,19 @@ export const PetProfilePage: React.FC = () => {
                 {vaccines.map(vaccine => (
                   <div key={vaccine.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium">{vaccine.catalog?.name || 'Vacuna'}</p>
+                      <p className="font-medium">
+                        {(() => {
+                          // Extraer el tipo real de vacuna del notes si existe
+                          const notes = vaccine.notes || ''
+                          const vaccineTypeMatch = notes.match(/^([^-]+)/)
+                          const extractedType = vaccineTypeMatch ? vaccineTypeMatch[1].trim() : null
+                          
+                          // Si el tipo extraído es diferente al catálogo, usar el tipo extraído
+                          const catalogName = vaccine.vaccine?.name || vaccine.catalog?.name || 'Vacuna'
+                          
+                          return extractedType && extractedType !== catalogName ? extractedType : catalogName
+                        })()}
+                      </p>
                       <p className="text-sm text-gray-600">{vaccine.author?.name || 'Veterinario'}</p>
                       {vaccine.notes && (
                         <p className="text-xs text-gray-500 mt-1">{vaccine.notes}</p>
@@ -246,12 +297,86 @@ export const PetProfilePage: React.FC = () => {
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-sm">{new Date(vaccine.applicationDate).toLocaleDateString('es-ES')}</p>
+                      <p className="text-sm">{vaccine.applicationDate ? new Date(vaccine.applicationDate).toLocaleDateString('es-ES') : 'Fecha no disponible'}</p>
                       {vaccine.expirationDate && (
                         <p className="text-xs text-gray-500">
                           Vence: {new Date(vaccine.expirationDate).toLocaleDateString('es-ES')}
                         </p>
                       )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Historial de tratamientos */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Pill className="h-5 w-5 mr-2" />
+              Historial de Tratamientos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingTreatments ? (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            ) : treatments.length === 0 ? (
+              <p className="text-gray-600 text-center py-4">No hay tratamientos registrados</p>
+            ) : (
+              <div className="space-y-3">
+                {treatments.map((treatment, index) => (
+                  <div key={index} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">
+                          {treatment.name || 'Tratamiento'}
+                        </h4>
+                        <div className="mt-2 space-y-1 text-sm text-gray-600">
+                          {treatment.startDate && (
+                            <p>
+                              <span className="font-medium">Inicio:</span> {' '}
+                              {new Date(treatment.startDate).toLocaleDateString('es-ES')}
+                            </p>
+                          )}
+                          {treatment.endDate && (
+                            <p>
+                              <span className="font-medium">Fin:</span> {' '}
+                              {new Date(treatment.endDate).toLocaleDateString('es-ES')}
+                            </p>
+                          )}
+                          {treatment.dosage && (
+                            <p>
+                              <span className="font-medium">Dosis:</span> {treatment.dosage}
+                            </p>
+                          )}
+                          {treatment.instructions && (
+                            <p>
+                              <span className="font-medium">Instrucciones:</span> {treatment.instructions}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="ml-4 text-right">
+                        {treatment.endDate ? (
+                          new Date(treatment.endDate) > new Date() ? (
+                            <Badge variant="outline" className="text-green-600 border-green-600">
+                              Activo
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-gray-600 border-gray-600">
+                              Finalizado
+                            </Badge>
+                          )
+                        ) : (
+                          <Badge variant="outline" className="text-blue-600 border-blue-600">
+                            En curso
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
