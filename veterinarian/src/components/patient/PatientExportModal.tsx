@@ -19,7 +19,7 @@ export default function PatientExportModal({
   onExport,
   isLoading = false
 }: PatientExportModalProps) {
-  const hasSelection = exportOptions.historia || exportOptions.vacunas || exportOptions.resumen
+  const hasSelection = exportOptions.historia || exportOptions.vacunas || exportOptions.resumen || exportOptions.tratamientos
 
   return (
     <Modal
@@ -67,6 +67,14 @@ export default function PatientExportModal({
           onChange={(e) => onExportOptionsChange({
             ...exportOptions,
             resumen: e.target.checked
+          })}
+        />
+        <Checkbox
+          label="Registro de Tratamientos"
+          checked={exportOptions.tratamientos}
+          onChange={(e) => onExportOptionsChange({
+            ...exportOptions,
+            tratamientos: e.target.checked
           })}
         />
       </div>

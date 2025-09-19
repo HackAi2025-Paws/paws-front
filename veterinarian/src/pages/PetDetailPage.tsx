@@ -5,6 +5,7 @@ import { usePetById } from '../hooks/usePets'
 import { useClinicalSummary } from '../hooks/useClinicalSummary'
 import { useUser } from '../hooks/useUser'
 import { consultationService } from '../services/consultationService'
+import { PDFService } from '../services/pdfService'
 import PatientSidebar from '../components/patient/PatientSidebar'
 import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
@@ -77,6 +78,14 @@ export default function PetDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [exportOptions, setExportOptions] = useState({
+    format: 'pdf' as const,
+    historia: false,
+    vacunas: false,
+    resumen: false,
+    tratamientos: false
+  })
+  const [isExporting, setIsExporting] = useState(false)
 
   // hook que sirve para cuando si recibis me entendes osea para contar la cantidad de final texts (juli arregla tu hook)
   const [finalTextCounter, setFinalTextCounter] = useState(0);
@@ -144,22 +153,45 @@ export default function PetDetailPage() {
       additionalNotes: consultation.additionalNotes
     })) : []
 
-  const exportOptions = {
-    format: 'pdf' as const,
-    historia: true,
-    vacunas: true,
-    resumen: true
-  }
-  const setExportOptions = () => {}
-  const isExporting = false
 
   const toggleRecordExpansion = (recordId: string) => {
     setExpandedRecordId(expandedRecordId === recordId ? null : recordId);
   };
 
   const handleExportClick = async () => {
-    if (!id) return;
-    setOpenExport(false);
+    if (!id || !patient) return;
+
+    setIsExporting(true);
+
+    try {
+      // Create a new instance for each export
+      const pdfServiceInstance = new PDFService();
+
+      pdfServiceInstance.generatePatientPDF({
+        id: patient.id,
+        name: patient.name,
+        species: patient.species,
+        breed: patient.breed,
+        age: patient.age,
+        owners: patient.owners || [],
+        weight: patient.weight,
+        sex: patient.sex === 'MALE' ? 'Macho' : patient.sex === 'FEMALE' ? 'Hembra' : 'No especificado',
+        dateOfBirth: patient.dateOfBirth,
+        consultations: patient.consultations,
+        vaccines: patient.vaccines,
+        treatments: patient.treatments,
+        clinicalSummary: clinicalSummary || undefined
+      }, exportOptions);
+
+      // Close modal after successful export
+      setOpenExport(false);
+
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Error al generar el PDF. Por favor intenta de nuevo.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleSaveRecord = async (data: any) => {
@@ -830,7 +862,7 @@ export default function PetDetailPage() {
         open={openExport}
         onClose={() => setOpenExport(false)}
         exportOptions={exportOptions}
-        onExportOptionsChange={setExportOptions}
+        onExportOptionsChange={(options) => setExportOptions({ ...exportOptions, ...options })}
         onExport={handleExportClick}
         isLoading={isExporting}
       />
