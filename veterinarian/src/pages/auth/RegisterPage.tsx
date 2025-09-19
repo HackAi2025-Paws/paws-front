@@ -1,4 +1,5 @@
-import { type FormEvent, useState } from 'react'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../modules/auth/AuthContext'
 import Logo from '../../components/ui/Logo'
@@ -71,7 +72,7 @@ export default function RegisterPage() {
       <div className="authLayout__header">
         <Logo />
         <div className="brand">
-          <div className="brand__title">PawsCare</div>
+          <div className="brand__title">PetLink</div>
           <div className="brand__subtitle">{step === 'register' ? 'Crear cuenta' : 'Verificar teléfono'}</div>
         </div>
       </div>
@@ -147,7 +148,7 @@ export default function RegisterPage() {
         </CardFooter>
       </Card>
 
-      <footer className="authLayout__footer">© 2024 PawsCare. Sistema de gestión veterinaria.</footer>
+      <footer className="authLayout__footer">© 2024 PetLink. Sistema de gestión veterinaria.</footer>
     </div>
   )
 }

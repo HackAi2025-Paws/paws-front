@@ -13,6 +13,7 @@ export type Patient = {
 
 export type PatientSearchInput = {
   query: string
+  filter?: 'owner' | 'pet' | 'breed'
 }
 
 export interface PatientsClient {

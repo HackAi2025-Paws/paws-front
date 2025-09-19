@@ -41,6 +41,23 @@ class HttpApiClient implements ApiClient {
 
       const responseData = await response.json()
 
+      // Handle unauthorized responses (token expired or invalid)
+      if (response.status === 401) {
+        // Clear invalid session
+        localStorage.removeItem("vetcare.session")
+
+        // Redirect to login if not already on auth pages
+        const currentPath = window.location.pathname
+        if (currentPath !== '/login' && currentPath !== '/register') {
+          window.location.href = '/login'
+        }
+
+        return {
+          success: false,
+          error: responseData.message || responseData.error || 'Session expired. Please login again.',
+        }
+      }
+
       if (!response.ok) {
         return {
           success: false,

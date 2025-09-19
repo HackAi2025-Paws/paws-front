@@ -3,19 +3,22 @@ import { MedicalIcons } from '../MedicalIcons';
 import QuestionSuggestions from './QuestionSuggestions';
 import type { Suggestion } from '../../../types/suggestions';
 import { apiClient } from '../../../services/apiClient';
+import type { Consultation } from '../../../types/consultations';
 
 interface SuggestionsPanelProps {
   transcription: string;
   onSuggestionClick?: (suggestion: Suggestion) => void;
   onManualRefresh?: () => void;
   className?: string;
+  onConsultationClick?: (consultation: Consultation) => void;
 }
 
 export default function SuggestionsPanel({
   transcription,
   onSuggestionClick,
   onManualRefresh,
-  className = ""
+  className = "",
+  onConsultationClick,
 }: SuggestionsPanelProps) {
   // Estados para sugerencias de preguntas
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -42,10 +45,15 @@ export default function SuggestionsPanel({
     setError(null);
 
     try {
-      // Mock suggestions - esto se reemplazará con el servicio real
       const response = await apiClient.post<{suggestions: Suggestion[]}>("/suggestions/questions", {
         "transcription": transcription
       });
+
+      const response2 = await apiClient.post<Consultation>("/consultations/generate", {
+        "transcription": transcription
+      });
+
+      onConsultationClick?.(response2.data!);
 
       setIsLoading(false);
 
@@ -164,9 +172,7 @@ export default function SuggestionsPanel({
             }}
             title="Actualizar sugerencias"
           >
-            <MedicalIcons.Refresh
-              size={14}
-            />
+            <MedicalIcons.Refresh size={14} />
             <span>Actualizar</span>
           </button>
         </div>

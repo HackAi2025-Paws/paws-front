@@ -6,17 +6,22 @@ function delay(ms: number) {
 }
 
 export const mockPatientsClient: PatientsClient = {
-  async search({ query }: PatientSearchInput): Promise<Patient[]> {
+  async search({ query, filter = 'pet' }: PatientSearchInput): Promise<Patient[]> {
     await delay(200)
     const q = query.trim().toLowerCase()
     if (!q) return MOCK_PATIENTS.slice(0, 4)
+
     return MOCK_PATIENTS.filter((p) => {
-      return (
-        p.name.toLowerCase().includes(q) ||
-        (p.breed ?? '').toLowerCase().includes(q) ||
-        p.ownerName.toLowerCase().includes(q) ||
-        p.species.toLowerCase().includes(q)
-      )
+      switch (filter) {
+        case 'owner':
+          return p.ownerName.toLowerCase().includes(q)
+        case 'pet':
+          return p.name.toLowerCase().includes(q)
+        case 'breed':
+          return (p.breed ?? '').toLowerCase().includes(q)
+        default:
+          return p.name.toLowerCase().includes(q)
+      }
     })
   },
 

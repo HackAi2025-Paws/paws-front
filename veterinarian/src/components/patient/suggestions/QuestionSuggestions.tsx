@@ -18,6 +18,7 @@ export default function QuestionSuggestions({
   onSuggestionClick,
   onRetry
 }: QuestionSuggestionsProps) {
+
   const getPriorityDotColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'bg-red-500';
@@ -208,6 +209,7 @@ export default function QuestionSuggestions({
         }}>
           <MedicalIcons.MedicalMicrophone size={32} />
         </div>
+        
         <p style={{ fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Esperando transcripción</p>
         <p style={{ fontSize: '12px', maxWidth: '280px' }}>
           Inicie la grabación para obtener preguntas inteligentes basadas en el contexto médico

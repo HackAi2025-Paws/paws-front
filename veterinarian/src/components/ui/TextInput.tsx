@@ -1,4 +1,4 @@
-import { type InputHTMLAttributes, type ReactNode } from 'react'
+import type { InputHTMLAttributes, ReactNode } from 'react'
 
 type TextInputProps = {
   label?: string

@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { usePatientDetail } from '../hooks/usePatientDetail'
-import { usePatientExport } from '../hooks/usePatientExport'
+import { usePetById } from '../hooks/usePets'
+import { useClinicalSummary } from '../hooks/useClinicalSummary'
+import { useUser } from '../hooks/useUser'
+import { consultationService } from '../services/consultationService'
 import PatientSidebar from '../components/patient/PatientSidebar'
 import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
-import AddRecordForm from '../components/patient/AddRecordForm'
+import AddRecordForm, { type AddRecordFormRef } from '../components/patient/AddRecordForm'
 import SuggestionsPanel from '../components/patient/suggestions/SuggestionsPanel'
 import MedicalTranscriptionBox from '../components/patient/MedicalTranscriptionBox'
-import type { PatientRecord } from '../modules/patients/types'
+import Spinner from '../components/ui/Spinner'
 import type { Suggestion } from '../types/suggestions'
 import { useSpeechToText } from '../hooks/useSpeechToText'
 import './PetDetailPage.css'
@@ -19,15 +21,62 @@ import '../components/patient/AddRecordForm.css'
 import '../components/common/RecordList.css'
 import '../components/patient/VaccinesList.css'
 import { apiClient } from '../services/apiClient'
+import type { Consultation } from '../types/consultations'
 
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+
+  // Early validation - ID is required
+  if (!id || id.trim() === '') {
+    return (
+      <div className="petPage">
+        <div className="petPage__content" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            backgroundColor: '#fee2e2',
+            color: '#ef4444',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #fecaca',
+            maxWidth: '400px'
+          }}>
+            <h2>ID de mascota inválido</h2>
+            <p>No se pudo encontrar el ID de la mascota en la URL.</p>
+            <button
+              className="btn btn--primary"
+              onClick={() => navigate(-1)}
+              style={{ marginTop: '16px' }}
+            >
+              ← Volver
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const petId = parseInt(id)
+  const { pet: patient, loading, error } = usePetById(petId)
+  const { summary: clinicalSummary, loading: summaryLoading, error: summaryError } = useClinicalSummary(petId)
+  const { user: userData } = useUser()
+  const formRef = useRef<AddRecordFormRef>(null)
+
   const [search, setSearch] = useState('')
   const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null)
   const [openExport, setOpenExport] = useState(false)
   const [activeTab, setActiveTab] = useState('resumen')
   const { finalText, toggleListening, isListening, clearText } = useSpeechToText();
+  const [consultation, setConsultation] = useState<Consultation | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   // hook que sirve para cuando si recibis me entendes osea para contar la cantidad de final texts (juli arregla tu hook)
   const [finalTextCounter, setFinalTextCounter] = useState(0);
@@ -48,18 +97,61 @@ export default function PetDetailPage() {
     setFinalTextCounter((prev) => prev + 1);
   }, [finalText]);
 
-  // Custom hooks for data and business logic
-  const {
-    patient,
-    patientDetails,
-    filteredRecords,
-    loading,
-    recordsLoading,
-    error,
-  } = usePatientDetail(id, search);
+  // Transform pet data to match PatientSidebar expectations
+  const patientDetails = patient ? {
+    weight: patient.weight ? `${patient.weight}kg` : 'Peso no registrado',
+    sex: patient.sex === 'MALE' ? 'Macho' : patient.sex === 'FEMALE' ? 'Hembra' : 'No especificado',
+    birthDate: patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }) : 'No especificado',
+    ownerPhone: patient.owners && patient.owners.length > 0 ? patient.owners[0].phone : 'Sin teléfono',
+    ownerEmail: 'No disponible'
+  } : undefined
 
-  const { exportOptions, setExportOptions, isExporting, handleExport } =
-    usePatientExport();
+  // Map consultation types from backend to UI
+  const getConsultationType = (consultationType: string) => {
+    const typeMap: Record<string, string> = {
+      'GENERAL_CONSULTATION': 'Consulta General',
+      'VACCINATION': 'Vacunación',
+      'TREATMENT': 'Tratamiento',
+      'CHECKUP': 'Control',
+      'EMERGENCY': 'Emergencia',
+      'SURGERY': 'Cirugía',
+      'AESTHETIC': 'Estética',
+      'REVIEW': 'Revisión'
+    }
+    return typeMap[consultationType] || 'Consulta General'
+  }
+
+  // Transform consultations to records format
+  const filteredRecords = patient?.consultations ? patient.consultations
+    .filter((consultation: any) => {
+      if (!search) return true
+      return consultation.chiefComplaint.toLowerCase().includes(search.toLowerCase()) ||
+             consultation.diagnosis?.toLowerCase().includes(search.toLowerCase())
+    })
+    .map((consultation: any) => ({
+      id: consultation.id.toString(),
+      title: consultation.chiefComplaint,
+      date: consultation.date,
+      doctor: consultation.user?.name || 'Dr. Desconocido',
+      type: getConsultationType(consultation.consultationType),
+      findings: consultation.findings,
+      diagnosis: consultation.diagnosis,
+      nextSteps: consultation.nextSteps,
+      additionalNotes: consultation.additionalNotes
+    })) : []
+
+  const exportOptions = {
+    format: 'pdf' as const,
+    historia: true,
+    vacunas: true,
+    resumen: true
+  }
+  const setExportOptions = () => {}
+  const isExporting = false
 
   const toggleRecordExpansion = (recordId: string) => {
     setExpandedRecordId(expandedRecordId === recordId ? null : recordId);
@@ -67,13 +159,86 @@ export default function PetDetailPage() {
 
   const handleExportClick = async () => {
     if (!id) return;
-    await handleExport(id);
     setOpenExport(false);
   };
 
-  const handleSaveRecord = (data: any) => {
-    console.log("Guardando entrada:", data);
-    // Aquí se implementaría la lógica para guardar la entrada
+  const handleSaveRecord = async (data: any) => {
+    if (!userData || !id) {
+      console.error('Missing user data or pet ID')
+      return
+    }
+
+    // Validate required fields
+    if (!data.motivo || data.motivo.trim() === '') {
+      setSubmitError('El motivo de consulta es obligatorio')
+      setTimeout(() => setSubmitError(null), 5000)
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitError(null)
+    setSubmitSuccess(false)
+
+    try {
+      console.log('Form data received:', data)
+
+      // Map entry types to consultation types
+      const entryTypeMap: Record<string, string> = {
+        'consulta': 'Consulta General',
+        'vacuna': 'Vacunación',
+        'tratamiento': 'Tratamiento',
+        'control': 'Control',
+        'emergencia': 'Emergencia',
+        'cirugia': 'Cirugía',
+        'estetica': 'Estética',
+        'revision': 'Revisión'
+      }
+
+      const consultationData = {
+        petId: parseInt(id),
+        userId: userData.id,
+        consultationType: entryTypeMap[data.entryType] || 'Consulta General',
+        date: data.fechaConsulta ? new Date(data.fechaConsulta).toISOString() : new Date().toISOString(),
+        chiefComplaint: data.motivo || 'Sin especificar',
+        findings: data.hallazgos,
+        diagnosis: data.diagnostico,
+        nextSteps: data.proximosPasos,
+        additionalNotes: data.notas,
+        nextConsultation: data.proximaConsulta ? new Date(data.proximaConsulta).toISOString() : undefined,
+        vaccines: data.vaccines?.map((vaccine: any) => ({
+          catalogId: parseInt(vaccine.vaccineId),
+          applicationDate: new Date(vaccine.date).toISOString(),
+          expirationDate: vaccine.expirationDate ? new Date(vaccine.expirationDate).toISOString() : undefined
+        })),
+        treatment: data.treatments?.map((treatment: any) => ({
+          name: treatment.name,
+          startDate: new Date(treatment.startDate).toISOString(),
+          endDate: treatment.endDate ? new Date(treatment.endDate).toISOString() : undefined
+        }))
+      }
+
+      const result = await consultationService.createConsultation(consultationData)
+      console.log('Consultation created successfully:', result)
+
+      setSubmitSuccess(true)
+
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false)
+      }, 3000)
+
+    } catch (error) {
+      console.error('Error creating consultation:', error)
+      setSubmitError(error instanceof Error ? error.message : 'Error al crear la consulta')
+
+      // Hide error message after 5 seconds
+      setTimeout(() => {
+        setSubmitError(null)
+      }, 5000)
+
+    } finally {
+      setIsSubmitting(false)
+    }
   };
 
   const handleVoiceInput = async () => {
@@ -85,10 +250,11 @@ export default function PetDetailPage() {
 
   const handleSuggestionClick = (suggestion: Suggestion) => {
     console.log('Sugerencia seleccionada:', suggestion)
-    // TODO: Implement logic to use the suggestion in the form
-    // This could copy the suggestion text to clipboard or trigger a form action
   }
 
+  const handleConsultationClick = (consultation: Consultation) => {
+    setConsultation(consultation)
+  }
 
   // Error handling
   if (error) {
@@ -99,7 +265,7 @@ export default function PetDetailPage() {
             <button className="backNavButton" onClick={() => navigate(-1)}>
               ←
             </button>
-            <div className="appTitle">PawsCare</div>
+            <div className="appTitle">PetLink</div>
           </div>
         </div>
         <div className="petPage__content">
@@ -109,7 +275,17 @@ export default function PetDetailPage() {
     );
   }
 
-  if (loading) return <div className="petPage">Cargando…</div>;
+  if (loading) return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',
+      backgroundColor: 'var(--background, #f8fafc)'
+    }}>
+      <Spinner size="large" text="Cargando información de la mascota..." />
+    </div>
+  );
   if (!patient)
     return (
       <div className="petPage">
@@ -145,11 +321,16 @@ export default function PetDetailPage() {
             <button className="backNavButton" onClick={() => navigate(-1)}>
               ←
             </button>
-            <div className="appTitle">PawsCare</div>
+            <div className="appTitle">PetLink</div>
           </div>
           <div className="patientSidebarContent">
             <PatientSidebar
-              patient={patient}
+              patient={{
+                ...patient,
+                ownerName: patient.owners?.[0]?.name || 'No especificado',
+                avatarUrl: patient.profileImageUrl || `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${patient.name}&backgroundColor=c0aede`,
+                age: patient.age || '5 años'
+              }}
               patientDetails={patientDetails}
               onExportClick={() => setOpenExport(true)}
             />
@@ -171,36 +352,168 @@ export default function PetDetailPage() {
               <div className="tabContentContainer">
                 <div className="tabContent">
                   <div className="recordList">
-                    <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text)', fontWeight: 600 }}>📋 Antecedentes Médicos</h2>
+                    <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text)', fontWeight: 600 }}>📋 Resumen Clínico</h2>
 
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Vacunación y Desparasitación</h3>
-                    <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Esquema completo de vacunación al día. Última vacuna DHPP y antirrábica aplicada en diciembre 2023. Tos de las perreras vencida desde junio 2023.</p>
+                    {summaryLoading && (
+                      <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+                        <Spinner size="medium" text="Generando resumen clínico..." />
+                      </div>
+                    )}
 
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Enfermedades Previas</h3>
-                    <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Sin enfermedades graves previas. Historial de salud excelente desde cachorro.</p>
+                    {summaryError && (
+                      <div style={{
+                        padding: '20px',
+                        backgroundColor: '#fee2e2',
+                        color: '#ef4444',
+                        borderRadius: '8px',
+                        marginBottom: '16px'
+                      }}>
+                        Error al cargar el resumen clínico: {summaryError}
+                      </div>
+                    )}
 
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Cirugías</h3>
-                    <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Sin cirugías previas registradas.</p>
+                    {!summaryLoading && !summaryError && clinicalSummary && (
+                      <div style={{ display: 'grid', gap: '20px' }}>
+                        <div style={{
+                          backgroundColor: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '12px',
+                          padding: '20px',
+                          borderLeft: '4px solid var(--brand-500)'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '12px'
+                          }}>
+                            <div style={{
+                              backgroundColor: 'var(--brand-100)',
+                              borderRadius: '8px',
+                              padding: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              📋
+                            </div>
+                            <h3 style={{
+                              margin: 0,
+                              color: 'var(--brand-700)',
+                              fontWeight: 600,
+                              fontSize: '16px'
+                            }}>
+                              Información Básica
+                            </h3>
+                          </div>
+                          <p style={{
+                            margin: 0,
+                            color: 'var(--text)',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-line',
+                            fontSize: '14px'
+                          }}>
+                            {clinicalSummary.basic_information}
+                          </p>
+                        </div>
 
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Alergias Conocidas</h3>
-                    <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>No se han identificado alergias conocidas a medicamentos o alimentos.</p>
+                        <div style={{
+                          backgroundColor: '#f0f9ff',
+                          border: '1px solid #bae6fd',
+                          borderRadius: '12px',
+                          padding: '20px',
+                          borderLeft: '4px solid #0ea5e9'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '12px'
+                          }}>
+                            <div style={{
+                              backgroundColor: '#dbeafe',
+                              borderRadius: '8px',
+                              padding: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              📚
+                            </div>
+                            <h3 style={{
+                              margin: 0,
+                              color: '#075985',
+                              fontWeight: 600,
+                              fontSize: '16px'
+                            }}>
+                              Historial
+                            </h3>
+                          </div>
+                          <p style={{
+                            margin: 0,
+                            color: 'var(--text)',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-line',
+                            fontSize: '14px'
+                          }}>
+                            {clinicalSummary.history}
+                          </p>
+                        </div>
 
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Medicación Actual</h3>
-                    <p style={{ margin: '0 0 24px 0', color: 'var(--text)', lineHeight: '1.4' }}>Sin medicación crónica. Tratamiento antiparasitario preventivo cada 3 meses.</p>
+                        <div style={{
+                          backgroundColor: '#f0fdf4',
+                          border: '1px solid #bbf7d0',
+                          borderRadius: '12px',
+                          padding: '20px',
+                          borderLeft: '4px solid #22c55e'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '12px'
+                          }}>
+                            <div style={{
+                              backgroundColor: '#dcfce7',
+                              borderRadius: '8px',
+                              padding: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              🩺
+                            </div>
+                            <h3 style={{
+                              margin: 0,
+                              color: '#15803d',
+                              fontWeight: 600,
+                              fontSize: '16px'
+                            }}>
+                              Última Consulta
+                            </h3>
+                          </div>
+                          <p style={{
+                            margin: 0,
+                            color: 'var(--text)',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-line',
+                            fontSize: '14px'
+                          }}>
+                            {clinicalSummary.last_consultation}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
-                    <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--text)', fontWeight: 600 }}>🩺 Consulta último evento</h2>
-
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Motivo de la consulta / síntomas observados</h3>
-                    <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Control preventivo de rutina. Propietario refiere que el animal se encuentra en buen estado general, con apetito normal y actividad habitual. Sin síntomas aparentes de enfermedad.</p>
-
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Hallazgos relevantes del examen clínico</h3>
-                    <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Peso estable en 28kg, dentro del rango ideal para la raza. Mucosas rosadas y húmedas, hidratación adecuada. Auscultación cardiopulmonar normal. Temperatura corporal dentro de parámetros normales (38.5°C). Palpación abdominal sin alteraciones.</p>
-
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Diagnóstico</h3>
-                    <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Paciente en buen estado general de salud. Sin signos de enfermedad o malestar detectados. Todos los parámetros evaluados se encuentran dentro de los rangos normales para la especie y edad.</p>
-
-                    <h3 style={{ margin: '0 0 4px 0', color: 'var(--brand-600)', fontWeight: 600 }}>Tratamiento indicado o recomendaciones</h3>
-                    <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.4' }}>Continuar con dieta balanceada y ejercicio regular. Mantener rutina de cuidados preventivos. Próximo control programado en 6 meses. Actualizar vacunación antirrábica en marzo 2024. Monitorear peso durante controles de rutina.</p>
+                    {!summaryLoading && !summaryError && !clinicalSummary && (
+                      <div style={{
+                        padding: '20px',
+                        textAlign: 'center',
+                        color: 'var(--muted)'
+                      }}>
+                        No hay resumen clínico disponible para esta mascota.
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -220,158 +533,79 @@ export default function PetDetailPage() {
                   </div>
 
                   <div className="recordList historiaList">
-                    {recordsLoading && <div className="muted">Cargando…</div>}
-                    {!recordsLoading &&
-                      filteredRecords.map((record: PatientRecord) => (
+                    {filteredRecords.length === 0 && (
+                      <div className="muted">No hay consultas registradas.</div>
+                    )}
+                    {filteredRecords.map((record: any) => (
+                      <div
+                        key={record.id}
+                        className={`expandableRecord ${expandedRecordId === record.id
+                          ? "expandableRecord--expanded"
+                          : ""
+                          }`}
+                      >
                         <div
-                          key={record.id}
-                          className={`expandableRecord ${expandedRecordId === record.id
-                            ? "expandableRecord--expanded"
-                            : ""
-                            }`}
+                          className="recordItem"
+                          onClick={() => toggleRecordExpansion(record.id)}
                         >
-                          <div
-                            className="recordItem"
-                            onClick={() => toggleRecordExpansion(record.id)}
-                          >
-                            <div className="recordItem__icon">
-                              {record.type === "Vacunación"
-                                ? "💉"
-                                : record.type === "Tratamiento"
-                                  ? "🧪"
-                                  : "🩺"}
-                            </div>
-                            <div className="recordItem__body">
-                              <div className="recordItem__title">{record.title}</div>
-                              <div className="recordItem__meta">
-                                {new Date(record.date).toLocaleDateString()} ·{" "}
-                                {record.doctor}
-                              </div>
-                            </div>
-                            <div className="recordItem__actions">
-                              <div className="expandIcon">
-                                {expandedRecordId === record.id ? "▲" : "▼"}
-                              </div>
-                              <span className="badge">{record.type}</span>
+                          <div className="recordItem__icon">
+                            {record.type === "Vacunación" ? "💉" :
+                             record.type === "Tratamiento" ? "💊" :
+                             record.type === "Control" ? "📋" :
+                             record.type === "Emergencia" ? "🚨" :
+                             record.type === "Cirugía" ? "🔪" :
+                             record.type === "Estética" ? "✂️" :
+                             record.type === "Revisión" ? "🔍" : "🩺"}
+                          </div>
+                          <div className="recordItem__body">
+                            <div className="recordItem__title">{record.title}</div>
+                            <div className="recordItem__meta">
+                              {new Date(record.date).toLocaleDateString()}
                             </div>
                           </div>
-
-                          {expandedRecordId === record.id && (
-                            <div className="recordExpansion">
-                              <div className="recordExpansion__content">
-                                <div className="recordExpansion__section">
-                                  <h4 className="recordExpansion__sectionTitle">
-                                    🔍 Hallazgos (Examen físico)
-                                  </h4>
-                                  <p className="recordExpansion__text">
-                                    {[
-                                      record.temperature &&
-                                      `Temperatura: ${record.temperature}`,
-                                      record.weight && `Peso: ${record.weight}`,
-                                      record.heartRate &&
-                                      `Frecuencia cardíaca: ${record.heartRate}`,
-                                    ]
-                                      .filter(Boolean)
-                                      .join(". ") ||
-                                      (record.type === "Consulta"
-                                        ? "Examen físico completo realizado. Mucosas rosadas y húmedas, hidratación adecuada. Auscultación cardiopulmonar normal. Palpación abdominal sin alteraciones. Temperatura corporal dentro de parámetros normales."
-                                        : record.type === "Vacunación"
-                                          ? "Evaluación previa a vacunación: animal en buen estado general, temperatura normal, sin signos de enfermedad. Condición física apropiada para inmunización."
-                                          : "Evaluación física específica para procedimiento. Signos vitales estables, condición general satisfactoria. Sin contraindicaciones para tratamiento propuesto.")}
-                                  </p>
-                                </div>
-
-                                <div className="recordExpansion__section">
-                                  <h4 className="recordExpansion__sectionTitle">
-                                    🩺 Diagnóstico
-                                  </h4>
-                                  <p className="recordExpansion__text">
-                                    {record.type === "Consulta"
-                                      ? "Paciente presenta buen estado general de salud. No se observan signos de enfermedad o malestar. Todos los parámetros evaluados se encuentran dentro de los rangos normales para la especie y edad del animal."
-                                      : record.type === "Vacunación"
-                                        ? "Animal en condiciones óptimas para recibir inmunización. No se observan contraindicaciones ni antecedentes de reacciones adversas a vacunaciones previas."
-                                        : "Evaluación completa realizada. Condición del paciente estable y apropiada para el procedimiento programado. Se confirma indicación médica para el tratamiento propuesto."}
-                                  </p>
-                                </div>
-
-                                <div className="recordExpansion__section">
-                                  <h4 className="recordExpansion__sectionTitle">
-                                    💊 Tratamiento
-                                  </h4>
-                                  <p className="recordExpansion__text">
-                                    {record.medication ||
-                                      (record.type === "Consulta"
-                                        ? "Se recomienda continuar con dieta balanceada y ejercicio regular. Mantener rutina de cuidados preventivos. Suplementación vitamínica según necesidades específicas de la raza y edad."
-                                        : record.type === "Vacunación"
-                                          ? "No se requiere medicación post-vacunación. Observar al animal por 24-48 horas para detectar posibles reacciones. Evitar baños y ejercicio intenso las primeras 48 horas."
-                                          : "Plan terapéutico establecido según condición específica del paciente. Seguimiento de evolución mediante controles programados. Ajuste de dosis según respuesta clínica y peso corporal.")}
-                                  </p>
-                                </div>
-
-                                <div className="recordExpansion__section">
-                                  <h4 className="recordExpansion__sectionTitle">
-                                    📋 Próximos pasos
-                                  </h4>
-                                  <p className="recordExpansion__text">
-                                    {record.nextAppointment
-                                      ? `Control programado para: ${new Date(
-                                        record.nextAppointment
-                                      ).toLocaleDateString()}. Evaluación de evolución y ajuste de tratamiento según corresponda.`
-                                      : record.type === "Consulta"
-                                        ? "Programar control preventivo en 6 meses. Contactar clínica ante cualquier cambio en comportamiento, apetito o actividad. Mantener calendario de vacunación y desparasitación actualizado."
-                                        : record.type === "Vacunación"
-                                          ? "Próxima vacunación según calendario: revisar fechas de refuerzo anual. Agendar control general en 3-4 meses. Actualizar cartilla sanitaria con fecha y lote de vacuna aplicada."
-                                          : "Seguimiento personalizado según evolución del caso. Control post-tratamiento en 7-10 días. Evaluación de respuesta terapéutica y posibles ajustes en próxima visita."}
-                                  </p>
-                                </div>
-
-                                <div className="recordExpansion__section">
-                                  <h4 className="recordExpansion__sectionTitle">
-                                    📝 Notas adicionales
-                                  </h4>
-                                  <p className="recordExpansion__text">
-                                    {[
-                                      record.description && record.description,
-                                      record.anesthesia &&
-                                      `Anestesia utilizada: ${record.anesthesia}`,
-                                      record.duration &&
-                                      `Duración del procedimiento: ${record.duration}`,
-                                    ]
-                                      .filter(Boolean)
-                                      .join(". ") ||
-                                      (record.type === "Consulta"
-                                        ? "Propietario informado sobre estado de salud del animal y recomendaciones de cuidado. Animal colaborativo durante examen. Se entregan indicaciones por escrito."
-                                        : record.type === "Vacunación"
-                                          ? "Vacunación realizada sin complicaciones. Propietario instruido sobre cuidados post-vacunación y signos de alarma. Certificado de vacunación actualizado y entregado."
-                                          : "Procedimiento completado satisfactoriamente. Propietario informado sobre cuidados específicos post-tratamiento. Se establece plan de seguimiento personalizado.")}
-                                  </p>
-                                </div>
-
-                                {record.nextAppointment && (
-                                  <div className="recordExpansion__footer">
-                                    📅 <strong>Próxima cita:</strong>{" "}
-                                    {new Date(
-                                      record.nextAppointment
-                                    ).toLocaleDateString()}
-                                  </div>
-                                )}
-
-                                {record.attachments && record.attachments.length > 0 && (
-                                  <div className="recordExpansion__attachments">
-                                    <h5>📎 Archivos adjuntos</h5>
-                                    {record.attachments.map((attachment) => (
-                                      <a key={attachment.id} href={attachment.url} className="attachment__link">
-                                        📄 {attachment.name}
-                                      </a>
-                                    ))}
-                                  </div>
-                                )}
-
-                              </div>
+                          <div className="recordItem__actions">
+                            <div className="expandIcon">
+                              {expandedRecordId === record.id ? "▲" : "▼"}
                             </div>
-                          )}
+                            <span className="badge">{record.type}</span>
+                          </div>
                         </div>
-                      ))}
+
+                        {expandedRecordId === record.id && (
+                          <div className="recordExpansion">
+                            <div className="recordExpansion__content">
+                              {record.findings && (
+                                <div className="recordExpansion__section">
+                                  <h4 className="recordExpansion__sectionTitle">🔍 Hallazgos</h4>
+                                  <p className="recordExpansion__text">{record.findings}</p>
+                                </div>
+                              )}
+
+                              {record.diagnosis && (
+                                <div className="recordExpansion__section">
+                                  <h4 className="recordExpansion__sectionTitle">🩺 Diagnóstico</h4>
+                                  <p className="recordExpansion__text">{record.diagnosis}</p>
+                                </div>
+                              )}
+
+                              {record.nextSteps && (
+                                <div className="recordExpansion__section">
+                                  <h4 className="recordExpansion__sectionTitle">📋 Próximos pasos</h4>
+                                  <p className="recordExpansion__text">{record.nextSteps}</p>
+                                </div>
+                              )}
+
+                              {record.additionalNotes && (
+                                <div className="recordExpansion__section">
+                                  <h4 className="recordExpansion__sectionTitle">📝 Notas adicionales</h4>
+                                  <p className="recordExpansion__text">{record.additionalNotes}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -381,94 +615,78 @@ export default function PetDetailPage() {
               <div className="tabContentContainer">
                 <div className="tabContent">
                   <div className="recordList vacunasList">
-                    <div className="vaccineItem">
-                      <div className="vaccineItem__icon">💉</div>
-                      <div className="vaccineItem__body">
-                        <div className="vaccineItem__title">DHPP</div>
-                        <div className="vaccineItem__meta">9/12/2023</div>
-                      </div>
-                      <div className="vaccineItem__right">
-                        <span className="vaccineBadge vaccineBadge--current">
-                          Al día
-                        </span>
-                      </div>
-                    </div>
+                    {!patient.vaccines || patient.vaccines.length === 0 ? (
+                      <div className="muted">No hay vacunas registradas.</div>
+                    ) : (
+                      patient.vaccines.map((vaccine: any) => (
+                        <div key={vaccine.id} className="vaccineItem">
+                          <div className="vaccineItem__icon">💉</div>
+                          <div className="vaccineItem__body">
+                            <div className="vaccineItem__title">{vaccine.vaccine.name}</div>
+                            <div className="vaccineItem__meta">
+                              {new Date(vaccine.applicationDate).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="vaccineItem__right">
+                            {vaccine.expirationDate && (
+                              <span className={`vaccineBadge ${
+                                new Date(vaccine.expirationDate) > new Date()
+                                  ? 'vaccineBadge--current'
+                                  : 'vaccineBadge--expired'
+                              }`}>
+                                {new Date(vaccine.expirationDate) > new Date()
+                                  ? 'Al día'
+                                  : 'Vencida'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
-                    <div className="vaccineItem">
-                      <div className="vaccineItem__icon">💉</div>
-                      <div className="vaccineItem__body">
-                        <div className="vaccineItem__title">Antirrábica</div>
-                        <div className="vaccineItem__meta">9/12/2023</div>
-                      </div>
-                      <div className="vaccineItem__right">
-                        <span className="vaccineBadge vaccineBadge--current">
-                          Al día
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="vaccineItem">
-                      <div className="vaccineItem__icon">💉</div>
-                      <div className="vaccineItem__body">
-                        <div className="vaccineItem__title">Leptospirosis</div>
-                        <div className="vaccineItem__meta">22/3/2023</div>
-                      </div>
-                      <div className="vaccineItem__right">
-                        <span className="vaccineBadge vaccineBadge--expired">
-                          Vencida
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="vaccineItem">
-                      <div className="vaccineItem__icon">💉</div>
-                      <div className="vaccineItem__body">
-                        <div className="vaccineItem__title">Parvovirus</div>
-                        <div className="vaccineItem__meta">28/10/2023</div>
-                      </div>
-                      <div className="vaccineItem__right">
-                        <span className="vaccineBadge vaccineBadge--current">
-                          Al día
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="vaccineItem">
-                      <div className="vaccineItem__icon">💉</div>
-                      <div className="vaccineItem__body">
-                        <div className="vaccineItem__title">Coronavirus</div>
-                        <div className="vaccineItem__meta">5/1/2023</div>
-                      </div>
-                      <div className="vaccineItem__right">
-                        <span className="vaccineBadge vaccineBadge--expired">
-                          Vencida
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="vaccineItem">
-                      <div className="vaccineItem__icon">💉</div>
-                      <div className="vaccineItem__body">
-                        <div className="vaccineItem__title">Lyme</div>
-                        <div className="vaccineItem__meta">18/11/2023</div>
-                      </div>
-                      <div className="vaccineItem__right">
-                        <span className="vaccineBadge vaccineBadge--current">
-                          Al día
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="vaccineItem">
-                      <div className="vaccineItem__icon">💉</div>
-                      <div className="vaccineItem__body">
-                        <div className="vaccineItem__title">Giardia</div>
-                        <div className="vaccineItem__meta">12/4/2023</div>
-                      </div>
-                      <div className="vaccineItem__right">
-                        <span className="vaccineBadge vaccineBadge--expired">Vencida</span>
-                      </div>
-                    </div>
+            {activeTab === 'tratamientos' && (
+              <div className="tabContentContainer">
+                <div className="tabContent">
+                  <div className="recordList vacunasList">
+                    {!patient.treatments || patient.treatments.length === 0 ? (
+                      <div className="muted">No hay tratamientos registrados.</div>
+                    ) : (
+                      patient.treatments.map((treatment: any) => (
+                        <div key={treatment.id} className="vaccineItem">
+                          <div className="vaccineItem__icon">💊</div>
+                          <div className="vaccineItem__body">
+                            <div className="vaccineItem__title">{treatment.name}</div>
+                            <div className="vaccineItem__meta">
+                              Inicio: {new Date(treatment.startDate).toLocaleDateString()}
+                              {treatment.endDate && (
+                                <> • Fin: {new Date(treatment.endDate).toLocaleDateString()}</>
+                              )}
+                            </div>
+                          </div>
+                          <div className="vaccineItem__right">
+                            {treatment.endDate ? (
+                              <span className={`vaccineBadge ${
+                                new Date(treatment.endDate) > new Date()
+                                  ? 'vaccineBadge--current'
+                                  : 'vaccineBadge--expired'
+                              }`}>
+                                {new Date(treatment.endDate) > new Date()
+                                  ? 'En curso'
+                                  : 'Finalizado'}
+                              </span>
+                            ) : (
+                              <span className="vaccineBadge vaccineBadge--current">
+                                En curso
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
@@ -481,25 +699,51 @@ export default function PetDetailPage() {
                 height: '100%'
               }}>
                 <div style={{
-                  flex: isListening ? '0 1 auto' : 1, // Don't grow when listening, allow shrinking
-                  overflow: 'auto', // Scroll only if needed
-                  marginBottom: '16px' // Space between form and buttons
+                  flex: isListening ? '0 1 auto' : 1,
+                  overflow: 'auto',
+                  marginBottom: '16px'
                 }} className="recordList">
                   <AddRecordForm
+                    ref={formRef}
                     onSave={handleSaveRecord}
                     onVoiceInput={handleVoiceInput}
+                    petId={id}
+                    initialData={consultation ?? undefined}
                   />
                 </div>
 
-                {/* Buttons bar outside container */}
+                {/* Status Messages */}
+                {(submitSuccess || submitError) && (
+                  <div style={{
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    marginTop: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    backgroundColor: submitSuccess ? '#dcfce7' : '#fee2e2',
+                    color: submitSuccess ? '#166534' : '#dc2626',
+                    border: `1px solid ${submitSuccess ? '#bbf7d0' : '#fecaca'}`
+                  }}>
+                    <span>{submitSuccess ? '✅' : '❌'}</span>
+                    <span>
+                      {submitSuccess
+                        ? 'Consulta guardada exitosamente'
+                        : `Error: ${submitError}`
+                      }
+                    </span>
+                  </div>
+                )}
+
                 <div className="formActionsExternal" style={{
-                  height: '60px', // Fixed height to make it shorter
-                  alignItems: 'center', // Center buttons vertically
-                  marginTop: 'auto' // Push to bottom
+                  height: '60px',
+                  alignItems: 'center',
+                  marginTop: submitSuccess || submitError ? '16px' : 'auto'
                 }}>
                   <button
                     className={`btn ${isListening ? 'btn--danger' : 'btn--ghost'} voiceBtn`}
                     onClick={handleVoiceInput}
+                    disabled={isSubmitting}
                     style={{
                       backgroundColor: isListening ? '#ef4444' : undefined,
                       color: isListening ? 'white' : undefined
@@ -507,8 +751,21 @@ export default function PetDetailPage() {
                   >
                     {isListening ? '⏹️ Parar grabación' : '🎤 Dictar por voz'}
                   </button>
-                  <button className="btn btn--primary" onClick={handleSaveRecord}>
-                    Guardar Entrada
+                  <button
+                    className="btn btn--primary"
+                    onClick={() => formRef.current?.submitForm()}
+                    disabled={isSubmitting || isListening}
+                  >
+                    {isSubmitting ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="spinner spinner--small">
+                          <div className="spinner__circle"></div>
+                        </div>
+                        <span>Guardando...</span>
+                      </div>
+                    ) : (
+                      'Guardar Entrada'
+                    )}
                   </button>
                 </div>
               </div>
@@ -532,12 +789,13 @@ export default function PetDetailPage() {
             <div style={{
               flex: 1,
               overflow: 'auto',
-              padding: '0' // Same as tabs content containers (no padding in container)
+              padding: '0'
             }}>
               <SuggestionsPanel
                 transcription={finalText}
                 onSuggestionClick={handleSuggestionClick}
                 className="suggestions-panel"
+                onConsultationClick={handleConsultationClick}
               />
             </div>
           </div>
