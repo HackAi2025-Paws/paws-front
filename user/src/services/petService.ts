@@ -293,10 +293,10 @@ class PetServiceImpl implements PetService {
         breed: pet.breed || 'Raza no especificada',
         birthDate: pet.dateOfBirth ? new Date(pet.dateOfBirth).toISOString().split('T')[0] : '',
         age: this.calculateAge(pet.dateOfBirth || ''),
-        species: pet.species ? (pet.species.toLowerCase() === 'dog' ? 'perro' : 'gato') : 'perro',
+        species: pet.species ? (pet.species === 'DOG' ? 'perro' : 'gato') : 'perro',
         weight: pet.weight ? { min: pet.weight, max: pet.weight, unit: 'kg' } : { min: 0, max: 0, unit: 'kg' },
         color: '',
-        gender: pet.sex ? (pet.sex.toLowerCase() === 'male' ? 'macho' : 'hembra') : 'no especificado',
+        gender: pet.sex ? (pet.sex === 'MALE' ? 'macho' : 'hembra') : 'no especificado',
         microchipId: '',
         ownerPhone: pet.owners?.[0]?.phone || '',
         medicalConditions: [],
@@ -335,8 +335,23 @@ class PetServiceImpl implements PetService {
         throw new Error(response.error || 'Pet not found')
       }
 
-      const petData = (response as ApiResponse<BackendPet>).data!
-      console.log('📋 Pet details from backend:', petData)
+      const responseData = (response as ApiResponse<BackendPet | BackendPet[]>).data!
+      console.log('📋 Pet details from backend:', responseData)
+      
+      // El backend puede devolver un array o un objeto individual
+      // Si es un array, buscar la mascota con el ID correcto
+      let petData: BackendPet
+      if (Array.isArray(responseData)) {
+        const targetPet = responseData.find(pet => pet.id === parseInt(id))
+        if (!targetPet) {
+          throw new Error('Pet not found in response array')
+        }
+        petData = targetPet
+      } else {
+        petData = responseData
+      }
+      
+      console.log('📋 Selected pet data:', petData)
       
       // Mapear respuesta detallada del backend al formato frontend
       const mappedPet: Pet = {
@@ -345,10 +360,10 @@ class PetServiceImpl implements PetService {
         breed: petData.breed || 'Raza no especificada',
         birthDate: petData.dateOfBirth ? new Date(petData.dateOfBirth).toISOString().split('T')[0] : '',
         age: this.calculateAge(petData.dateOfBirth || ''),
-        species: petData.species ? (petData.species.toLowerCase() === 'dog' ? 'perro' : 'gato') : 'perro',
+        species: petData.species ? (petData.species === 'DOG' ? 'perro' : 'gato') : 'perro',
         weight: petData.weight ? { min: petData.weight, max: petData.weight, unit: 'kg' } : { min: 0, max: 0, unit: 'kg' },
         color: '',
-        gender: petData.sex ? (petData.sex.toLowerCase() === 'male' ? 'macho' : 'hembra') : 'no especificado',
+        gender: petData.sex ? (petData.sex === 'MALE' ? 'macho' : 'hembra') : 'no especificado',
         microchipId: '',
         ownerPhone: petData.owners?.[0]?.phone || '',
         medicalConditions: [],
