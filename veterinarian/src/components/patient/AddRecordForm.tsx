@@ -1,6 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useImperativeHandle, forwardRef } from 'react'
 import { apiClient } from '../../services/apiClient'
 import type { Consultation } from '../../types/consultations'
+
+export interface AddRecordFormRef {
+  submitForm: () => void
+}
 
 interface AddRecordFormProps {
   onSave: (data: any) => void
@@ -59,7 +63,7 @@ interface BackendConsultation {
   nextConsultation?: string // ISO date string
 }
 
-export default function AddRecordForm({ petId, initialData }: AddRecordFormProps) {
+const AddRecordForm = forwardRef<AddRecordFormRef, AddRecordFormProps>(({ onSave, onVoiceInput, petId, initialData }, ref) => {
   // Early validation - petId is required
   if (!petId || petId.trim() === '') {
     return (
@@ -79,6 +83,7 @@ export default function AddRecordForm({ petId, initialData }: AddRecordFormProps
   }
 
   const [entryType, setEntryType] = useState<EntryType>('consulta')
+  const [validationError, setValidationError] = useState<string>('')
   const [formData, setFormData] = useState({
     motivo: initialData?.chiefComplaint || '',
     hallazgos: initialData?.findings || '',
@@ -134,7 +139,34 @@ export default function AddRecordForm({ petId, initialData }: AddRecordFormProps
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear validation error when user starts typing in the motivo field
+    if (field === 'motivo' && validationError) {
+      setValidationError('')
+    }
   }
+
+  const handleSubmit = () => {
+    // Validate required fields
+    if (!formData.motivo || formData.motivo.trim() === '') {
+      setValidationError('El motivo de consulta es obligatorio')
+      return
+    }
+
+    // Clear validation error if form is valid
+    setValidationError('')
+
+    const allData = {
+      entryType,
+      ...formData,
+      vaccines,
+      treatments
+    }
+    onSave(allData)
+  }
+
+  useImperativeHandle(ref, () => ({
+    submitForm: handleSubmit
+  }))
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -292,13 +324,30 @@ export default function AddRecordForm({ petId, initialData }: AddRecordFormProps
             <div className="formGroup">
               <label className="fieldLabel">Motivo de consulta *</label>
               <textarea
-                className="fieldTextarea"
+                className={`fieldTextarea ${validationError ? 'fieldTextarea--error' : ''}`}
                 placeholder="Describe el motivo de la consulta..."
                 value={formData.motivo}
                 onChange={(e) => handleInputChange('motivo', e.target.value)}
                 rows={3}
                 required
+                style={{
+                  borderColor: validationError ? '#ef4444' : undefined,
+                  backgroundColor: validationError ? '#fef2f2' : undefined
+                }}
               />
+              {validationError && (
+                <div style={{
+                  color: '#ef4444',
+                  fontSize: '14px',
+                  marginTop: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <span>⚠️</span>
+                  {validationError}
+                </div>
+              )}
             </div>
 
             <div className="formGroup">
@@ -673,4 +722,6 @@ export default function AddRecordForm({ petId, initialData }: AddRecordFormProps
       </div>
     </div>
   )
-}
+})
+
+export default AddRecordForm

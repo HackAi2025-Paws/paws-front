@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePetById } from '../hooks/usePets'
 import { useClinicalSummary } from '../hooks/useClinicalSummary'
+import { useUser } from '../hooks/useUser'
+import { consultationService } from '../services/consultationService'
 import PatientSidebar from '../components/patient/PatientSidebar'
 import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
-import AddRecordForm from '../components/patient/AddRecordForm'
+import AddRecordForm, { type AddRecordFormRef } from '../components/patient/AddRecordForm'
 import SuggestionsPanel from '../components/patient/suggestions/SuggestionsPanel'
 import MedicalTranscriptionBox from '../components/patient/MedicalTranscriptionBox'
 import Spinner from '../components/ui/Spinner'
@@ -63,7 +65,8 @@ export default function PetDetailPage() {
   const petId = parseInt(id)
   const { pet: patient, loading, error } = usePetById(petId)
   const { summary: clinicalSummary, loading: summaryLoading, error: summaryError } = useClinicalSummary(petId)
-
+  const { user: userData } = useUser()
+  const formRef = useRef<AddRecordFormRef>(null)
 
   const [search, setSearch] = useState('')
   const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null)
@@ -71,6 +74,9 @@ export default function PetDetailPage() {
   const [activeTab, setActiveTab] = useState('resumen')
   const { finalText, toggleListening, isListening, clearText } = useSpeechToText();
   const [consultation, setConsultation] = useState<Consultation | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   // hook que sirve para cuando si recibis me entendes osea para contar la cantidad de final texts (juli arregla tu hook)
   const [finalTextCounter, setFinalTextCounter] = useState(0);
@@ -142,8 +148,83 @@ export default function PetDetailPage() {
     setOpenExport(false);
   };
 
-  const handleSaveRecord = (data: any) => {
-    console.log("Guardando entrada:", data);
+  const handleSaveRecord = async (data: any) => {
+    if (!userData || !id) {
+      console.error('Missing user data or pet ID')
+      return
+    }
+
+    // Validate required fields
+    if (!data.motivo || data.motivo.trim() === '') {
+      setSubmitError('El motivo de consulta es obligatorio')
+      setTimeout(() => setSubmitError(null), 5000)
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitError(null)
+    setSubmitSuccess(false)
+
+    try {
+      console.log('Form data received:', data)
+
+      // Map entry types to consultation types
+      const entryTypeMap: Record<string, string> = {
+        'consulta': 'Consulta General',
+        'vacuna': 'Vacunación',
+        'tratamiento': 'Tratamiento',
+        'control': 'Control',
+        'emergencia': 'Emergencia',
+        'cirugia': 'Cirugía',
+        'estetica': 'Estética',
+        'revision': 'Revisión'
+      }
+
+      const consultationData = {
+        petId: parseInt(id),
+        userId: userData.id,
+        consultationType: entryTypeMap[data.entryType] || 'Consulta General',
+        date: data.fechaConsulta ? new Date(data.fechaConsulta).toISOString() : new Date().toISOString(),
+        chiefComplaint: data.motivo || 'Sin especificar',
+        findings: data.hallazgos,
+        diagnosis: data.diagnostico,
+        nextSteps: data.proximosPasos,
+        additionalNotes: data.notas,
+        nextConsultation: data.proximaConsulta ? new Date(data.proximaConsulta).toISOString() : undefined,
+        vaccines: data.vaccines?.map((vaccine: any) => ({
+          catalogId: parseInt(vaccine.vaccineId),
+          applicationDate: new Date(vaccine.date).toISOString(),
+          expirationDate: vaccine.expirationDate ? new Date(vaccine.expirationDate).toISOString() : undefined
+        })),
+        treatment: data.treatments?.map((treatment: any) => ({
+          name: treatment.name,
+          startDate: new Date(treatment.startDate).toISOString(),
+          endDate: treatment.endDate ? new Date(treatment.endDate).toISOString() : undefined
+        }))
+      }
+
+      const result = await consultationService.createConsultation(consultationData)
+      console.log('Consultation created successfully:', result)
+
+      setSubmitSuccess(true)
+
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false)
+      }, 3000)
+
+    } catch (error) {
+      console.error('Error creating consultation:', error)
+      setSubmitError(error instanceof Error ? error.message : 'Error al crear la consulta')
+
+      // Hide error message after 5 seconds
+      setTimeout(() => {
+        setSubmitError(null)
+      }, 5000)
+
+    } finally {
+      setIsSubmitting(false)
+    }
   };
 
   const handleVoiceInput = async () => {
@@ -559,6 +640,7 @@ export default function PetDetailPage() {
                   marginBottom: '16px'
                 }} className="recordList">
                   <AddRecordForm
+                    ref={formRef}
                     onSave={handleSaveRecord}
                     onVoiceInput={handleVoiceInput}
                     petId={id}
@@ -566,14 +648,38 @@ export default function PetDetailPage() {
                   />
                 </div>
 
+                {/* Status Messages */}
+                {(submitSuccess || submitError) && (
+                  <div style={{
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    marginTop: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    backgroundColor: submitSuccess ? '#dcfce7' : '#fee2e2',
+                    color: submitSuccess ? '#166534' : '#dc2626',
+                    border: `1px solid ${submitSuccess ? '#bbf7d0' : '#fecaca'}`
+                  }}>
+                    <span>{submitSuccess ? '✅' : '❌'}</span>
+                    <span>
+                      {submitSuccess
+                        ? 'Consulta guardada exitosamente'
+                        : `Error: ${submitError}`
+                      }
+                    </span>
+                  </div>
+                )}
+
                 <div className="formActionsExternal" style={{
                   height: '60px',
                   alignItems: 'center',
-                  marginTop: 'auto'
+                  marginTop: submitSuccess || submitError ? '16px' : 'auto'
                 }}>
                   <button
                     className={`btn ${isListening ? 'btn--danger' : 'btn--ghost'} voiceBtn`}
                     onClick={handleVoiceInput}
+                    disabled={isSubmitting}
                     style={{
                       backgroundColor: isListening ? '#ef4444' : undefined,
                       color: isListening ? 'white' : undefined
@@ -581,8 +687,21 @@ export default function PetDetailPage() {
                   >
                     {isListening ? '⏹️ Parar grabación' : '🎤 Dictar por voz'}
                   </button>
-                  <button className="btn btn--primary" onClick={handleSaveRecord}>
-                    Guardar Entrada
+                  <button
+                    className="btn btn--primary"
+                    onClick={() => formRef.current?.submitForm()}
+                    disabled={isSubmitting || isListening}
+                  >
+                    {isSubmitting ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="spinner spinner--small">
+                          <div className="spinner__circle"></div>
+                        </div>
+                        <span>Guardando...</span>
+                      </div>
+                    ) : (
+                      'Guardar Entrada'
+                    )}
                   </button>
                 </div>
               </div>
