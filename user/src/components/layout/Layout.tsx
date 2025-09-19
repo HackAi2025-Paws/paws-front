@@ -2,7 +2,7 @@ import React from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Navigation } from './Navigation'
 import { useAppSelector } from '../../hooks'
-import { useAuth } from '../../modules/auth/AuthContext'
+import { useAuth } from '../../modules/auth/hooks'
 import { env } from '../../config/env'
 
 export const Layout: React.FC = () => {

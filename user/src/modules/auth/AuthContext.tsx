@@ -1,17 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import type { ReactNode } from 'react'
-import type { AuthClient, AuthSession, LoginInput, RegisterInput, User } from './types'
-
-type AuthContextValue = {
-  user: User | null
-  session: AuthSession | null
-  isLoading: boolean
-  login: (input: LoginInput) => Promise<void>
-  register: (input: RegisterInput) => Promise<void>
-  logout: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+import type { AuthClient, AuthSession, LoginInput, RegisterInput } from './types'
+import { AuthContext, type AuthContextValue } from './context'
 
 export function AuthProvider({ client, children }: { client: AuthClient; children: ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(null)
@@ -30,7 +20,7 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
     }
   }, [client])
 
-  async function login(input: LoginInput) {
+  const login = useCallback(async (input: LoginInput) => {
     setIsLoading(true)
     try {
       const s = await client.login(input)
@@ -38,9 +28,9 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [client])
 
-  async function register(input: RegisterInput) {
+  const register = useCallback(async (input: RegisterInput) => {
     setIsLoading(true)
     try {
       const s = await client.register(input)
@@ -48,9 +38,9 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [client])
 
-  async function logout() {
+  const logout = useCallback(async () => {
     setIsLoading(true)
     try {
       await client.logout()
@@ -58,18 +48,14 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [client])
 
   const value: AuthContextValue = useMemo(
     () => ({ user: session?.user ?? null, session, isLoading, login, register, logout }),
-    [session, isLoading]
+    [session, isLoading, login, register, logout]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth debe usarse dentro de <AuthProvider>')
-  return ctx
-}
+

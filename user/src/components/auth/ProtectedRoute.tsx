@@ -1,7 +1,7 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAppSelector } from '../../hooks'
-import { useAuth } from '../../modules/auth/AuthContext'
+import { useAuth } from '../../modules/auth/hooks'
 import { env } from '../../config/env'
 
 interface ProtectedRouteProps {
