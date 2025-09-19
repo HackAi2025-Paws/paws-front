@@ -19,9 +19,6 @@ export default function QuestionSuggestions({
   onRetry
 }: QuestionSuggestionsProps) {
 
-  // Removed unused function
-  // const getPriorityColor = (priority: string) => { ... }
-
   const getPriorityDotColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'bg-red-500';

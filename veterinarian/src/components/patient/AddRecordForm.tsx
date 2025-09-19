@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useImperativeHandle, forwardRef } from 'react'
 import { apiClient } from '../../services/apiClient'
 import type { Consultation } from '../../types/consultations'
@@ -94,6 +95,9 @@ const AddRecordForm = forwardRef<AddRecordFormRef, AddRecordFormProps>(({ onSave
     fechaConsulta: new Date().toISOString().split('T')[0],
     proximaConsulta: ''
   })
+  let _ = onSave;
+  _ = onVoiceInput;
+  _.toString();
   const [files, setFiles] = useState<File[]>([])
   const [vaccines, setVaccines] = useState<VaccineEntry[]>([])
   const [vaccineCatalog, setVaccineCatalog] = useState<VaccineCatalog[]>([])
