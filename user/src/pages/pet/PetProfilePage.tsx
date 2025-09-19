@@ -6,11 +6,11 @@ import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { setSelectedPet } from '../../store/petsSlice'
-import { calculateAge, formatDate } from '../../lib/utils'
+import { calculateAge } from '../../lib/utils'
 import { exportPetHistoryToPDF } from '../../lib/pdfExport'
 import { petService } from '../../services/petService'
 import type { ConsultationRecord } from '../../types/index.js'
-import { Calendar, Syringe, Stethoscope, Edit, Weight, Cake, Download, FileText } from 'lucide-react'
+import { Syringe, Edit, Weight, Cake, Download, FileText } from 'lucide-react'
 
 export const PetProfilePage: React.FC = () => {
   const { petId } = useParams<{ petId: string }>()

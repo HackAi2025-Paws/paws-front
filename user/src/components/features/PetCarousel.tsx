@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Card, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
 import type { Pet } from '../../types/index.js'
-import { Plus, Calendar, Weight, Cake, Heart, Stethoscope, MapPin } from 'lucide-react'
+import { Plus, Calendar, Weight, Stethoscope } from 'lucide-react'
 
 interface PetCarouselProps {
   pets: Pet[]
@@ -58,7 +58,7 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
   }
 
   // Funciones simplificadas - todas las tarjetas se ven igual
-  const isCardActive = (index: number) => index === currentIndex
+  // const isCardActive = (index: number) => index === currentIndex
 
   if (pets.length === 0) {
     return (
@@ -98,8 +98,8 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {pets.map((pet, index) => {
-            const isActive = isCardActive(index)
+          {pets.map((pet, _index) => {
+            // const isActive = isCardActive(index)
             const upcomingVaccines = pet.vaccinations.filter(v => 
               v.nextDue && new Date(v.nextDue) > new Date()
             ).length

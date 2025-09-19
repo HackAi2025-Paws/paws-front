@@ -9,7 +9,7 @@ import { Card, CardContent } from '../../components/ui/card'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { addReminder, setLoading, setReminders } from '../../store/remindersSlice'
 import { petService } from '../../services/petService'
-import { Plus, Search, Filter } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import type { Reminder } from '../../types/index.js'
 
 export const RemindersPage: React.FC = () => {

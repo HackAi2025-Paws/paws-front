@@ -6,14 +6,14 @@ import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { logout } from '../../store/authSlice'
 import { useNavigate } from 'react-router-dom'
-import { User, Settings, Bell, HelpCircle, Shield, LogOut, Edit } from 'lucide-react'
+import { Settings, Bell, HelpCircle, Shield, LogOut, Edit } from 'lucide-react'
 
 export const ProfilePage: React.FC = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { user } = useAppSelector((state) => state.auth)
-  const { pets } = useAppSelector((state) => state.pets)
-  const { reminders } = useAppSelector((state) => state.reminders)
+  // const { pets } = useAppSelector((state) => state.pets)
+  // const { reminders } = useAppSelector((state) => state.reminders)
 
   const handleLogout = () => {
     dispatch(logout())

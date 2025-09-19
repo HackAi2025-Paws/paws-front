@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { PetCarousel } from '../../components/features/PetCarousel'
 import { PetIllustration } from '../../components/illustrations/PetIllustration'
 import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Card, CardContent } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { loadPets } from '../../store/petsSlice'
 import { setReminders } from '../../store/remindersSlice'
 import { petService } from '../../services/petService'
-import { Calendar, AlertTriangle, Heart, TrendingUp, ChevronRight, Stethoscope, Plus } from 'lucide-react'
+import { Calendar, Heart, TrendingUp, ChevronRight, Stethoscope, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export const DashboardPage: React.FC = () => {

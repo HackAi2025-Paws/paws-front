@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { Header } from '../../components/layout/Header'
 import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Card, CardContent } from '../../components/ui/card'
 import { Input } from '../../components/ui/input'
 import { Select } from '../../components/ui/select'
 import { Badge } from '../../components/ui/badge'
 import { AddConsultationForm } from '../../components/forms/AddConsultationForm'
-import { useAppDispatch, useAppSelector } from '../../hooks'
-import { addConsultationRecord } from '../../store/petsSlice'
+import { useAppSelector } from '../../hooks'
+// import { addConsultationRecord } from '../../store/petsSlice'
 import { petService } from '../../services/petService'
 import type { ConsultationRecord } from '../../types/index.js'
+
+// Tipo extendido para incluir información de la mascota
+type ConsultationWithPetInfo = ConsultationRecord & {
+  petName: string
+  petBreed: string
+}
 import { 
   Plus, 
   Search, 
@@ -25,7 +31,7 @@ import {
 } from 'lucide-react'
 
 export const ConsultationsPage: React.FC = () => {
-  const dispatch = useAppDispatch()
+  // const dispatch = useAppDispatch()
   const { pets } = useAppSelector((state) => state.pets)
   
   const [showAddForm, setShowAddForm] = useState(false)
@@ -33,7 +39,7 @@ export const ConsultationsPage: React.FC = () => {
   const [selectedTypeFilter, setSelectedTypeFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
-  const [consultations, setConsultations] = useState<ConsultationRecord[]>([])
+  const [consultations, setConsultations] = useState<ConsultationWithPetInfo[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   // Cargar consultas desde el backend cuando se monta el componente

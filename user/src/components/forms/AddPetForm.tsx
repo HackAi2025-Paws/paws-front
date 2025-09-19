@@ -12,7 +12,7 @@ import {
   X, 
   Upload, 
   HelpCircle,
-  Calendar,
+  // Calendar,
   Syringe,
   FileText
 } from 'lucide-react'

@@ -1,4 +1,4 @@
-import type { Pet, FAQ, User, Reminder, ConsultationRecord } from '../types/index.js'
+import type { Pet, FAQ, User, Reminder } from '../types/index.js'
 
 export const mockUser: User = {
   id: '1',

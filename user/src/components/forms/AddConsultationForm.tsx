@@ -5,7 +5,7 @@ import { Textarea } from '../ui/textarea'
 import { Select } from '../ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { useAppSelector } from '../../hooks'
-import type { ConsultationRecord, VaccinationType, Treatment } from '../../types/index.js'
+import type { ConsultationRecord, VaccinationType } from '../../types/index.js'
 import { X, Calendar, Stethoscope, FileText, DollarSign, MapPin, Plus, Syringe, Pill } from 'lucide-react'
 
 interface AddConsultationFormProps {
