@@ -6,10 +6,12 @@ import { Input } from '../../components/ui/input'
 import { Select } from '../../components/ui/select'
 import { Badge } from '../../components/ui/badge'
 import { AddConsultationForm } from '../../components/forms/AddConsultationForm'
+import { AddVaccineForm } from '../../components/forms/AddVaccineForm'
+import { AddTreatmentForm } from '../../components/forms/AddTreatmentForm'
 import { useAppSelector } from '../../hooks'
 // import { addConsultationRecord } from '../../store/petsSlice'
 import { petService } from '../../services/petService'
-import type { ConsultationRecord } from '../../types/index.js'
+import type { ConsultationRecord, VaccinationFormData, TreatmentFormData } from '../../types'
 
 // Tipo extendido para incluir información de la mascota
 type ConsultationWithPetInfo = ConsultationRecord & {
@@ -27,7 +29,9 @@ import {
   User,
   ChevronDown,
   ChevronUp,
-  Filter
+  Filter,
+  Syringe,
+  Pill
 } from 'lucide-react'
 
 export const ConsultationsPage: React.FC = () => {
@@ -35,6 +39,8 @@ export const ConsultationsPage: React.FC = () => {
   const { pets } = useAppSelector((state) => state.pets)
   
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showVaccineForm, setShowVaccineForm] = useState(false)
+  const [showTreatmentForm, setShowTreatmentForm] = useState(false)
   const [selectedPetFilter, setSelectedPetFilter] = useState('')
   const [selectedTypeFilter, setSelectedTypeFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -107,7 +113,7 @@ export const ConsultationsPage: React.FC = () => {
     return consultationTypes.find(t => t.value === type) || consultationTypes[0]
   }
 
-  const handleAddConsultation = async (consultationData: Omit<ConsultationRecord, 'id' | 'createdAt'>, vaccinations?: any[], treatments?: any[]) => {
+  const handleAddConsultation = async (consultationData: Omit<ConsultationRecord, 'id' | 'createdAt'>, vaccinations?: VaccinationFormData[], treatments?: TreatmentFormData[]) => {
     try {
       console.log('🔄 Creating consultation with vaccines and treatments...')
       console.log('📋 Consultation data:', consultationData)
@@ -162,49 +168,25 @@ export const ConsultationsPage: React.FC = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              {pets.length > 0 && (
-                <Button 
-                  onClick={async () => {
-                    const firstPetId = pets[0].id
-                    console.log(`🧪 Testing GET vaccines for petId=${firstPetId}...`)
-                    try {
-                      const vaccines = await petService.getPetVaccines(firstPetId)
-                      console.log('✅ Vaccines result:', vaccines)
-                      alert(`Found ${vaccines.length} vaccines for ${pets[0].name}. Check console for details.`)
-                    } catch (error) {
-                      console.error('❌ Error testing vaccines:', error)
-                      alert('Error testing vaccines. Check console.')
-                    }
-                  }} 
-                  variant="outline" 
-                  size="sm"
-                >
-                  🧪 Test Vaccines ({pets[0]?.name})
-                </Button>
-              )}
-              {pets.length > 0 && (
-                <Button 
-                  onClick={async () => {
-                    const firstPetId = pets[0].id
-                    console.log(`🧪 Testing GET treatments for petId=${firstPetId}...`)
-                    try {
-                      const treatments = await petService.getPetTreatments(firstPetId)
-                      console.log('✅ Treatments result:', treatments)
-                      alert(`Found ${treatments.length} treatments for ${pets[0].name}. Check console for details.`)
-                    } catch (error) {
-                      console.error('❌ Error testing treatments:', error)
-                      alert('Error testing treatments. Check console.')
-                    }
-                  }} 
-                  variant="outline" 
-                  size="sm"
-                >
-                  🧪 Test Treatments ({pets[0]?.name})
-                </Button>
-              )}
               <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
                 Nueva Consulta
+              </Button>
+              <Button 
+                onClick={() => setShowVaccineForm(true)} 
+                className="flex items-center gap-2"
+                variant="outline"
+              >
+                <Syringe className="h-4 w-4" />
+                Nueva Vacuna
+              </Button>
+              <Button 
+                onClick={() => setShowTreatmentForm(true)} 
+                className="flex items-center gap-2"
+                variant="outline"
+              >
+                <Pill className="h-4 w-4" />
+                Nuevo Tratamiento
               </Button>
             </div>
           </div>
@@ -455,11 +437,27 @@ export const ConsultationsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal del formulario */}
+      {/* Modal del formulario de consulta */}
       {showAddForm && (
         <AddConsultationForm
           onSubmit={handleAddConsultation}
           onClose={() => setShowAddForm(false)}
+        />
+      )}
+
+      {/* Modal del formulario de vacuna */}
+      {showVaccineForm && (
+        <AddVaccineForm
+          onSubmit={handleAddConsultation}
+          onClose={() => setShowVaccineForm(false)}
+        />
+      )}
+
+      {/* Modal del formulario de tratamiento */}
+      {showTreatmentForm && (
+        <AddTreatmentForm
+          onSubmit={handleAddConsultation}
+          onClose={() => setShowTreatmentForm(false)}
         />
       )}
     </>

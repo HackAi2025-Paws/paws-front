@@ -1,7 +1,7 @@
 import apiClient from './apiClient'
 import { env } from '../config/env'
 import { mockPets } from '../data/mockData'
-import type { Pet, Reminder, ConsultationRecord, ReminderType, VaccinationType } from '../types'
+import type { Pet, Reminder, ConsultationRecord, ReminderType, VaccinationType, VaccinationFormData, TreatmentFormData, VaccineCatalog, Vaccination, Treatment } from '../types'
 import { store } from '../store'
 
 // Tipos para el backend
@@ -27,6 +27,7 @@ interface BackendVaccine {
   batchNumber?: string
   notes?: string
   catalog?: { name: string; description?: string }
+  vaccine?: { name: string; description?: string } // Para endpoint /vaccines
   pet?: { id: number; name: string }
   author?: { id: number; name: string }
   consultation?: BackendConsultation
@@ -82,23 +83,39 @@ interface ApiResponse<T> {
 }
 
 // Interfaces para parámetros de formularios
-interface VaccinationFormData {
-  type?: string
-  date?: string
-  expirationDate?: string
-  batchNumber?: string
-  veterinarian?: string
-  notes?: string
+// VaccinationFormData and TreatmentFormData are imported from types/index.ts
+
+// Helper functions to map backend data to frontend types
+const mapBackendVaccineToFrontend = (backendVaccine: BackendVaccine): Vaccination => {
+  return {
+    id: backendVaccine.id.toString(),
+    petId: backendVaccine.pet?.id?.toString() || '',
+    name: mapVaccineNameToType(backendVaccine.vaccine?.name || backendVaccine.catalog?.name || 'Otra'),
+    displayName: backendVaccine.vaccine?.name || backendVaccine.catalog?.name || 'Vacuna',
+    date: backendVaccine.applicationDate || new Date().toISOString(),
+    expirationDate: backendVaccine.expirationDate,
+    batchNumber: backendVaccine.batchNumber || '',
+    veterinarian: backendVaccine.author?.name || 'Veterinario',
+    notes: backendVaccine.notes || '',
+    // Backend compatibility fields
+    applicationDate: backendVaccine.applicationDate,
+    vaccine: backendVaccine.vaccine,
+    catalog: backendVaccine.catalog,
+    author: backendVaccine.author
+  }
 }
 
-interface TreatmentFormData {
-  name: string
-  type?: string
-  startDate?: string
-  endDate?: string
-  dosage?: string
-  instructions?: string
-  veterinarian?: string
+const mapBackendTreatmentToFrontend = (backendTreatment: BackendTreatment): Treatment => {
+  return {
+    id: backendTreatment.id.toString(),
+    petId: backendTreatment.petId?.toString() || '',
+    type: 'tratamiento',
+    name: backendTreatment.name,
+    date: backendTreatment.startDate || new Date().toISOString(),
+    startDate: backendTreatment.startDate,
+    endDate: backendTreatment.endDate,
+    notes: backendTreatment.notes || ''
+  }
 }
 
 // Mapeo de tipos de recordatorio frontend a categorías backend
@@ -169,7 +186,7 @@ const mapVaccineNameToType = (backendName: string): VaccinationType => {
   const mapping: Record<string, VaccinationType> = {
     'rabia': 'Rabia',
     'dhpp': 'DHPP (Múltiple)',
-    'múltiple': 'DHPP (Múltiple)',
+    'multiple': 'DHPP (Múltiple)',
     'parvovirus': 'Parvovirus',
     'moquillo': 'Moquillo',
     'hepatitis': 'Hepatitis',
@@ -184,9 +201,9 @@ const mapVaccineNameToType = (backendName: string): VaccinationType => {
     'leishmaniosis': 'Leishmaniosis',
     'pentavalente': 'Pentavalente',
     'quintuple': 'Pentavalente',
-    'quíntuple': 'Pentavalente',
+    'quintuple_special': 'Pentavalente',
     'sextuple': 'Sextuple',
-    'séxtuple': 'Sextuple',
+    'sextuple_special': 'Sextuple',
     'leucemia felina': 'Leucemia Felina (FeLV)',
     'felv': 'Leucemia Felina (FeLV)',
     'panleucopenia': 'Panleucopenia',
@@ -205,6 +222,86 @@ const mapVaccineNameToType = (backendName: string): VaccinationType => {
   return 'Otra'
 }
 
+// Helper para mapear nombres de vacunas a catalogId (basado en el catálogo conocido)
+const getVaccineCatalogId = (vaccineName: string, species: 'DOG' | 'CAT' = 'DOG'): number => {
+  const normalizedInput = vaccineName.toLowerCase().trim()
+  console.log(`🔍 Mapping vaccine: "${vaccineName}" -> normalized: "${normalizedInput}" (species: ${species})`)
+  
+  // Mapeo directo basado en el catálogo conocido
+  const catalogMapping: Record<string, number> = {
+    // Perros
+    'quintuple_special': 1,
+    'quintuple': 1,
+    'moquillo': 1,
+    'parvovirus': 1,
+    'dhpp': 1,
+    'multiple': 1,
+    'cpv': 1,
+    'cdv': 1,
+    'cav': 1,
+    'sextuple': 2,
+    'sextuple_special': 2,
+    'leptospirosis': 2,
+    'antirrabica_perro': 3,
+    'antirrabica (perro)': 3,
+    'tos de las perreras': 4,
+    'bordetella': 4,
+    // Gatos
+    'triple felina': 5,
+    'fvrcp': 5,
+    'panleucopenia': 5,
+    'rinotraqueitis': 5,
+    'calicivirus': 5,
+    'fpv': 5,
+    'fhv': 5,
+    'fcv': 5,
+    'antirrabica_gato': 6,
+    'antirrabica (gato)': 6,
+    'leucemia felina': 7,
+    'felv': 7,
+    'leucemia': 7
+  }
+  
+  // Mapeo genérico para nombres sin especificar especie
+  const genericMapping: Record<string, number> = {
+    'antirrabica_generic': species === 'DOG' ? 3 : 6,
+    'antirrabica': species === 'DOG' ? 3 : 6,
+    'rabia': species === 'DOG' ? 3 : 6,
+  }
+  
+  // 1. Buscar coincidencias exactas en el mapeo específico
+  for (const [key, catalogId] of Object.entries(catalogMapping)) {
+    if (normalizedInput.includes(key) || key.includes(normalizedInput)) {
+      console.log(`✅ Found specific match: "${normalizedInput}" -> "${key}" -> catalogId: ${catalogId}`)
+      return catalogId
+    }
+  }
+  
+  // 2. Buscar en el mapeo genérico
+  for (const [key, catalogId] of Object.entries(genericMapping)) {
+    if (normalizedInput.includes(key) || key.includes(normalizedInput)) {
+      console.log(`✅ Found generic match: "${normalizedInput}" -> "${key}" -> catalogId: ${catalogId} (species: ${species})`)
+      return catalogId
+    }
+  }
+  
+  // 3. Buscar en nombres más largos
+  if (normalizedInput.includes('cpv') || normalizedInput.includes('cdv') || normalizedInput.includes('cav')) {
+    console.log(`✅ Found code match for Quíntuple: "${normalizedInput}" -> catalogId: 1`)
+    return 1 // Quíntuple
+  }
+  
+  if (normalizedInput.includes('fpv') || normalizedInput.includes('fhv') || normalizedInput.includes('fcv')) {
+    console.log(`✅ Found code match for Triple felina: "${normalizedInput}" -> catalogId: 5`)
+    return 5 // Triple felina
+  }
+  
+  // Default basado en especie
+  const defaultId = species === 'DOG' ? 1 : 5
+  console.log(`⚠️ No match found for "${normalizedInput}", using default catalogId: ${defaultId} (species: ${species})`)
+  return defaultId
+}
+
 export interface PetService {
   getAllPets(): Promise<Pet[]>
   getPetById(id: string): Promise<Pet>
@@ -218,6 +315,7 @@ export interface PetService {
   createConsultation(consultation: Omit<ConsultationRecord, 'id' | 'createdAt'>): Promise<ConsultationRecord>
   createConsultationWithVaccinesAndTreatments(consultation: Omit<ConsultationRecord, 'id' | 'createdAt'>, vaccinations?: VaccinationFormData[], treatments?: TreatmentFormData[]): Promise<ConsultationRecord>
   getConsultations(petId?: string): Promise<ConsultationRecord[]>
+  getVaccineCatalog(species?: 'DOG' | 'CAT'): Promise<VaccineCatalog[]>
   // Deprecated methods - keeping for compatibility
   addConsultationRecord(record: Omit<ConsultationRecord, 'id' | 'createdAt'>): Promise<ConsultationRecord>
   getPetConsultations(petId: string): Promise<ConsultationRecord[]>
@@ -372,7 +470,8 @@ class PetServiceImpl implements PetService {
         vaccinations: petData.vaccines ? petData.vaccines.map((vaccine: BackendVaccine) => ({
           id: vaccine.id.toString(),
           petId: petData.id.toString(),
-          name: mapVaccineNameToType(vaccine.catalog?.name || 'Otra'),
+          name: mapVaccineNameToType(vaccine.vaccine?.name || vaccine.catalog?.name || 'Otra'), // Tipo mapeado para compatibilidad
+          displayName: vaccine.vaccine?.name || vaccine.catalog?.name || 'Vacuna', // Nombre completo del catálogo
           date: vaccine.applicationDate ? new Date(vaccine.applicationDate).toISOString().split('T')[0] : '',
           nextDue: vaccine.expirationDate ? new Date(vaccine.expirationDate).toISOString().split('T')[0] : '',
           veterinarian: 'Veterinario',
@@ -444,11 +543,11 @@ class PetServiceImpl implements PetService {
         
         // Vacunas anidadas
         vaccines: petData.vaccinations && petData.vaccinations.length > 0 ? petData.vaccinations.map(vaccination => ({
-          catalogId: 1, // Por ahora hardcodeado
+          catalogId: getVaccineCatalogId(vaccination.displayName || vaccination.name, petData.species === 'perro' ? 'DOG' : 'CAT'),
           applicationDate: vaccination.date ? new Date(vaccination.date).toISOString() : new Date().toISOString(),
           expirationDate: vaccination.expirationDate ? new Date(vaccination.expirationDate).toISOString() : undefined,
           batchNumber: vaccination.batchNumber || undefined,
-          notes: `${vaccination.name} - ${vaccination.veterinarian || 'Veterinario no especificado'} - ${vaccination.notes || ''}`,
+          notes: `${vaccination.displayName || vaccination.name} - ${vaccination.veterinarian || 'Veterinario no especificado'} - ${vaccination.notes || ''}`,
         })) : undefined,
         
         // Tratamientos anidados
@@ -950,7 +1049,7 @@ class PetServiceImpl implements PetService {
         
         // Agregar vaccines y treatments como objetos anidados
         vaccines: vaccinations && vaccinations.length > 0 ? vaccinations.map(vaccination => ({
-          catalogId: 1, // Hardcodeado por ahora
+          catalogId: getVaccineCatalogId(vaccination.type || 'Quíntuple', 'DOG'), // TODO: determinar especie
           applicationDate: vaccination.date ? new Date(vaccination.date).toISOString() : new Date().toISOString(),
           expirationDate: vaccination.expirationDate ? new Date(vaccination.expirationDate).toISOString() : undefined,
           batchNumber: vaccination.batchNumber || undefined,
@@ -1043,8 +1142,35 @@ class PetServiceImpl implements PetService {
     return this.getConsultations(petId)
   }
 
+  // Método para obtener el catálogo de vacunas
+  async getVaccineCatalog(species?: 'DOG' | 'CAT'): Promise<VaccineCatalog[]> {
+    if (env.MOCK_API) {
+      return Promise.resolve([])
+    }
+    
+    try {
+      console.log('📥 Fetching vaccine catalog from backend...')
+      
+      const params = species ? { species: species } : {}
+      const response = await apiClient.get('/vaccines/vaccineCatalog', params)
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Error fetching vaccine catalog')
+      }
+
+      const catalog = Array.isArray(response.data) ? response.data : []
+      
+      console.log('📋 Vaccine catalog from backend:', catalog)
+      
+      return catalog
+    } catch (error) {
+      console.error('❌ Error fetching vaccine catalog:', error)
+      return []
+    }
+  }
+
   // Nuevos métodos para obtener vacunas y tratamientos
-  async getPetVaccines(petId: string): Promise<BackendVaccine[]> {
+  async getPetVaccines(petId: string): Promise<Vaccination[]> {
     if (env.MOCK_API) {
       return Promise.resolve([])
     }
@@ -1058,18 +1184,18 @@ class PetServiceImpl implements PetService {
         throw new Error(response.error || 'Error fetching vaccines')
       }
 
-      const vaccines = Array.isArray(response.data) ? response.data : []
+      const backendVaccines = Array.isArray(response.data) ? response.data : []
       
-      console.log('📋 Vaccines from backend:', vaccines)
+      console.log('📋 Vaccines from backend:', backendVaccines)
       
-      return vaccines
+      return backendVaccines.map(mapBackendVaccineToFrontend)
     } catch (error) {
       console.error('❌ Error fetching pet vaccines:', error)
       return []
     }
   }
 
-  async getPetTreatments(petId: string): Promise<BackendTreatment[]> {
+  async getPetTreatments(petId: string): Promise<Treatment[]> {
     if (env.MOCK_API) {
       return Promise.resolve([])
     }
@@ -1083,11 +1209,11 @@ class PetServiceImpl implements PetService {
         throw new Error(response.error || 'Error fetching treatments')
       }
 
-      const treatments = Array.isArray(response.data) ? response.data : []
+      const backendTreatments = Array.isArray(response.data) ? response.data : []
       
-      console.log('📋 Treatments from backend:', treatments)
+      console.log('📋 Treatments from backend:', backendTreatments)
       
-      return treatments
+      return backendTreatments.map(mapBackendTreatmentToFrontend)
     } catch (error) {
       console.error('❌ Error fetching pet treatments:', error)
       return []
