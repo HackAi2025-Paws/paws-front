@@ -64,8 +64,8 @@ export default function PetDetailPage() {
   }
 
   const petId = parseInt(id)
-  const { pet: patient, loading, error } = usePetById(petId)
-  const { summary: clinicalSummary, loading: summaryLoading, error: summaryError } = useClinicalSummary(petId)
+  const { pet: patient, loading, error, refetch: refetchPatient } = usePetById(petId)
+  const { summary: clinicalSummary, loading: summaryLoading, error: summaryError, refetch: refetchSummary } = useClinicalSummary(petId)
   const { user: userData } = useUser()
   const formRef = useRef<AddRecordFormRef>(null)
 
@@ -253,6 +253,13 @@ export default function PetDetailPage() {
       console.log('Consultation created successfully:', result)
 
       setSubmitSuccess(true)
+
+      // Refetch patient data and clinical summary to show the new consultation
+      refetchPatient()
+      refetchSummary()
+
+      // Reset the form for a new consultation
+      formRef.current?.resetForm()
 
       // Hide success message after 3 seconds
       setTimeout(() => {
