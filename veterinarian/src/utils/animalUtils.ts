@@ -25,8 +25,8 @@ export function getDefaultAnimalAvatar(species: string | undefined, name: string
     return catDefaultImage
   }
 
-  // Default for other animals - use generated avatar as fallback
-  return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${name}-pet&backgroundColor=d1fae5&scale=80`
+  // Default for other animals - use generated avatar as fallback with brand color
+  return `https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${name}-pet&backgroundColor=fef3c7&scale=80`
 }
 
 /**

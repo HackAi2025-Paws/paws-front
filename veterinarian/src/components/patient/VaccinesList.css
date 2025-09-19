@@ -43,8 +43,8 @@
 }
 
 .vaccineBadge--current {
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--brand-50);
+  color: var(--brand-700);
 }
 
 .vaccineBadge--expired {

@@ -1,9 +1,11 @@
 :root {
-  --brand: #16a34a;
-  --brand-600: #16a34a;
-  --brand-700: #15803d;
-  --brand-300: #86efac;
-  --brand-50: #eaf8ef;
+  --brand: #ea9651;
+  --brand-600: #ea9651;
+  --brand-700: #d97706;
+  --brand-500: #ea9651;
+  --brand-300: #fbbf24;
+  --brand-100: #fef3c7;
+  --brand-50: #fffbeb;
   --text: #0f172a;
   --muted: #64748b;
   --border: #e2e8f0;
@@ -85,7 +87,7 @@ a:hover { text-decoration: underline; }
 .form { display: grid; gap: 14px; }
 .form__hint { text-align: right; }
 .form__error { color: #b91c1c; background: #fee2e2; border: 1px solid #fecaca; padding: 8px 10px; border-radius: 8px; font-size: 14px; }
-.form__success { color: #15803d; background: #dcfce7; border: 1px solid #bbf7d0; padding: 8px 10px; border-radius: 8px; font-size: 14px; }
+.form__success { color: var(--brand-700); background: var(--brand-50); border: 1px solid var(--brand-100); padding: 8px 10px; border-radius: 8px; font-size: 14px; }
 
 .divider {
   display: grid;
@@ -196,7 +198,7 @@ a:hover { text-decoration: underline; }
 .petPage__nameRow { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .petPage__name { margin: 0; }
 .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #eef2f7; color: #334155; font-size: 12px; }
-.badge--success { background: #dcfce7; color: #166534; }
+.badge--success { background: var(--brand-50); color: var(--brand-700); }
 .petPage__meta { color: var(--muted); }
 .petPage__content { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: none; padding: 24px 24px 24px 0; }
 .tabs { display: flex; justify-content: center; gap: 6px; background: #e2e8f0; border-radius: 10px; padding: 6px 4px; height: 48px; align-items: center; width: 100%; }
@@ -277,8 +279,8 @@ a:hover { text-decoration: underline; }
 }
 
 .vaccineBadge--current {
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--brand-50);
+  color: var(--brand-700);
 }
 
 .vaccineBadge--expired {
@@ -549,7 +551,7 @@ a:hover { text-decoration: underline; }
 .infoBox__label { color: var(--muted); font-size: 12px; }
 .infoBox__value { color: var(--brand-700); font-weight: 700; }
 .owner { display: grid; gap: 8px; margin-top: 6px; text-align: left; }
-.owner__title { color: #166534; font-weight: 800; }
+.owner__title { color: var(--brand-700); font-weight: 800; }
 .owner__row { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; text-align: left; }
 
 @media (max-width: 768px) {

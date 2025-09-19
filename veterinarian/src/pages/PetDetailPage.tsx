@@ -7,7 +7,6 @@ import { useUser } from '../hooks/useUser'
 import { consultationService } from '../services/consultationService'
 import { PDFService } from '../services/pdfService'
 import { formatDateSafe, dateInputToISO } from '../utils/dateUtils'
-import { getAnimalAvatar } from '../utils/animalUtils'
 import PatientSidebar from '../components/patient/PatientSidebar'
 import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
@@ -75,7 +74,7 @@ export default function PetDetailPage() {
   const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null)
   const [openExport, setOpenExport] = useState(false)
   const [activeTab, setActiveTab] = useState('resumen')
-  const { finalText, toggleListening, isListening, clearText } = useSpeechToText();
+  const { finalText, toggleListening, isListening, isConnecting, clearText } = useSpeechToText();
   const [consultation, setConsultation] = useState<Consultation | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
@@ -366,7 +365,7 @@ export default function PetDetailPage() {
               patient={{
                 ...patient,
                 ownerName: patient.owners?.[0]?.name || 'No especificado',
-                avatarUrl: getAnimalAvatar(patient.species, patient.name, patient.profileImageUrl),
+                avatarUrl: patient.profileImageUrl,
                 age: patient.age || '5 años'
               }}
               patientDetails={patientDetails}
@@ -788,13 +787,23 @@ export default function PetDetailPage() {
                   <button
                     className={`btn ${isListening ? 'btn--danger' : 'btn--ghost'} voiceBtn`}
                     onClick={handleVoiceInput}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isConnecting}
                     style={{
                       backgroundColor: isListening ? '#ef4444' : undefined,
-                      color: isListening ? 'white' : undefined
+                      color: isListening ? 'white' : undefined,
+                      position: 'relative'
                     }}
                   >
-                    {isListening ? '⏹️ Parar grabación' : '🎤 Dictar por voz'}
+                    {isConnecting ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="spinner spinner--small">
+                          <div className="spinner__circle"></div>
+                        </div>
+                        <span>Conectando...</span>
+                      </div>
+                    ) : (
+                      isListening ? '⏹️ Parar grabación' : '🎤 Dictar por voz'
+                    )}
                   </button>
                   <button
                     className="btn btn--primary"

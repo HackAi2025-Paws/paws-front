@@ -1,5 +1,5 @@
 import type { Patient, PatientDetails } from '../../modules/patients/types'
-import { getAnimalAvatar } from '../../utils/animalUtils'
+import SafeImage from '../ui/SafeImage'
 
 interface PatientSidebarProps {
   patient: Patient
@@ -10,9 +10,11 @@ interface PatientSidebarProps {
 export default function PatientSidebar({ patient, patientDetails, onExportClick }: PatientSidebarProps) {
   return (
     <div className="petPage__sidebar">
-      <img
+      <SafeImage
         className="petPage__avatar"
-        src={getAnimalAvatar(patient.species, patient.name, patient.avatarUrl)}
+        src={patient.avatarUrl}
+        fallbackSpecies={patient.species}
+        fallbackName={patient.name}
         alt={patient.name}
       />
       <div className="petPage__nameRow">
