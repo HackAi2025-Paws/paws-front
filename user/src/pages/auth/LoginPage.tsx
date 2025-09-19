@@ -35,7 +35,7 @@ export const LoginPage: React.FC = () => {
       const result = await sendOTP({ phone })
       setSuccessMessage(result.message)
       setStep('otp')
-    } catch (err) {
+    } catch {
       // Error is handled by the hook
     }
   }
@@ -54,7 +54,7 @@ export const LoginPage: React.FC = () => {
       // Store session for AuthContext (ya se hace en authService, pero por seguridad)
       localStorage.setItem(env.SESSION_STORAGE_KEY, JSON.stringify(session))
       navigate('/dashboard')
-    } catch (err) {
+    } catch {
       // Error is handled by the hook
     }
   }
