@@ -1,14 +1,12 @@
 import React, { useEffect } from 'react'
 import { PetCarousel } from '../../components/features/PetCarousel'
 import { PetIllustration } from '../../components/illustrations/PetIllustration'
-import { Button } from '../../components/ui/button'
-import { Card, CardContent } from '../../components/ui/card'
-import { Badge } from '../../components/ui/badge'
+// Banking style components - using custom CSS classes instead
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { loadPets } from '../../store/petsSlice'
 import { setReminders } from '../../store/remindersSlice'
 import { petService } from '../../services/petService'
-import { Calendar, Heart, TrendingUp, ChevronRight, Stethoscope, Plus } from 'lucide-react'
+import { Calendar, Heart, ChevronRight, Stethoscope, Plus, Bell } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export const DashboardPage: React.FC = () => {
@@ -48,154 +46,162 @@ export const DashboardPage: React.FC = () => {
   const upcomingReminders = reminders.filter(r => !r.isCompleted).slice(0, 3)
 
   return (
-    <div className="min-h-screen bg-cream-400">
-      {/* Hero Section con Ilustración */}
-      <div className="relative overflow-hidden bg-red-500 px-6 pt-8 pb-6">
-        {/* Ilustración de fondo */}
-        <div className="absolute top-0 right-0 w-32 h-32 opacity-20">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            {/* Formas decorativas simples */}
-            <circle cx="20" cy="20" r="8" fill="currentColor" opacity="0.3"/>
-            <path d="M40 10 Q50 20 60 10 Q50 30 40 10" fill="currentColor" opacity="0.2"/>
-            <circle cx="70" cy="30" r="5" fill="currentColor" opacity="0.4"/>
-          </svg>
-        </div>
-        
-        {/* Ilustración principal estilo mascota */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50">
+      {/* Banking Style Header */}
+      <div className="banking-header">
+        {/* Balance style section con campanita integrada */}
+        <div className="flex items-center justify-between mb-6">
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Hola, {user?.name?.split(' ')[0] || 'Usuario'} 👋
+            <p className="text-coral-100 text-sm font-medium mb-1">Mis mascotas</p>
+            <h1 className="text-3xl font-bold text-white mb-1">
+              {pets.length} <span className="text-xl font-normal">🐾</span>
             </h1>
-            <p className="text-white/90 text-base">
-              ¿Qué te gustaría hacer hoy?
+            <p className="text-coral-100 text-sm">
+              Hola, {user?.name?.split(' ')[0] || 'Usuario'} 👋
             </p>
           </div>
           
-          {/* Ilustración de mascota */}
-          <PetIllustration className="w-28 h-28" />
+          {/* Iconos del lado derecho */}
+          <div className="flex items-center space-x-3">
+            <Link to="/reminders">
+              <div className="banking-icon-soft">
+                <Bell className="w-5 h-5" />
+              </div>
+            </Link>
+            <div className="banking-icon-soft">
+              <PetIllustration className="w-8 h-8" />
+            </div>
+          </div>
         </div>
-
+        
       </div>
 
       {/* Contenido principal */}
-      <div className="px-6 py-6 space-y-6">
+      <div className="px-6 py-4 space-y-6">
+
         {/* Sección de mascotas */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-dark-900">Mis Mascotas</h2>
-            <Link to="/pet/add">
-              <Button variant="ghost" size="sm" className="text-red-600">
-                <Plus className="w-4 h-4 mr-1" />
-                Agregar
-              </Button>
-            </Link>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold banking-text-secondary">Mis Mascotas</h2>
           </div>
           
           {pets.length === 0 ? (
-            <Card className="text-center p-8">
-              <Heart className="w-12 h-12 text-red-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-dark-900 mb-2">
+            <div className="banking-card-highlight text-center">
+              <div className="banking-icon-soft mx-auto mb-4">
+                <Heart className="w-8 h-8" />
+              </div>
+              <h3 className="text-lg font-semibold banking-text-secondary mb-2">
                 ¡Agrega tu primera mascota!
               </h3>
-              <p className="text-dark-500 mb-4">
+              <p className="banking-text-secondary mb-4 text-sm">
                 Comienza a cuidar a tus compañeros peludos
               </p>
               <Link to="/pet/add">
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
+                <button className="banking-button-primary flex items-center">
                   Agregar Mascota
-                </Button>
+                  <Plus className="w-4 h-4 ml-2" />
+                </button>
               </Link>
-            </Card>
+            </div>
           ) : (
-            <PetCarousel pets={pets} />
+        <PetCarousel pets={pets} />
           )}
         </div>
 
-        {/* Recordatorios importantes */}
+        {/* Próximos Recordatorios estilo banking */}
         {upcomingReminders.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-dark-900 flex items-center">
-                <TrendingUp className="w-5 h-5 mr-2 text-red-500" />
-                Próximos
-              </h2>
+              <h2 className="text-lg font-semibold banking-text-secondary">Próximos recordatorios</h2>
               <Link to="/reminders">
-                <Button variant="ghost" size="sm" className="text-red-600">
-                  ver todo
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
+                <span className="banking-text-primary text-sm font-medium">
+                  Ver todos
+                  <ChevronRight className="w-4 h-4 inline ml-1" />
+                </span>
               </Link>
             </div>
 
-            <Card className="bg-pink-100 border-red-200">
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {upcomingReminders.slice(0, 1).map(reminder => (
-                    <div key={reminder.id} className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-                        <Calendar className="w-6 h-6 text-red-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-dark-900 text-base">
-                          {reminder.title}
-                        </h3>
-                        <p className="text-dark-600 text-sm line-clamp-2">
-                          {reminder.description}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {new Date(reminder.date).toLocaleDateString('es-ES')}
-                          </Badge>
-                          {reminder.time && (
-                            <Badge variant="outline" className="text-xs">
-                              {reminder.time}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+            <div className="banking-balance-card">
+              <div className="flex items-center justify-between mb-4">
+                <div className="banking-icon-coral">
+                  <Calendar className="w-6 h-6" />
                 </div>
-                
-                {upcomingReminders.length > 1 && (
-                  <div className="mt-4 pt-3 border-t border-red-200">
-                    <p className="text-sm text-dark-600">
-                      +{upcomingReminders.length - 1} recordatorios más
+                <span className="text-sm banking-text-primary font-medium">
+                  {upcomingReminders.length} pendiente{upcomingReminders.length > 1 ? 's' : ''}
+                </span>
+              </div>
+              
+              {upcomingReminders.slice(0, 2).map(reminder => (
+                <div key={reminder.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+                  <div className="flex-1">
+                    <h3 className="font-medium banking-text-secondary text-sm mb-1">
+                      {reminder.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 line-clamp-1">
+                      {reminder.description}
                     </p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                  <div className="text-right ml-4">
+                    <p className="text-xs banking-text-primary font-medium">
+                      {new Date(reminder.date).toLocaleDateString('es-ES')}
+                    </p>
+                    {reminder.time && (
+                      <p className="text-xs text-gray-500">
+                        {reminder.time}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Acciones rápidas */}
+        {/* Beneficios destacados estilo banking */}
         <div>
-          <h2 className="text-xl font-semibold text-dark-900 mb-4">Acciones Rápidas</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Link to="/consultations">
-              <Card className="bg-pink-200 border-pink-300 hover:shadow-md transition-all">
-                <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 bg-pink-400 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                    <Stethoscope className="w-6 h-6 text-white" />
+          <h2 className="text-lg font-semibold banking-text-secondary mb-4">Beneficios destacados</h2>
+          <div className="space-y-4">
+            <Link to="/faq">
+              <div className="banking-card-highlight hover:shadow-lg transition-all duration-200 cursor-pointer">
+                <div className="flex items-center space-x-4">
+                  <div className="banking-icon-coral">
+                    <Heart className="w-6 h-6" />
                   </div>
-                  <h3 className="font-medium text-dark-900 text-sm">Nueva Consulta</h3>
-                </CardContent>
-              </Card>
+                  <div className="flex-1">
+                    <h3 className="font-semibold banking-text-secondary text-sm mb-1">
+                      ¿Dudas sobre el cuidado de tu mascota?
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Encontrá respuestas a las preguntas más frecuentes sobre salud y bienestar.
+                    </p>
+                    <span className="banking-button-secondary text-xs px-3 py-1 inline-block">
+                      Ver FAQ
+                    </span>
+                  </div>
+                  <div>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </div>
+                </div>
+              </div>
             </Link>
             
-            <Link to="/reminders">
-              <Card className="bg-orange-200 border-orange-300 hover:shadow-md transition-all">
-                <CardContent className="p-4 text-center">
-                  <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                    <Calendar className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="font-medium text-dark-900 text-sm">Recordatorio</h3>
-                </CardContent>
-              </Card>
-            </Link>
+            <div className="banking-grid gap-3">
+              <div className="banking-stat-card">
+                <div className="banking-icon-banking mx-auto mb-2">
+                  <Stethoscope className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-semibold banking-text-secondary mb-1">Emergencias</h4>
+                <p className="text-xs text-gray-500">Qué hacer en casos urgentes</p>
+              </div>
+              
+              <div className="banking-stat-card">
+                <div className="banking-icon-coral mx-auto mb-2">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-semibold banking-text-secondary mb-1">Vacunación</h4>
+                <p className="text-xs text-gray-500">Calendario de vacunas</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

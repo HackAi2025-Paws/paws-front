@@ -101,6 +101,31 @@ export default {
           800: '#4e3831',  // Muy oscuro
           900: '#3b291c',  // Principal - #3b291c
         },
+        // Banking App Inspired Colors
+        'coral': {
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#f97316',  // Main coral like banking app
+          600: '#ea580c',
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
+        },
+        'banking': {
+          50: '#fef9f3',
+          100: '#fef2e7',
+          200: '#fde2c4',
+          300: '#fbcc96',
+          400: '#f8b166',
+          500: '#f59e42',  // Banking orange
+          600: '#ee7f1f',
+          700: '#d16218',
+          800: '#b04e18',
+          900: '#8f4118',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

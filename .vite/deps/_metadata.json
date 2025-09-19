@@ -1,0 +1,25 @@
+{
+  "hash": "43379372",
+  "configHash": "89f067a5",
+  "lockfileHash": "df30cd54",
+  "browserHash": "ca1d147c",
+  "optimized": {
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "e18bf3d3",
+      "needsInterop": true
+    },
+    "lucide-react": {
+      "src": "../../node_modules/lucide-react/dist/esm/lucide-react.js",
+      "file": "lucide-react.js",
+      "fileHash": "7c04f139",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-R5S4GS3S": {
+      "file": "chunk-R5S4GS3S.js"
+    }
+  }
+}
