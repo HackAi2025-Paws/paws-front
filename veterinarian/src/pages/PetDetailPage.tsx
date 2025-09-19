@@ -278,22 +278,136 @@ export default function PetDetailPage() {
                     )}
 
                     {!summaryLoading && !summaryError && clinicalSummary && (
-                      <>
-                        <h3 style={{ margin: '0 0 8px 0', color: 'var(--brand-600)', fontWeight: 600 }}>📋 Información Básica</h3>
-                        <p style={{ margin: '0 0 24px 0', color: 'var(--text)', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
-                          {clinicalSummary.basic_information}
-                        </p>
+                      <div style={{ display: 'grid', gap: '20px' }}>
+                        <div style={{
+                          backgroundColor: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '12px',
+                          padding: '20px',
+                          borderLeft: '4px solid var(--brand-500)'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '12px'
+                          }}>
+                            <div style={{
+                              backgroundColor: 'var(--brand-100)',
+                              borderRadius: '8px',
+                              padding: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              📋
+                            </div>
+                            <h3 style={{
+                              margin: 0,
+                              color: 'var(--brand-700)',
+                              fontWeight: 600,
+                              fontSize: '16px'
+                            }}>
+                              Información Básica
+                            </h3>
+                          </div>
+                          <p style={{
+                            margin: 0,
+                            color: 'var(--text)',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-line',
+                            fontSize: '14px'
+                          }}>
+                            {clinicalSummary.basic_information}
+                          </p>
+                        </div>
 
-                        <h3 style={{ margin: '0 0 8px 0', color: 'var(--brand-600)', fontWeight: 600 }}>📚 Historial</h3>
-                        <p style={{ margin: '0 0 24px 0', color: 'var(--text)', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
-                          {clinicalSummary.history}
-                        </p>
+                        <div style={{
+                          backgroundColor: '#f0f9ff',
+                          border: '1px solid #bae6fd',
+                          borderRadius: '12px',
+                          padding: '20px',
+                          borderLeft: '4px solid #0ea5e9'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '12px'
+                          }}>
+                            <div style={{
+                              backgroundColor: '#dbeafe',
+                              borderRadius: '8px',
+                              padding: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              📚
+                            </div>
+                            <h3 style={{
+                              margin: 0,
+                              color: '#075985',
+                              fontWeight: 600,
+                              fontSize: '16px'
+                            }}>
+                              Historial
+                            </h3>
+                          </div>
+                          <p style={{
+                            margin: 0,
+                            color: 'var(--text)',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-line',
+                            fontSize: '14px'
+                          }}>
+                            {clinicalSummary.history}
+                          </p>
+                        </div>
 
-                        <h3 style={{ margin: '0 0 8px 0', color: 'var(--brand-600)', fontWeight: 600 }}>🩺 Última Consulta</h3>
-                        <p style={{ margin: '0 0 16px 0', color: 'var(--text)', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
-                          {clinicalSummary.last_consultation}
-                        </p>
-                      </>
+                        <div style={{
+                          backgroundColor: '#f0fdf4',
+                          border: '1px solid #bbf7d0',
+                          borderRadius: '12px',
+                          padding: '20px',
+                          borderLeft: '4px solid #22c55e'
+                        }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '12px'
+                          }}>
+                            <div style={{
+                              backgroundColor: '#dcfce7',
+                              borderRadius: '8px',
+                              padding: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              🩺
+                            </div>
+                            <h3 style={{
+                              margin: 0,
+                              color: '#15803d',
+                              fontWeight: 600,
+                              fontSize: '16px'
+                            }}>
+                              Última Consulta
+                            </h3>
+                          </div>
+                          <p style={{
+                            margin: 0,
+                            color: 'var(--text)',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-line',
+                            fontSize: '14px'
+                          }}>
+                            {clinicalSummary.last_consultation}
+                          </p>
+                        </div>
+                      </div>
                     )}
 
                     {!summaryLoading && !summaryError && !clinicalSummary && (
@@ -345,7 +459,7 @@ export default function PetDetailPage() {
                           <div className="recordItem__body">
                             <div className="recordItem__title">{record.title}</div>
                             <div className="recordItem__meta">
-                              {new Date(record.date).toLocaleDateString()} · {record.doctor}
+                              {new Date(record.date).toLocaleDateString()}
                             </div>
                           </div>
                           <div className="recordItem__actions">
@@ -410,19 +524,20 @@ export default function PetDetailPage() {
                             <div className="vaccineItem__title">{vaccine.vaccine.name}</div>
                             <div className="vaccineItem__meta">
                               {new Date(vaccine.applicationDate).toLocaleDateString()}
-                              {vaccine.notes && ` - ${vaccine.notes}`}
                             </div>
                           </div>
                           <div className="vaccineItem__right">
-                            <span className={`vaccineBadge ${
-                              vaccine.expirationDate && new Date(vaccine.expirationDate) > new Date()
-                                ? 'vaccineBadge--current'
-                                : 'vaccineBadge--expired'
-                            }`}>
-                              {vaccine.expirationDate && new Date(vaccine.expirationDate) > new Date()
-                                ? 'Al día'
-                                : 'Vencida'}
-                            </span>
+                            {vaccine.expirationDate && (
+                              <span className={`vaccineBadge ${
+                                new Date(vaccine.expirationDate) > new Date()
+                                  ? 'vaccineBadge--current'
+                                  : 'vaccineBadge--expired'
+                              }`}>
+                                {new Date(vaccine.expirationDate) > new Date()
+                                  ? 'Al día'
+                                  : 'Vencida'}
+                              </span>
+                            )}
                           </div>
                         </div>
                       ))

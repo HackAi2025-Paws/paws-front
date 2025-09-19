@@ -3,13 +3,15 @@ import SearchBar from '../components/dashboard/SearchBar'
 import PatientListItem from '../components/dashboard/PatientListItem'
 import Spinner from '../components/ui/Spinner'
 import { usePetsSearch, useDefaultPets } from '../hooks/usePets'
+import { useUser } from '../hooks/useUser'
 import { useAuth } from '../modules/auth/AuthContext'
 
 
 export default function DashboardPage() {
   const [query, setQuery] = useState('')
   const [searchFilter, setSearchFilter] = useState<'name' | 'ownerName' | 'breed'>('name')
-  const { user, logout } = useAuth()
+  const { logout } = useAuth()
+  const { user: userData, loading: userLoading } = useUser()
 
 
   const showingSearch = query.trim().length > 0
@@ -50,11 +52,6 @@ export default function DashboardPage() {
         <div className="brandRow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <div className="brandRow__brand">PetLink</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {user && (
-              <span style={{ fontSize: '14px', color: 'var(--muted)' }}>
-                 {user.firstName} {user.lastName}
-              </span>
-            )}
             <button
               onClick={handleLogout}
               className="btn btn--secondary"
@@ -65,7 +62,7 @@ export default function DashboardPage() {
           </div>
         </div>
         <h1 className="dashboard__title">
-          Bienvenido{user ? `, Dr. ${user.lastName}` : ', Doctor'}
+          Bienvenido{!userLoading && userData ? `, ${userData.name}` : ', Doctor'}
         </h1>
         <p className="dashboard__subtitle">Consulta las historias clínicas de tus pacientes</p>
         <SearchBar

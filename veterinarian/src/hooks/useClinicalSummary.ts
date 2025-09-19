@@ -25,7 +25,7 @@ export function useClinicalSummary(petId: number | null) {
       setError(null)
 
       try {
-        const response = await apiClient.get<ClinicalSummary>(`petsbien/${petId}/clinical-summary`)
+        const response = await apiClient.get<ClinicalSummary>(`pets/${petId}/clinical-summary`)
 
         if (!response.success) {
           throw new Error(response.error || 'Failed to fetch clinical summary')
