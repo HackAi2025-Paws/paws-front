@@ -4,9 +4,8 @@ import { PetCarousel } from '../../components/features/PetCarousel'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { useAppDispatch, useAppSelector } from '../../hooks'
-import { setPets } from '../../store/petsSlice'
+import { loadPets } from '../../store/petsSlice'
 import { setReminders } from '../../store/remindersSlice'
-import { mockPets } from '../../data/mockData'
 import { petService } from '../../services/petService'
 import { Calendar, AlertTriangle } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -22,8 +21,10 @@ export const DashboardPage: React.FC = () => {
       try {
         console.log('🏠 Loading dashboard data...')
         
-        // Cargar pets (mock por ahora)
-        dispatch(setPets(mockPets))
+        // Cargar pets reales del backend (si no hay pets cargados)
+        if (pets.length === 0) {
+          dispatch(loadPets())
+        }
         
         // Cargar recordatorios reales del backend
         const reminders = await petService.getPetReminders('dummy')
@@ -32,14 +33,16 @@ export const DashboardPage: React.FC = () => {
         console.log('✅ Dashboard data loaded successfully')
       } catch (error) {
         console.error('❌ Error loading dashboard data:', error)
-        // En caso de error, al menos cargar los pets
-        dispatch(setPets(mockPets))
+        // En caso de error, al menos intentar cargar los pets
+        if (pets.length === 0) {
+          dispatch(loadPets())
+        }
         dispatch(setReminders([])) // Array vacío en lugar de mock
       }
     }
 
     loadDashboardData()
-  }, [dispatch])
+  }, [dispatch, pets.length])
 
   const upcomingReminders = reminders.filter(r => !r.isCompleted).slice(0, 3)
 

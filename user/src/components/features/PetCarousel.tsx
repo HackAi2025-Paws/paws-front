@@ -164,7 +164,10 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
                           <Weight className="h-4 w-4 mx-auto mb-1 text-blue-500" />
                           <p className="text-xs text-gray-600">Peso</p>
                           <p className="text-sm font-semibold text-gray-900">
-                            {pet.weight.min}-{pet.weight.max} {pet.weight.unit}
+                            {pet.weight && pet.weight.min > 0 
+                              ? `${pet.weight.min}-${pet.weight.max} ${pet.weight.unit}`
+                              : 'No registrado'
+                            }
                           </p>
                         </div>
                         

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Header } from '../../components/layout/Header'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/badge'
 import { AddConsultationForm } from '../../components/forms/AddConsultationForm'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { addConsultationRecord } from '../../store/petsSlice'
+import { petService } from '../../services/petService'
 import type { ConsultationRecord } from '../../types/index.js'
 import { 
   Plus, 
@@ -32,15 +33,45 @@ export const ConsultationsPage: React.FC = () => {
   const [selectedTypeFilter, setSelectedTypeFilter] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set())
+  const [consultations, setConsultations] = useState<ConsultationRecord[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Obtener todos los registros de consultas de todas las mascotas
-  const allConsultationRecords = pets.flatMap(pet => 
-    pet.consultationRecords.map(record => ({
-      ...record,
-      petName: pet.name,
-      petBreed: pet.breed
-    }))
-  ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  // Cargar consultas desde el backend cuando se monta el componente
+  useEffect(() => {
+    const loadConsultations = async () => {
+      setIsLoading(true)
+      try {
+        console.log('📥 Loading consultations from backend...')
+        
+        // Obtener todas las consultas del usuario (sin filtro de petId)
+        const allConsultations = await petService.getConsultations()
+        
+        // Agregar información de la mascota a cada consulta
+        const consultationsWithPetInfo = allConsultations.map(consultation => {
+          const pet = pets.find(p => p.id === consultation.petId)
+          return {
+            ...consultation,
+            petName: pet?.name || 'Mascota desconocida',
+            petBreed: pet?.breed || 'Raza desconocida'
+          }
+        })
+        
+        setConsultations(consultationsWithPetInfo)
+        console.log('✅ Consultations loaded successfully:', consultationsWithPetInfo)
+      } catch (error) {
+        console.error('❌ Error loading consultations:', error)
+        // Fallback a datos vacíos en lugar de mock
+        setConsultations([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadConsultations()
+  }, [pets]) // Volver a cargar si cambian las mascotas
+
+  // Usar consultations en lugar de pet.consultationRecords
+  const allConsultationRecords = consultations.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
   // Filtrar registros
   const filteredRecords = allConsultationRecords.filter(record => {
@@ -70,15 +101,32 @@ export const ConsultationsPage: React.FC = () => {
     return consultationTypes.find(t => t.value === type) || consultationTypes[0]
   }
 
-  const handleAddConsultation = (consultationData: Omit<ConsultationRecord, 'id' | 'createdAt'>) => {
-    const newRecord: ConsultationRecord = {
-      ...consultationData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
+  const handleAddConsultation = async (consultationData: Omit<ConsultationRecord, 'id' | 'createdAt'>, vaccinations?: any[], treatments?: any[]) => {
+    try {
+      console.log('🔄 Creating consultation with vaccines and treatments...')
+      console.log('📋 Consultation data:', consultationData)
+      console.log('💉 Vaccinations:', vaccinations)
+      console.log('💊 Treatments:', treatments)
+      
+      // Llamar al backend con el nuevo método
+      const newRecord = await petService.createConsultationWithVaccinesAndTreatments(consultationData, vaccinations, treatments)
+      
+      // Agregar a la lista local con información de mascota
+      const pet = pets.find(p => p.id === newRecord.petId)
+      const newRecordWithPetInfo = {
+        ...newRecord,
+        petName: pet?.name || 'Mascota desconocida',
+        petBreed: pet?.breed || 'Raza desconocida'
+      }
+      
+      setConsultations(prev => [newRecordWithPetInfo, ...prev])
+      setShowAddForm(false)
+      
+      console.log('✅ Consultation created successfully:', newRecord)
+    } catch (error) {
+      console.error('❌ Error creating consultation:', error)
+      alert('Error al crear la consulta. Por favor, inténtalo de nuevo.')
     }
-    
-    dispatch(addConsultationRecord(newRecord))
-    setShowAddForm(false)
   }
 
   const toggleExpanded = (recordId: string) => {
@@ -107,10 +155,46 @@ export const ConsultationsPage: React.FC = () => {
                 {filteredRecords.length} registro{filteredRecords.length !== 1 ? 's' : ''} encontrado{filteredRecords.length !== 1 ? 's' : ''}
               </p>
             </div>
-            <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nueva Consulta
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={async () => {
+                  console.log('🧪 Testing GET vaccines for petId=2...')
+                  try {
+                    const vaccines = await petService.getPetVaccines('2')
+                    console.log('✅ Vaccines result:', vaccines)
+                    alert(`Found ${vaccines.length} vaccines. Check console for details.`)
+                  } catch (error) {
+                    console.error('❌ Error testing vaccines:', error)
+                    alert('Error testing vaccines. Check console.')
+                  }
+                }} 
+                variant="outline" 
+                size="sm"
+              >
+                🧪 Test Vaccines
+              </Button>
+              <Button 
+                onClick={async () => {
+                  console.log('🧪 Testing GET treatments for petId=2...')
+                  try {
+                    const treatments = await petService.getPetTreatments('2')
+                    console.log('✅ Treatments result:', treatments)
+                    alert(`Found ${treatments.length} treatments. Check console for details.`)
+                  } catch (error) {
+                    console.error('❌ Error testing treatments:', error)
+                    alert('Error testing treatments. Check console.')
+                  }
+                }} 
+                variant="outline" 
+                size="sm"
+              >
+                🧪 Test Treatments
+              </Button>
+              <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Nueva Consulta
+              </Button>
+            </div>
           </div>
 
           {/* Filtros y búsqueda */}
@@ -184,7 +268,14 @@ export const ConsultationsPage: React.FC = () => {
           </Card>
 
           {/* Lista de consultas */}
-          {filteredRecords.length === 0 ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+                <p className="text-gray-600">Cargando consultas...</p>
+              </CardContent>
+            </Card>
+          ) : filteredRecords.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="h-12 w-12 text-gray-400 mb-4" />

@@ -8,6 +8,8 @@ import { useAppDispatch, useAppSelector } from '../../hooks'
 import { setSelectedPet } from '../../store/petsSlice'
 import { calculateAge, formatDate } from '../../lib/utils'
 import { exportPetHistoryToPDF } from '../../lib/pdfExport'
+import { petService } from '../../services/petService'
+import type { ConsultationRecord } from '../../types/index.js'
 import { Calendar, Syringe, Stethoscope, Edit, Weight, Cake, Download, FileText } from 'lucide-react'
 
 export const PetProfilePage: React.FC = () => {
@@ -15,6 +17,8 @@ export const PetProfilePage: React.FC = () => {
   const dispatch = useAppDispatch()
   const { pets, selectedPet } = useAppSelector((state) => state.pets)
   const [isExporting, setIsExporting] = useState(false)
+  const [consultations, setConsultations] = useState<ConsultationRecord[]>([])
+  const [isLoadingConsultations, setIsLoadingConsultations] = useState(false)
 
   useEffect(() => {
     if (petId) {
@@ -22,6 +26,28 @@ export const PetProfilePage: React.FC = () => {
       dispatch(setSelectedPet(pet || null))
     }
   }, [petId, pets, dispatch])
+
+  // Cargar consultas específicas de esta mascota
+  useEffect(() => {
+    const loadPetConsultations = async () => {
+      if (!petId) return
+      
+      setIsLoadingConsultations(true)
+      try {
+        console.log('📥 Loading consultations for pet:', petId)
+        const petConsultations = await petService.getConsultations(petId)
+        setConsultations(petConsultations)
+        console.log('✅ Pet consultations loaded:', petConsultations)
+      } catch (error) {
+        console.error('❌ Error loading pet consultations:', error)
+        setConsultations([])
+      } finally {
+        setIsLoadingConsultations(false)
+      }
+    }
+
+    loadPetConsultations()
+  }, [petId])
 
   if (!selectedPet) {
     return (
@@ -255,11 +281,15 @@ export const PetProfilePage: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {selectedPet.consultationRecords.length === 0 ? (
+            {isLoadingConsultations ? (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            ) : consultations.length === 0 ? (
               <p className="text-gray-600 text-center py-4">No hay consultas registradas</p>
             ) : (
               <div className="space-y-3">
-                {selectedPet.consultationRecords.slice(0, 3).map(record => (
+                {consultations.slice(0, 3).map(record => (
                   <div key={record.id} className="flex items-start justify-between p-3 border rounded-lg">
                     <div className="flex-1">
                       <p className="font-medium">{record.title}</p>
@@ -274,9 +304,9 @@ export const PetProfilePage: React.FC = () => {
                     </div>
                   </div>
                 ))}
-                {selectedPet.consultationRecords.length > 3 && (
+                {consultations.length > 3 && (
                   <p className="text-sm text-gray-500 text-center">
-                    Y {selectedPet.consultationRecords.length - 3} consulta{selectedPet.consultationRecords.length - 3 !== 1 ? 's' : ''} más...
+                    Y {consultations.length - 3} consulta{consultations.length - 3 !== 1 ? 's' : ''} más...
                   </p>
                 )}
               </div>
