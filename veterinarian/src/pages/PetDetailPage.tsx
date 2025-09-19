@@ -74,7 +74,7 @@ export default function PetDetailPage() {
   const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null)
   const [openExport, setOpenExport] = useState(false)
   const [activeTab, setActiveTab] = useState('resumen')
-  const { finalText, toggleListening, isListening, clearText } = useSpeechToText();
+  const { finalText, toggleListening, isListening, isConnecting, clearText } = useSpeechToText();
   const [consultation, setConsultation] = useState<Consultation | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
@@ -787,13 +787,23 @@ export default function PetDetailPage() {
                   <button
                     className={`btn ${isListening ? 'btn--danger' : 'btn--ghost'} voiceBtn`}
                     onClick={handleVoiceInput}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isConnecting}
                     style={{
                       backgroundColor: isListening ? '#ef4444' : undefined,
-                      color: isListening ? 'white' : undefined
+                      color: isListening ? 'white' : undefined,
+                      position: 'relative'
                     }}
                   >
-                    {isListening ? '⏹️ Parar grabación' : '🎤 Dictar por voz'}
+                    {isConnecting ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="spinner spinner--small">
+                          <div className="spinner__circle"></div>
+                        </div>
+                        <span>Conectando...</span>
+                      </div>
+                    ) : (
+                      isListening ? '⏹️ Parar grabación' : '🎤 Dictar por voz'
+                    )}
                   </button>
                   <button
                     className="btn btn--primary"

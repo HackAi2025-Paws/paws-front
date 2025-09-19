@@ -81,7 +81,7 @@
 }
 
 .owner__title {
-  color: #166534;
+  color: var(--brand-700);
   font-weight: 800;
 }
 
