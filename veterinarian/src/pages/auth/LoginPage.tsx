@@ -53,9 +53,8 @@ export default function LoginPage() {
   return (
     <div className="authLayout">
       <div className="authLayout__header">
-        <Logo />
+        <Logo size={100} />
         <div className="brand">
-          <div className="brand__title">PetLink</div>
           <div className="brand__subtitle">Accede a tu plataforma veterinaria</div>
         </div>
       </div>

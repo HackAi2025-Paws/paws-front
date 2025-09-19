@@ -1,4 +1,4 @@
-import newLogo from '../../assets/new_logo.jpg';
+import newLogo from '../../assets/logo_paws.png';
 
 export function Logo({ size = 44 }: { size?: number }) {
   return (
@@ -6,8 +6,6 @@ export function Logo({ size = 44 }: { size?: number }) {
       className="logoMark"
       style={{
         width: size,
-        height: size,
-        borderRadius: '50%',
         overflow: 'hidden'
       }}
       aria-label="PetLink"

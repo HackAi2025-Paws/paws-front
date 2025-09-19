@@ -54,11 +54,10 @@ export const RegisterPage: React.FC = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo y bienvenida */}
         <div className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-            <Logo />
+          <div className="mx-auto rounded-full flex items-center justify-center">
+            <Logo size={100} />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">PetLink</h1>
             <p className="text-gray-600">Únete y cuida a tus mascotas</p>
           </div>
         </div>
