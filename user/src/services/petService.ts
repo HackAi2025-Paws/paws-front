@@ -2,6 +2,7 @@ import apiClient from './apiClient'
 import { env } from '../config/env'
 import { mockPets } from '../data/mockData'
 import type { Pet, Reminder, ConsultationRecord, ReminderType, VaccinationType } from '../types'
+import { store } from '../store'
 
 // Tipos para el backend
 interface BackendPet {
@@ -263,7 +264,17 @@ class PetServiceImpl implements PetService {
     try {
       console.log('📥 Fetching all pets from backend...')
       
-      const response = await apiClient.get('/pets')
+      // Obtener el userId del estado de Redux
+      const state = store.getState()
+      const userId = state.auth.user?.id
+      
+      if (!userId) {
+        console.error('❌ No user ID found in auth state')
+        return []
+      }
+      
+      console.log('🔑 Using ownerId filter:', userId)
+      const response = await apiClient.get('/pets', { ownerId: userId })
       
       if (!response.success) {
         throw new Error(response.error || 'Error fetching pets')
