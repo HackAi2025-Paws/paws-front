@@ -40,12 +40,19 @@ a:hover { text-decoration: underline; }
 
 .authLayout__header {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
 }
 
 .logoMark { display: grid; place-items: center; }
+.brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 .brand__title { font-weight: 700; font-size: 22px; }
 .brand__subtitle { color: var(--muted); font-size: 14px; }
 

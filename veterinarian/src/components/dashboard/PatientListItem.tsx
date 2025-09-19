@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { Pet } from '../../services/petsService'
+import { getAnimalAvatar } from '../../utils/animalUtils'
 
 interface PatientListItemProps {
   pet: Pet
@@ -41,7 +42,7 @@ export default function PatientListItem({ pet }: PatientListItemProps) {
       <div className="patientItem__left">
         <img
           className="patientItem__avatar"
-          src={`https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${pet.name}&backgroundColor=c0aede`}
+          src={getAnimalAvatar(displaySpecies, pet.name, pet.profileImageUrl)}
           alt={pet.name}
         />
         <div className="patientItem__text">

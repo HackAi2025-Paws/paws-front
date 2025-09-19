@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import type { ExportOptions } from '../modules/patients/types'
+import { formatDateSafe } from '../utils/dateUtils'
 
 export interface PDFPatientData {
   id: number
@@ -98,15 +99,7 @@ export class PDFService {
   }
 
   private formatDate(dateString: string): string {
-    try {
-      return new Date(dateString).toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      })
-    } catch {
-      return dateString
-    }
+    return formatDateSafe(dateString)
   }
 
   private getConsultationType(type: string): string {

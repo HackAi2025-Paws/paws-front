@@ -2,6 +2,7 @@
 import { useState, useEffect, useImperativeHandle, forwardRef } from 'react'
 import { apiClient } from '../../services/apiClient'
 import type { Consultation } from '../../types/consultations'
+import { getTodayForInput } from '../../utils/dateUtils'
 
 export interface AddRecordFormRef {
   submitForm: () => void
@@ -64,7 +65,7 @@ const AddRecordForm = forwardRef<AddRecordFormRef, AddRecordFormProps>(({ onSave
     tratamiento: '',
     proximosPasos: initialData?.nextSteps || '',
     notas: initialData?.additionalNotes || '',
-    fechaConsulta: new Date().toISOString().split('T')[0],
+    fechaConsulta: getTodayForInput(),
     proximaConsulta: ''
   })
   let _ = onSave;
@@ -85,7 +86,7 @@ const AddRecordForm = forwardRef<AddRecordFormRef, AddRecordFormProps>(({ onSave
         tratamiento: '',
         proximosPasos: initialData.nextSteps || '',
         notas: initialData.additionalNotes || '',
-        fechaConsulta: new Date().toISOString().split('T')[0],
+        fechaConsulta: getTodayForInput(),
         proximaConsulta: ''
       })
 
@@ -149,7 +150,7 @@ const AddRecordForm = forwardRef<AddRecordFormRef, AddRecordFormProps>(({ onSave
       tratamiento: '',
       proximosPasos: '',
       notas: '',
-      fechaConsulta: new Date().toISOString().split('T')[0],
+      fechaConsulta: getTodayForInput(),
       proximaConsulta: ''
     })
     setFiles([])
@@ -197,7 +198,7 @@ const AddRecordForm = forwardRef<AddRecordFormRef, AddRecordFormProps>(({ onSave
   }
 
   const addVaccine = () => {
-    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const today = getTodayForInput(); // Format: YYYY-MM-DD
     const newVaccine: VaccineEntry = {
       id: `vaccine-${Date.now()}`,
       vaccineId: '',
@@ -219,7 +220,7 @@ const AddRecordForm = forwardRef<AddRecordFormRef, AddRecordFormProps>(({ onSave
 
   // Treatment management functions
   const addTreatment = () => {
-    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const today = getTodayForInput(); // Format: YYYY-MM-DD
     const newTreatment: TreatmentEntry = {
       id: `treatment-${Date.now()}`,
       name: '',
