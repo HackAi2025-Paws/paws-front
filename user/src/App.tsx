@@ -1,4 +1,4 @@
-import React from 'react'
+import { useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { store } from './store'
@@ -16,10 +16,25 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { AuthProvider } from './modules/auth/AuthContext'
 import { mockAuthClient } from './modules/auth/mockClient'
 import { useSessionSync } from './hooks/useSessionSync'
+import { useAppDispatch, useAppSelector } from './hooks'
+import { loadPets } from './store/petsSlice'
+import { useAuth } from './modules/auth/AuthContext'
 
 function AppContent() {
   // Sincronizar sesión al inicializar
   useSessionSync()
+  
+  const dispatch = useAppDispatch()
+  const { user } = useAuth()
+  const { pets } = useAppSelector(state => state.pets)
+
+  // Cargar mascotas cuando el usuario está autenticado
+  useEffect(() => {
+    if (user && pets.length === 0) {
+      console.log('🔄 Loading pets from backend...')
+      dispatch(loadPets())
+    }
+  }, [user, pets.length, dispatch])
 
   return (
     <Router>
@@ -74,7 +89,7 @@ function AppContent() {
             } />
             
             {/* Redirecciones */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>

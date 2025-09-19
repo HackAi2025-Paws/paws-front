@@ -6,22 +6,79 @@ import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { setSelectedPet } from '../../store/petsSlice'
-import { calculateAge, formatDate } from '../../lib/utils'
+import { calculateAge } from '../../lib/utils'
 import { exportPetHistoryToPDF } from '../../lib/pdfExport'
-import { Calendar, Syringe, Stethoscope, Edit, Weight, Cake, Download, FileText } from 'lucide-react'
+import { petService } from '../../services/petService'
+import type { ConsultationRecord } from '../../types/index.js'
+import { Syringe, Edit, Weight, Cake, Download, FileText } from 'lucide-react'
 
 export const PetProfilePage: React.FC = () => {
   const { petId } = useParams<{ petId: string }>()
   const dispatch = useAppDispatch()
-  const { pets, selectedPet } = useAppSelector((state) => state.pets)
+  const { selectedPet } = useAppSelector((state) => state.pets)
   const [isExporting, setIsExporting] = useState(false)
+  const [consultations, setConsultations] = useState<ConsultationRecord[]>([])
+  const [vaccines, setVaccines] = useState<any[]>([])
+  const [isLoadingPet, setIsLoadingPet] = useState(false)
+  const [isLoadingVaccines, setIsLoadingVaccines] = useState(false)
 
+  // Cargar información completa de la mascota desde backend (GET /pets)
   useEffect(() => {
-    if (petId) {
-      const pet = pets.find(p => p.id === petId)
-      dispatch(setSelectedPet(pet || null))
+    const loadPetFromBackend = async () => {
+      if (!petId) return
+      
+      setIsLoadingPet(true)
+      try {
+        console.log('📥 Loading complete pet data from backend:', petId)
+        
+        // Obtener información completa de la mascota incluyendo historial clínico
+        const petData = await petService.getPetById(petId)
+        
+        // Setear la mascota en el store Redux
+        dispatch(setSelectedPet(petData))
+        
+        // Setear las consultas desde los datos de la mascota
+        setConsultations(petData.consultationRecords || [])
+        
+        console.log('✅ Complete pet data loaded:', petData)
+        console.log('📋 Pet consultations:', petData.consultationRecords)
+      } catch (error) {
+        console.error('❌ Error loading pet from backend:', error)
+        // Fallback: limpiar datos
+        dispatch(setSelectedPet(null))
+        setConsultations([])
+      } finally {
+        setIsLoadingPet(false)
+      }
     }
-  }, [petId, pets, dispatch])
+
+    loadPetFromBackend()
+  }, [petId, dispatch])
+
+  // Cargar vacunas específicas de esta mascota desde endpoint /vaccines
+  useEffect(() => {
+    const loadPetVaccines = async () => {
+      if (!petId) return
+      
+      setIsLoadingVaccines(true)
+      try {
+        console.log('📥 Loading vaccines for pet:', petId)
+        
+        // Obtener vacunas específicas de la mascota
+        const petVaccines = await petService.getPetVaccines(petId)
+        setVaccines(petVaccines)
+        
+        console.log('✅ Pet vaccines loaded:', petVaccines)
+      } catch (error) {
+        console.error('❌ Error loading pet vaccines:', error)
+        setVaccines([])
+      } finally {
+        setIsLoadingVaccines(false)
+      }
+    }
+
+    loadPetVaccines()
+  }, [petId])
 
   if (!selectedPet) {
     return (
@@ -39,11 +96,8 @@ export const PetProfilePage: React.FC = () => {
   }
 
   const age = calculateAge(selectedPet.birthDate)
-  const upcomingAppointments = selectedPet.appointments.filter(
-    apt => apt.status === 'programada'
-  )
-  const upcomingVaccinations = selectedPet.vaccinations.filter(
-    vacc => vacc.nextDue && new Date(vacc.nextDue) > new Date()
+  const upcomingVaccinations = vaccines.filter(
+    vaccine => vaccine.expirationDate && new Date(vaccine.expirationDate) > new Date()
   )
 
   const handleExportPDF = async () => {
@@ -120,7 +174,12 @@ export const PetProfilePage: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-1">
                       <Weight className="h-4 w-4" />
-                      <span>{selectedPet.weight.min}-{selectedPet.weight.max} {selectedPet.weight.unit}</span>
+                      <span>
+                        {selectedPet.weight && selectedPet.weight.min > 0 
+                          ? `${selectedPet.weight.min}-${selectedPet.weight.max} ${selectedPet.weight.unit}`
+                          : 'No registrado'
+                        }
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -129,39 +188,28 @@ export const PetProfilePage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Próximos eventos */}
-        {(upcomingAppointments.length > 0 || upcomingVaccinations.length > 0) && (
+        {/* Próximas vacunas a vencer */}
+        {upcomingVaccinations.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Calendar className="h-5 w-5 mr-2" />
-                Próximos Eventos
+                <Syringe className="h-5 w-5 mr-2" />
+                Próximas Vacunas a Vencer
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {upcomingAppointments.map(apt => (
-                <div key={apt.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <Stethoscope className="h-4 w-4 text-blue-500" />
-                    <div>
-                      <p className="font-medium text-blue-900 capitalize">{apt.type}</p>
-                      <p className="text-sm text-blue-700">{apt.veterinarian}</p>
-                    </div>
-                  </div>
-                  <Badge variant="outline">{formatDate(apt.date)}</Badge>
-                </div>
-              ))}
-              
-              {upcomingVaccinations.map(vacc => (
-                <div key={vacc.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              {upcomingVaccinations.map(vaccine => (
+                <div key={vaccine.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Syringe className="h-4 w-4 text-green-500" />
                     <div>
-                      <p className="font-medium text-green-900">{vacc.name}</p>
-                      <p className="text-sm text-green-700">Vacuna pendiente</p>
+                      <p className="font-medium text-green-900">{vaccine.catalog?.name || 'Vacuna'}</p>
+                      <p className="text-sm text-green-700">Próxima a vencer</p>
                     </div>
                   </div>
-                  <Badge variant="outline">{formatDate(vacc.nextDue!)}</Badge>
+                  <Badge variant="outline">
+                    {new Date(vaccine.expirationDate!).toLocaleDateString('es-ES')}
+                  </Badge>
                 </div>
               ))}
             </CardContent>
@@ -177,60 +225,33 @@ export const PetProfilePage: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {selectedPet.vaccinations.length === 0 ? (
+            {isLoadingVaccines ? (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            ) : vaccines.length === 0 ? (
               <p className="text-gray-600 text-center py-4">No hay vacunas registradas</p>
             ) : (
               <div className="space-y-3">
-                {selectedPet.vaccinations.map(vacc => (
-                  <div key={vacc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                {vaccines.map(vaccine => (
+                  <div key={vaccine.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium">{vacc.name}</p>
-                      <p className="text-sm text-gray-600">{vacc.veterinarian}</p>
-                      {vacc.notes && (
-                        <p className="text-xs text-gray-500 mt-1">{vacc.notes}</p>
+                      <p className="font-medium">{vaccine.catalog?.name || 'Vacuna'}</p>
+                      <p className="text-sm text-gray-600">{vaccine.author?.name || 'Veterinario'}</p>
+                      {vaccine.notes && (
+                        <p className="text-xs text-gray-500 mt-1">{vaccine.notes}</p>
+                      )}
+                      {vaccine.batchNumber && (
+                        <p className="text-xs text-gray-400">Lote: {vaccine.batchNumber}</p>
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-sm">{formatDate(vacc.date)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Historial de consultas */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Stethoscope className="h-5 w-5 mr-2" />
-              Historial de Consultas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {selectedPet.appointments.length === 0 ? (
-              <p className="text-gray-600 text-center py-4">No hay consultas registradas</p>
-            ) : (
-              <div className="space-y-3">
-                {selectedPet.appointments.map(apt => (
-                  <div key={apt.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium capitalize">{apt.type}</p>
-                      <p className="text-sm text-gray-600">{apt.veterinarian}</p>
-                      {apt.notes && (
-                        <p className="text-xs text-gray-500 mt-1">{apt.notes}</p>
+                      <p className="text-sm">{new Date(vaccine.applicationDate).toLocaleDateString('es-ES')}</p>
+                      {vaccine.expirationDate && (
+                        <p className="text-xs text-gray-500">
+                          Vence: {new Date(vaccine.expirationDate).toLocaleDateString('es-ES')}
+                        </p>
                       )}
-                    </div>
-                    <div className="text-right">
-                      <Badge 
-                        variant={apt.status === 'completada' ? 'default' : 'outline'}
-                      >
-                        {apt.status}
-                      </Badge>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatDate(apt.date)}
-                      </p>
                     </div>
                   </div>
                 ))}
@@ -255,11 +276,15 @@ export const PetProfilePage: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {selectedPet.consultationRecords.length === 0 ? (
+            {isLoadingPet ? (
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            ) : consultations.length === 0 ? (
               <p className="text-gray-600 text-center py-4">No hay consultas registradas</p>
             ) : (
               <div className="space-y-3">
-                {selectedPet.consultationRecords.slice(0, 3).map(record => (
+                {consultations.slice(0, 3).map(record => (
                   <div key={record.id} className="flex items-start justify-between p-3 border rounded-lg">
                     <div className="flex-1">
                       <p className="font-medium">{record.title}</p>
@@ -274,9 +299,9 @@ export const PetProfilePage: React.FC = () => {
                     </div>
                   </div>
                 ))}
-                {selectedPet.consultationRecords.length > 3 && (
+                {consultations.length > 3 && (
                   <p className="text-sm text-gray-500 text-center">
-                    Y {selectedPet.consultationRecords.length - 3} consulta{selectedPet.consultationRecords.length - 3 !== 1 ? 's' : ''} más...
+                    Y {consultations.length - 3} consulta{consultations.length - 3 !== 1 ? 's' : ''} más...
                   </p>
                 )}
               </div>

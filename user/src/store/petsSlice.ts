@@ -1,17 +1,29 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit'
 import type { Pet, ConsultationRecord } from '../types/index.js'
+import { petService } from '../services/petService'
 
 interface PetsState {
   pets: Pet[]
   selectedPet: Pet | null
   isLoading: boolean
+  error: string | null
 }
 
 const initialState: PetsState = {
   pets: [],
   selectedPet: null,
   isLoading: false,
+  error: null,
 }
+
+// Async thunk para cargar pets desde el backend
+export const loadPets = createAsyncThunk(
+  'pets/loadPets',
+  async () => {
+    const pets = await petService.getAllPets()
+    return pets
+  }
+)
 
 const petsSlice = createSlice({
   name: 'pets',
@@ -52,8 +64,27 @@ const petsSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload
     },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loadPets.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(loadPets.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.pets = action.payload
+        state.error = null
+      })
+      .addCase(loadPets.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.error.message || 'Error loading pets'
+      })
   },
 })
 
-export const { setPets, setSelectedPet, addPet, addConsultationRecord, updatePet, deletePet, setLoading } = petsSlice.actions
+export const { setPets, setSelectedPet, addPet, addConsultationRecord, updatePet, deletePet, setLoading, setError } = petsSlice.actions
 export default petsSlice.reducer

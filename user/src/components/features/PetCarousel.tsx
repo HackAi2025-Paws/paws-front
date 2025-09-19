@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Card, CardContent } from '../ui/card'
 import { Button } from '../ui/button'
 import type { Pet } from '../../types/index.js'
-import { Plus, Calendar, Weight, Cake, Heart, Stethoscope, MapPin } from 'lucide-react'
+import { Plus, Calendar, Weight, Stethoscope } from 'lucide-react'
 
 interface PetCarouselProps {
   pets: Pet[]
@@ -58,21 +58,21 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
   }
 
   // Funciones simplificadas - todas las tarjetas se ven igual
-  const isCardActive = (index: number) => index === currentIndex
+  // const isCardActive = (index: number) => index === currentIndex
 
   if (pets.length === 0) {
     return (
-      <Card className="border-dashed border-2 border-gray-300 bg-gradient-to-br from-blue-50 to-purple-50">
+      <Card className="border-dashed border-2 border-red-300 bg-transparent">
         <CardContent className="flex flex-col items-center justify-center py-12">
           <div className="text-6xl mb-4 animate-bounce">🐾</div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <h3 className="text-lg font-semibold text-dark-900 mb-2">
             ¡Agrega tu primera mascota!
           </h3>
-          <p className="text-gray-500 text-center mb-4">
+          <p className="text-dark-600 text-center mb-4">
             Comienza creando el perfil de tu compañero peludo
           </p>
           <Link to="/pet/add">
-            <Button className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+            <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               Agregar Mascota
             </Button>
@@ -83,20 +83,7 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">Mis Mascotas</h2>
-          <p className="text-sm text-gray-500">{pets.length} mascota{pets.length !== 1 ? 's' : ''} registrada{pets.length !== 1 ? 's' : ''}</p>
-        </div>
-        <Link to="/pet/add">
-          <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-blue-50 border-blue-200">
-            <Plus className="h-4 w-4" />
-            Agregar
-          </Button>
-        </Link>
-      </div>
-
+    <div className="space-y-4">
       {/* Carrusel estilo billetera virtual */}
       <div className="relative h-64 overflow-hidden">
         <div 
@@ -111,8 +98,8 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {pets.map((pet, index) => {
-            const isActive = isCardActive(index)
+          {pets.map((pet, _index) => {
+            // const isActive = isCardActive(index)
             const upcomingVaccines = pet.vaccinations.filter(v => 
               v.nextDue && new Date(v.nextDue) > new Date()
             ).length
@@ -125,11 +112,11 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
                 style={{ scrollSnapAlign: 'start' }}
               >
                 <Link to={`/pet/${pet.id}`} className="block h-full">
-                  <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 bg-white hover:bg-gray-50">
+                  <Card className="h-full border-dashed border-2 border-red-300 bg-transparent hover:bg-red-50/30 transition-all duration-300">
                     <CardContent className="p-6 h-full flex flex-col">
                       {/* Header con foto y nombre */}
                       <div className="flex items-start space-x-4 mb-4">
-                        <div className="relative w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <div className="relative w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-orange-300">
                           {pet.photo ? (
                             <img 
                               src={pet.photo} 
@@ -144,14 +131,14 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-bold text-gray-900 truncate">
+                          <h3 className="text-lg font-bold text-dark-900 truncate">
                             {pet.name}
                           </h3>
-                          <p className="text-sm text-gray-600 truncate">
+                          <p className="text-sm text-dark-600 truncate">
                             {pet.breed}
                           </p>
                           <div className="flex items-center gap-1 mt-1">
-                            <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                            <span className="text-xs px-2 py-1 rounded-full bg-pink-100 text-dark-700">
                               {pet.gender === 'macho' ? '♂️' : '♀️'} {pet.age}
                             </span>
                           </div>
@@ -160,18 +147,21 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
 
                       {/* Estadísticas rápidas */}
                       <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="p-3 rounded-lg text-center bg-gray-50">
-                          <Weight className="h-4 w-4 mx-auto mb-1 text-blue-500" />
-                          <p className="text-xs text-gray-600">Peso</p>
-                          <p className="text-sm font-semibold text-gray-900">
-                            {pet.weight.min}-{pet.weight.max} {pet.weight.unit}
+                        <div className="p-3 rounded-lg text-center bg-cream-200">
+                          <Weight className="h-4 w-4 mx-auto mb-1 text-orange-600" />
+                          <p className="text-xs text-dark-600">Peso</p>
+                          <p className="text-sm font-semibold text-dark-900">
+                            {pet.weight && pet.weight.min > 0 
+                              ? `${pet.weight.min}-${pet.weight.max} ${pet.weight.unit}`
+                              : 'No registrado'
+                            }
                           </p>
                         </div>
                         
-                        <div className="p-3 rounded-lg text-center bg-gray-50">
-                          <Stethoscope className="h-4 w-4 mx-auto mb-1 text-purple-500" />
-                          <p className="text-xs text-gray-600">Consultas</p>
-                          <p className="text-sm font-semibold text-gray-900">
+                        <div className="p-3 rounded-lg text-center bg-cream-200">
+                          <Stethoscope className="h-4 w-4 mx-auto mb-1 text-red-600" />
+                          <p className="text-xs text-dark-600">Consultas</p>
+                          <p className="text-sm font-semibold text-dark-900">
                             {totalConsultations}
                           </p>
                         </div>

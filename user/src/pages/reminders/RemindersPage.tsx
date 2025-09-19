@@ -9,7 +9,7 @@ import { Card, CardContent } from '../../components/ui/card'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { addReminder, setLoading, setReminders } from '../../store/remindersSlice'
 import { petService } from '../../services/petService'
-import { Plus, Search, Filter } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
 import type { Reminder } from '../../types/index.js'
 
 export const RemindersPage: React.FC = () => {
@@ -30,7 +30,7 @@ export const RemindersPage: React.FC = () => {
         console.log('🔄 Loading reminders on page mount...')
         
         // Usar un petId dummy para activar la carga
-        const reminders = await petService.getPetReminders('dummy')
+        const reminders = await petService.getPetReminders()
         dispatch(setReminders(reminders))
         
         console.log('✅ Reminders loaded successfully:', reminders)

@@ -9,6 +9,7 @@ export interface Pet {
   id: string
   name: string
   breed: string
+  species?: string
   birthDate: string
   age: string // Calculado automáticamente
   weight: {
@@ -16,11 +17,16 @@ export interface Pet {
     max: number
     unit: 'kg' | 'lbs'
   }
-  gender: 'macho' | 'hembra'
+  color?: string
+  gender: 'macho' | 'hembra' | 'no especificado'
+  microchipId?: string
+  ownerPhone?: string
+  medicalConditions?: string[]
+  allergies?: string[]
   photo?: string
   notes: string
   observations: string
-  ownerId: string
+  ownerId?: string
   vaccinations: Vaccination[]
   treatments: Treatment[]
   appointments: Appointment[]
@@ -34,6 +40,8 @@ export interface Vaccination {
   name: VaccinationType
   date: string
   nextDue?: string
+  expirationDate?: string
+  batchNumber?: string
   veterinarian: string
   notes?: string
 }
@@ -43,10 +51,15 @@ export interface Treatment {
   petId: string
   type: 'inyeccion' | 'tratamiento' | 'antiparasitario' | 'medicamento'
   name: string
+  medication?: string
   date: string
+  startDate?: string
+  endDate?: string
   dose?: string
+  dosage?: string
   frequency?: string
   duration?: string
+  instructions?: string
   veterinarian?: string
   notes?: string
 }
@@ -95,6 +108,13 @@ export type VaccinationType =
   | 'Leptospirosis'
   | 'Lyme'
   | 'Triple Felina (FVRCP)'
+  | 'Coronavirus'
+  | 'Giardia'
+  | 'Leishmaniosis'
+  | 'Pentavalente'
+  | 'Sextuple'
+  | 'Triple felina'
+  | 'Leucemia felina'
   | 'Leucemia Felina (FeLV)'
   | 'Panleucopenia'
   | 'Rinotraqueitis'

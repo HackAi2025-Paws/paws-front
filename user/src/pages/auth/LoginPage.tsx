@@ -1,4 +1,5 @@
-import React, { useState, FormEvent } from 'react'
+import React, { useState } from 'react'
+import type { FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
@@ -12,7 +13,7 @@ import { env } from '../../config/env'
 import { Heart, Phone, Shield } from 'lucide-react'
 
 export const LoginPage: React.FC = () => {
-  const { login, isLoading: authLoading } = useAuth()
+  const { /* login, */ isLoading: authLoading } = useAuth()
   const { sendOTP, verifyOTP, isLoading: apiLoading, error: apiError, clearError } = useAuthFlow()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()

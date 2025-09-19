@@ -5,11 +5,11 @@ import { Textarea } from '../ui/textarea'
 import { Select } from '../ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { useAppSelector } from '../../hooks'
-import type { ConsultationRecord } from '../../types/index.js'
-import { X, Calendar, Stethoscope, FileText, DollarSign, MapPin } from 'lucide-react'
+import type { ConsultationRecord, VaccinationType } from '../../types/index.js'
+import { X, Calendar, Stethoscope, FileText, DollarSign, MapPin, Plus, Syringe, Pill } from 'lucide-react'
 
 interface AddConsultationFormProps {
-  onSubmit: (consultation: Omit<ConsultationRecord, 'id' | 'createdAt'>) => void
+  onSubmit: (consultation: Omit<ConsultationRecord, 'id' | 'createdAt'>, vaccinations?: any[], treatments?: any[]) => Promise<void>
   onClose: () => void
   selectedPetId?: string
 }
@@ -48,6 +48,103 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
     { value: 'revision', label: '🔍 Revisión', icon: Calendar }
   ]
 
+  const VACCINATION_OPTIONS: VaccinationType[] = [
+    'Rabia',
+    'DHPP (Múltiple)',
+    'Parvovirus',
+    'Moquillo',
+    'Hepatitis',
+    'Parainfluenza',
+    'Coronavirus',
+    'Leptospirosis',
+    'Bordetella',
+    'Giardia',
+    'Leishmaniosis',
+    'Pentavalente',
+    'Sextuple',
+    'Triple felina',
+    'Leucemia felina'
+  ]
+
+  const TREATMENT_TYPES = [
+    'Antibiótico',
+    'Antiinflamatorio',
+    'Analgésico',
+    'Antiparasitario',
+    'Vitaminas',
+    'Suplemento',
+    'Antihistamínico',
+    'Corticoide',
+    'Probiótico',
+    'Desparasitante',
+    'Otro'
+  ] as const
+
+  // Estado para vacunas y tratamientos
+  const [vaccinations, setVaccinations] = useState<Array<{
+    type: VaccinationType | ''
+    date: string
+    veterinarian: string
+    batchNumber: string
+    expirationDate: string
+    notes: string
+  }>>([])
+
+  const [treatments, setTreatments] = useState<Array<{
+    type: typeof TREATMENT_TYPES[number] | ''
+    name: string
+    startDate: string
+    endDate: string
+    dosage: string
+    instructions: string
+    veterinarian: string
+  }>>([])
+
+  // Funciones para manejar vacunas
+  const addVaccination = () => {
+    setVaccinations(prev => [...prev, { 
+      type: '', 
+      date: '', 
+      veterinarian: '', 
+      batchNumber: '', 
+      expirationDate: '', 
+      notes: '' 
+    }])
+  }
+
+  const removeVaccination = (index: number) => {
+    setVaccinations(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const updateVaccination = (index: number, field: string, value: string) => {
+    setVaccinations(prev => prev.map((vaccination, i) => 
+      i === index ? { ...vaccination, [field]: value } : vaccination
+    ))
+  }
+
+  // Funciones para manejar tratamientos
+  const addTreatment = () => {
+    setTreatments(prev => [...prev, { 
+      type: '', 
+      name: '', 
+      startDate: '', 
+      endDate: '', 
+      dosage: '', 
+      instructions: '', 
+      veterinarian: '' 
+    }])
+  }
+
+  const removeTreatment = (index: number) => {
+    setTreatments(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const updateTreatment = (index: number, field: string, value: string) => {
+    setTreatments(prev => prev.map((treatment, i) => 
+      i === index ? { ...treatment, [field]: value } : treatment
+    ))
+  }
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -55,12 +152,41 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!formData.petId || !formData.title || !formData.diagnosis) {
       alert('Por favor completa los campos obligatorios: Mascota, Título y Diagnóstico')
       return
+    }
+
+    // Validación específica por tipo de consulta
+    if (formData.type === 'vacunacion' && vaccinations.length === 0) {
+      alert('Para consultas de vacunación debe agregar al menos una vacuna')
+      return
+    }
+    
+    if (formData.type === 'tratamiento' && treatments.length === 0) {
+      alert('Para consultas de tratamiento debe agregar al menos un tratamiento')
+      return
+    }
+
+    // Validar vacunas requeridas
+    for (let i = 0; i < vaccinations.length; i++) {
+      const vaccination = vaccinations[i]
+      if (!vaccination.type || !vaccination.date) {
+        alert(`Vacuna #${i + 1}: Tipo y fecha son obligatorios`)
+        return
+      }
+    }
+
+    // Validar tratamientos requeridos
+    for (let i = 0; i < treatments.length; i++) {
+      const treatment = treatments[i]
+      if (!treatment.type || !treatment.name || !treatment.startDate || !treatment.dosage || !treatment.instructions) {
+        alert(`Tratamiento #${i + 1}: Tipo, nombre, fecha de inicio, dosis e instrucciones son obligatorios`)
+        return
+      }
     }
 
     const consultationData: Omit<ConsultationRecord, 'id' | 'createdAt'> = {
@@ -80,7 +206,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
       createdBy: 'owner'
     }
 
-    onSubmit(consultationData)
+    await onSubmit(consultationData, vaccinations, treatments)
   }
 
   return (
@@ -293,6 +419,252 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
                 value={formData.nextAppointment}
                 onChange={(e) => handleInputChange('nextAppointment', e.target.value)}
               />
+            </div>
+
+            {/* Sección de Vacunas - Mostrar solo si el tipo es 'vacunacion' o siempre */}
+        <div className="space-y-4 border-t pt-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+              <Syringe className="h-5 w-5 mr-2" />
+              Vacunas Aplicadas
+              {formData.type === 'vacunacion' && <span className="text-red-500 ml-1">*</span>}
+            </h3>
+            <Button type="button" onClick={addVaccination} variant="outline" size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Agregar Vacuna
+            </Button>
+          </div>
+          
+          {formData.type === 'vacunacion' && vaccinations.length === 0 && (
+            <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+              ⚠️ Para consultas de tipo "Vacunación" es obligatorio agregar al menos una vacuna
+            </p>
+          )}
+
+              {vaccinations.map((vaccination, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-3 bg-blue-50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">💉 Vacuna #{index + 1}</span>
+                    <Button
+                      type="button"
+                      onClick={() => removeVaccination(index)}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tipo de vacuna *
+                      </label>
+                      <Select
+                        value={vaccination.type}
+                        onChange={(e) => updateVaccination(index, 'type', e.target.value)}
+                      >
+                        <option value="">Seleccionar vacuna</option>
+                        {VACCINATION_OPTIONS.map(vaccine => (
+                          <option key={vaccine} value={vaccine}>{vaccine}</option>
+                        ))}
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de aplicación *
+                      </label>
+                      <Input
+                        type="date"
+                        value={vaccination.date}
+                        onChange={(e) => updateVaccination(index, 'date', e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Veterinario
+                      </label>
+                      <Input
+                        value={vaccination.veterinarian}
+                        onChange={(e) => updateVaccination(index, 'veterinarian', e.target.value)}
+                        placeholder="Dr./Dra."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Número de lote
+                      </label>
+                      <Input
+                        value={vaccination.batchNumber}
+                        onChange={(e) => updateVaccination(index, 'batchNumber', e.target.value)}
+                        placeholder="Lote"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de expiración
+                      </label>
+                      <Input
+                        type="date"
+                        value={vaccination.expirationDate}
+                        onChange={(e) => updateVaccination(index, 'expirationDate', e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Notas
+                      </label>
+                      <Input
+                        value={vaccination.notes}
+                        onChange={(e) => updateVaccination(index, 'notes', e.target.value)}
+                        placeholder="Observaciones adicionales"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {vaccinations.length === 0 && (
+                <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
+                  <Syringe className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No hay vacunas registradas para esta consulta</p>
+                  <p className="text-sm">Haz clic en "Agregar Vacuna" si se aplicaron vacunas</p>
+                </div>
+              )}
+            </div>
+
+            {/* Sección de Tratamientos */}
+        <div className="space-y-4 border-t pt-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+              <Pill className="h-5 w-5 mr-2" />
+              Tratamientos Prescritos
+              {formData.type === 'tratamiento' && <span className="text-red-500 ml-1">*</span>}
+            </h3>
+            <Button type="button" onClick={addTreatment} variant="outline" size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Agregar Tratamiento
+            </Button>
+          </div>
+          
+          {formData.type === 'tratamiento' && treatments.length === 0 && (
+            <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+              ⚠️ Para consultas de tipo "Tratamiento" es obligatorio agregar al menos un tratamiento
+            </p>
+          )}
+
+              {treatments.map((treatment, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-3 bg-green-50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">💊 Tratamiento #{index + 1}</span>
+                    <Button
+                      type="button"
+                      onClick={() => removeTreatment(index)}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Tipo de tratamiento *
+                      </label>
+                      <Select
+                        value={treatment.type}
+                        onChange={(e) => updateTreatment(index, 'type', e.target.value)}
+                      >
+                        <option value="">Seleccionar tipo</option>
+                        {TREATMENT_TYPES.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Nombre del medicamento *
+                      </label>
+                      <Input
+                        value={treatment.name}
+                        onChange={(e) => updateTreatment(index, 'name', e.target.value)}
+                        placeholder="Ej: Amoxicilina, Rimadyl..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de inicio *
+                      </label>
+                      <Input
+                        type="date"
+                        value={treatment.startDate}
+                        onChange={(e) => updateTreatment(index, 'startDate', e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de fin
+                      </label>
+                      <Input
+                        type="date"
+                        value={treatment.endDate}
+                        onChange={(e) => updateTreatment(index, 'endDate', e.target.value)}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Dosis *
+                      </label>
+                      <Input
+                        value={treatment.dosage}
+                        onChange={(e) => updateTreatment(index, 'dosage', e.target.value)}
+                        placeholder="Ej: 250mg, 1 comprimido..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Veterinario
+                      </label>
+                      <Input
+                        value={treatment.veterinarian}
+                        onChange={(e) => updateTreatment(index, 'veterinarian', e.target.value)}
+                        placeholder="Dr./Dra."
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Instrucciones de administración *
+                    </label>
+                    <Textarea
+                      value={treatment.instructions}
+                      onChange={(e) => updateTreatment(index, 'instructions', e.target.value)}
+                      placeholder="Ej: Cada 12 horas con comida. Completar todo el tratamiento..."
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              {treatments.length === 0 && (
+                <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
+                  <Pill className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No hay tratamientos registrados para esta consulta</p>
+                  <p className="text-sm">Haz clic en "Agregar Tratamiento" si se prescribieron medicamentos</p>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">
