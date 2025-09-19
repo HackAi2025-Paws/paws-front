@@ -19,7 +19,7 @@ export default function SafeImage({
   style
 }: SafeImageProps) {
   const [hasError, setHasError] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [_, setIsLoading] = useState(true)
 
   const handleError = () => {
     setHasError(true)
