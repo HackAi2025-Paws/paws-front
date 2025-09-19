@@ -18,7 +18,7 @@ import { mockAuthClient } from './modules/auth/mockClient'
 import { useSessionSync } from './hooks/useSessionSync'
 import { useAppDispatch, useAppSelector } from './hooks'
 import { loadPets } from './store/petsSlice'
-import { useAuth } from './modules/auth/AuthContext'
+import { useAuth } from './modules/auth/hooks'
 
 function AppContent() {
   // Sincronizar sesión al inicializar

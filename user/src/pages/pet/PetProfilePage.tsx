@@ -10,7 +10,7 @@ import { calculateAge } from '../../lib/utils'
 import { exportPetHistoryToPDF } from '../../lib/pdfExport'
 import { petService } from '../../services/petService'
 import type { ConsultationRecord, Vaccination, Treatment } from '../../types'
-import { Syringe, Edit, Weight, Cake, Download, FileText, Pill } from 'lucide-react'
+import { Syringe, Weight, Cake, Download, FileText, Pill } from 'lucide-react'
 
 export const PetProfilePage: React.FC = () => {
   const { petId } = useParams<{ petId: string }>()
@@ -113,8 +113,15 @@ export const PetProfilePage: React.FC = () => {
         <Header title="Mascota" showBack />
         <div className="p-4">
           <Card>
-            <CardContent className="flex items-center justify-center py-12">
-              <p className="text-gray-600">Mascota no encontrada</p>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              {isLoadingPet ? (
+                <>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mb-4"></div>
+                  <p className="text-gray-600">Cargando mascota...</p>
+                </>
+              ) : (
+                <p className="text-gray-600">Mascota no encontrada</p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -145,10 +152,32 @@ export const PetProfilePage: React.FC = () => {
       
       <div className="p-4 space-y-6">
         {/* Información básica */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-start space-x-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+        <Card className="relative">
+          {/* Botón Exportar PDF en esquina superior derecha */}
+          <div className="absolute top-4 right-4 z-10">
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={handleExportPDF}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <>
+                  <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  Generando...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exportar
+                </>
+              )}
+            </Button>
+          </div>
+
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto sm:mx-0">
                 {selectedPet.photo ? (
                   <img 
                     src={selectedPet.photo} 
@@ -156,52 +185,37 @@ export const PetProfilePage: React.FC = () => {
                     className="w-full h-full object-cover rounded-full"
                   />
                 ) : (
-                  <div className="text-3xl">🐕</div>
+                  <div className="text-2xl sm:text-3xl">🐕</div>
                 )}
               </div>
               
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h1 className="text-2xl font-bold text-gray-900">{selectedPet.name}</h1>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={handleExportPDF}
-                      disabled={isExporting}
-                    >
-                      {isExporting ? (
-                        <>
-                          <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                          Generando...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4 mr-2" />
-                          Exportar PDF
-                        </>
-                      )}
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4 mr-2" />
-                      Editar
-                    </Button>
-                  </div>
+              <div className="flex-1 w-full text-center sm:text-left">
+                <div className="flex flex-col space-y-2">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{selectedPet.name}</h1>
                 </div>
                 
-                <div className="mt-2 space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg font-medium text-gray-700">{selectedPet.breed}</span>
+                <div className="mt-3">
+                  {/* Raza */}
+                  <div className="text-center sm:text-left mb-3">
+                    <span className="text-base sm:text-lg font-medium text-gray-700">{selectedPet.breed}</span>
                   </div>
                   
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <div className="flex items-center space-x-1">
-                      <Cake className="h-4 w-4" />
-                      <span>{age}</span>
+                  {/* Grid de información en cards pequeñas */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <div className="flex items-center justify-center space-x-1 text-gray-600 mb-1">
+                        <Cake className="h-4 w-4" />
+                        <span className="text-xs font-medium">Edad</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">{age}</span>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <Weight className="h-4 w-4" />
-                      <span>
+                    
+                    <div className="bg-gray-50 rounded-lg p-3 text-center">
+                      <div className="flex items-center justify-center space-x-1 text-gray-600 mb-1">
+                        <Weight className="h-4 w-4" />
+                        <span className="text-xs font-medium">Peso</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">
                         {selectedPet.weight && selectedPet.weight.min > 0 
                           ? `${selectedPet.weight.min}-${selectedPet.weight.max} ${selectedPet.weight.unit}`
                           : 'No registrado'
@@ -255,8 +269,10 @@ export const PetProfilePage: React.FC = () => {
           </Card>
         )}
 
-        {/* Historial de vacunas */}
-        <Card>
+        {/* Layout en Grid para Desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Historial de vacunas */}
+          <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <Syringe className="h-5 w-5 mr-2" />
@@ -273,8 +289,8 @@ export const PetProfilePage: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {vaccines.map(vaccine => (
-                  <div key={vaccine.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
+                  <div key={vaccine.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg space-y-2 sm:space-y-0">
+                    <div className="flex-1">
                       <p className="font-medium">
                         {(() => {
                           // Extraer el tipo real de vacuna del notes si existe
@@ -296,8 +312,8 @@ export const PetProfilePage: React.FC = () => {
                         <p className="text-xs text-gray-400">Lote: {vaccine.batchNumber}</p>
                       )}
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm">{vaccine.applicationDate ? new Date(vaccine.applicationDate).toLocaleDateString('es-ES') : 'Fecha no disponible'}</p>
+                    <div className="text-left sm:text-right">
+                      <p className="text-sm font-medium">{vaccine.applicationDate ? new Date(vaccine.applicationDate).toLocaleDateString('es-ES') : 'Fecha no disponible'}</p>
                       {vaccine.expirationDate && (
                         <p className="text-xs text-gray-500">
                           Vence: {new Date(vaccine.expirationDate).toLocaleDateString('es-ES')}
@@ -330,7 +346,7 @@ export const PetProfilePage: React.FC = () => {
               <div className="space-y-3">
                 {treatments.map((treatment, index) => (
                   <div key={index} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex justify-between items-start">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-2 sm:space-y-0">
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900">
                           {treatment.name || 'Tratamiento'}
@@ -360,7 +376,7 @@ export const PetProfilePage: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      <div className="ml-4 text-right">
+                      <div className="sm:ml-4 text-left sm:text-right">
                         {treatment.endDate ? (
                           new Date(treatment.endDate) > new Date() ? (
                             <Badge variant="outline" className="text-green-600 border-green-600">
@@ -384,8 +400,9 @@ export const PetProfilePage: React.FC = () => {
             )}
           </CardContent>
         </Card>
+        </div>
 
-        {/* Registros de consultas */}
+        {/* Registros de consultas - Full Width */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -410,14 +427,14 @@ export const PetProfilePage: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {consultations.slice(0, 3).map(record => (
-                  <div key={record.id} className="flex items-start justify-between p-3 border rounded-lg">
+                  <div key={record.id} className="flex flex-col sm:flex-row sm:items-start sm:justify-between p-3 border rounded-lg space-y-2 sm:space-y-0">
                     <div className="flex-1">
                       <p className="font-medium">{record.title}</p>
                       <p className="text-sm text-gray-600">{record.veterinarian || 'Sin veterinario'}</p>
                       <p className="text-sm text-gray-500 mt-1 line-clamp-2">{record.diagnosis}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm">{new Date(record.date).toLocaleDateString('es-ES')}</p>
+                    <div className="text-left sm:text-right">
+                      <p className="text-sm font-medium">{new Date(record.date).toLocaleDateString('es-ES')}</p>
                       {record.cost && (
                         <p className="text-xs text-green-600">${record.cost}</p>
                       )}

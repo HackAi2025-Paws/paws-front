@@ -20,6 +20,7 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
   selectedPetId
 }) => {
   const { pets } = useAppSelector((state) => state.pets)
+  const [isLoading, setIsLoading] = useState(false)
   
   const [formData, setFormData] = useState({
     petId: selectedPetId || '',
@@ -60,6 +61,8 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
       return
     }
 
+    setIsLoading(true)
+
     // Estructurar datos como consulta de tratamiento
     const consultationData = {
       petId: formData.petId,
@@ -88,16 +91,45 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
       notes: formData.treatmentNotes || ''
     }
 
-    await onSubmit(consultationData, [], [treatmentData])
+    // Convertir fecha a formato ISO para evitar problemas de zona horaria
+    const formatDateForBackend = (dateString: string) => {
+      if (!dateString) return dateString
+      const [year, month, day] = dateString.split('-')
+      const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0)
+      return localDate.toISOString()
+    }
+
+    // Actualizar fechas en consultationData y treatmentData
+    const consultationWithFormattedDate = {
+      ...consultationData,
+      date: formatDateForBackend(consultationData.date)
+    }
+
+    const treatmentWithFormattedDate = {
+      ...treatmentData,
+      startDate: formatDateForBackend(treatmentData.startDate),
+      endDate: treatmentData.endDate ? formatDateForBackend(treatmentData.endDate) : undefined
+    }
+
+    try {
+      await onSubmit(consultationWithFormattedDate, [], [treatmentWithFormattedDate])
+      // Si llegamos aquí, el tratamiento se guardó correctamente
+      onClose()
+    } catch (error) {
+      console.error('Error al guardar el tratamiento:', error)
+      alert('Error al guardar el tratamiento. Por favor, inténtalo de nuevo.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <CardHeader>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+      <Card className="w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Pill className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Pill className="h-4 w-4 sm:h-5 sm:w-5" />
               Nuevo Tratamiento
             </CardTitle>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -105,11 +137,11 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="px-4 sm:px-6">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 sm:space-y-6">
             {/* Selección de mascota */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Mascota *
               </label>
               <Select
@@ -127,12 +159,12 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
             </div>
 
             {/* Información del tratamiento */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">Información del Tratamiento</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Tipo de tratamiento *
                   </label>
                   <Select
@@ -150,7 +182,7 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Medicamento/Producto
                   </label>
                   <Input
@@ -161,7 +193,7 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Fecha de inicio *
                   </label>
                   <Input
@@ -173,7 +205,7 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Fecha de finalización
                   </label>
                   <Input
@@ -184,7 +216,7 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Dosis
                   </label>
                   <Input
@@ -195,7 +227,7 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Frecuencia
                   </label>
                   <Select
@@ -216,7 +248,7 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
 
               {/* Instrucciones */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Instrucciones de administración
                 </label>
                 <Textarea
@@ -229,12 +261,12 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
             </div>
 
             {/* Información del veterinario */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">Información del Veterinario</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Veterinario
                   </label>
                   <Input
@@ -245,7 +277,7 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Clínica/Hospital
                   </label>
                   <Input
@@ -259,7 +291,7 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
 
             {/* Notas */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 Notas adicionales
               </label>
               <Textarea
@@ -271,12 +303,19 @@ export const AddTreatmentForm: React.FC<AddTreatmentFormProps> = ({
             </div>
 
             {/* Botones */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={onClose}>
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1 w-full" disabled={isLoading}>
                 Cancelar
               </Button>
-              <Button type="submit">
-                Registrar Tratamiento
+              <Button type="submit" className="flex-1 w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Guardando...
+                  </>
+                ) : (
+                  'Registrar Tratamiento'
+                )}
               </Button>
             </div>
           </form>

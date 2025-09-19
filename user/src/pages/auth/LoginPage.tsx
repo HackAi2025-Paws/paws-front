@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 import { useAppDispatch } from '../../hooks'
 import { loginSuccess } from '../../store/authSlice'
-import { mockUser } from '../../data/mockData'
-import { useAuth } from '../../modules/auth/AuthContext'
+import { useAuth } from '../../modules/auth/hooks'
 import { useAuthFlow } from '../../hooks/useAuth'
 import { env } from '../../config/env'
 import { Phone, Shield } from 'lucide-react'
@@ -35,7 +34,7 @@ export const LoginPage: React.FC = () => {
       const result = await sendOTP({ phone })
       setSuccessMessage(result.message)
       setStep('otp')
-    } catch (err) {
+    } catch {
       // Error is handled by the hook
     }
   }
@@ -54,7 +53,7 @@ export const LoginPage: React.FC = () => {
       // Store session for AuthContext (ya se hace en authService, pero por seguridad)
       localStorage.setItem(env.SESSION_STORAGE_KEY, JSON.stringify(session))
       navigate('/dashboard')
-    } catch (err) {
+    } catch {
       // Error is handled by the hook
     }
   }
@@ -66,10 +65,6 @@ export const LoginPage: React.FC = () => {
     setSuccessMessage(null)
   }
 
-  const handleQuickLogin = () => {
-    dispatch(loginSuccess(mockUser))
-    navigate('/dashboard')
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -124,25 +119,6 @@ export const LoginPage: React.FC = () => {
                   {isLoading ? 'Enviando código...' : 'Enviar código'}
                 </Button>
 
-                <div className="mt-6 text-center">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-300" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">PARA PRUEBAS</span>
-                    </div>
-                  </div>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleQuickLogin}
-                    className="w-full mt-4"
-                  >
-                    Acceso rápido (Demo)
-                  </Button>
-                </div>
               </form>
             ) : (
               <form onSubmit={handleOTPSubmit} className="space-y-4">
@@ -183,9 +159,6 @@ export const LoginPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        <div className="text-center text-sm text-gray-600">
-          <p>¿No tienes cuenta? <Link to="/register" className="text-primary font-medium hover:underline">Regístrate</Link></p>
-        </div>
       </div>
     </div>
   )

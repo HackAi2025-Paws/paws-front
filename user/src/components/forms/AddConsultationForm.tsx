@@ -20,6 +20,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
   selectedPetId
 }) => {
   const { pets } = useAppSelector((state) => state.pets)
+  const [isLoading, setIsLoading] = useState(false)
   
   const [formData, setFormData] = useState({
     petId: selectedPetId || '',
@@ -58,11 +59,22 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
       return
     }
 
+    setIsLoading(true)
+
+    // Convertir fecha a formato ISO para evitar problemas de zona horaria
+    const formatDateForBackend = (dateString: string) => {
+      if (!dateString) return dateString
+      // Crear fecha local sin conversión UTC
+      const [year, month, day] = dateString.split('-')
+      const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 12, 0, 0)
+      return localDate.toISOString()
+    }
+
     const consultation: Omit<ConsultationRecord, 'id' | 'createdAt'> = {
       petId: formData.petId,
       type: formData.type,
       title: formData.title,
-      date: formData.date,
+      date: formatDateForBackend(formData.date),
       veterinarian: formData.veterinarian,
       clinicName: formData.clinicName,
       findings: formData.findings,
@@ -71,21 +83,30 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
       nextSteps: formData.nextSteps,
       notes: formData.notes,
       cost: formData.cost ? parseFloat(formData.cost) : undefined,
-      nextAppointment: formData.nextAppointment || undefined,
+      nextAppointment: formData.nextAppointment ? formatDateForBackend(formData.nextAppointment) : undefined,
       createdBy: 'owner'
     }
 
-    // Solo consulta, sin vacunas ni tratamientos
-    await onSubmit(consultation, [], [])
+    try {
+      // Solo consulta, sin vacunas ni tratamientos
+      await onSubmit(consultation, [], [])
+      // Si llegamos aquí, la consulta se guardó correctamente
+      onClose()
+    } catch (error) {
+      console.error('Error al guardar la consulta:', error)
+      alert('Error al guardar la consulta. Por favor, inténtalo de nuevo.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <CardHeader>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+      <Card className="w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Stethoscope className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Stethoscope className="h-4 w-4 sm:h-5 sm:w-5" />
               Nueva Consulta
             </CardTitle>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -93,12 +114,12 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <CardContent className="px-4 sm:px-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Información básica */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Mascota *
                 </label>
                 <Select
@@ -116,7 +137,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Tipo de consulta *
                 </label>
                 <Select
@@ -133,7 +154,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Título *
                 </label>
                 <Input
@@ -145,7 +166,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Fecha *
                 </label>
                 <Input
@@ -158,15 +179,15 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
             </div>
 
             {/* Información del veterinario */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                 <MapPin className="h-5 w-5 mr-2" />
                 Información del Veterinario
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Veterinario
                   </label>
                   <Input
@@ -177,7 +198,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     Clínica/Hospital
                   </label>
                   <Input
@@ -190,14 +211,14 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
             </div>
 
             {/* Detalles de la consulta */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                 <Stethoscope className="h-5 w-5 mr-2" />
                 Detalles de la Consulta
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Hallazgos del examen
                 </label>
                 <Textarea
@@ -209,7 +230,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Diagnóstico
                 </label>
                 <Textarea
@@ -221,7 +242,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Prescripción/Tratamiento
                 </label>
                 <Textarea
@@ -233,7 +254,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Próximos pasos
                 </label>
                 <Textarea
@@ -246,12 +267,12 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
             </div>
 
             {/* Información adicional */}
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">Información Adicional</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     <DollarSign className="h-4 w-4 inline mr-1" />
                     Costo
                   </label>
@@ -265,7 +286,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                     <Calendar className="h-4 w-4 inline mr-1" />
                     Próxima cita
                   </label>
@@ -278,7 +299,7 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Notas adicionales
                 </label>
                 <Textarea
@@ -291,12 +312,21 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
             </div>
 
             {/* Botones */}
-            <div className="flex gap-3 pt-4 border-t">
-              <Button type="submit" className="flex-1">
-                <FileText className="h-4 w-4 mr-2" />
-                Guardar Consulta
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+              <Button type="submit" className="flex-1 w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Guardar Consulta
+                  </>
+                )}
               </Button>
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto" disabled={isLoading}>
                 Cancelar
               </Button>
             </div>

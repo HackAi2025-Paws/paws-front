@@ -1,51 +1,10 @@
 import React from 'react'
 import { Header } from '../../components/layout/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Button } from '../../components/ui/button'
-import { Avatar, AvatarImage, AvatarFallback } from '../../components/ui/avatar'
-import { useAppDispatch, useAppSelector } from '../../hooks'
-import { logout } from '../../store/authSlice'
-import { useNavigate } from 'react-router-dom'
-import { Settings, Bell, HelpCircle, Shield, LogOut, Edit } from 'lucide-react'
+import { useAppSelector } from '../../hooks'
 
 export const ProfilePage: React.FC = () => {
-  const dispatch = useAppDispatch()
-  const navigate = useNavigate()
   const { user } = useAppSelector((state) => state.auth)
-  // const { pets } = useAppSelector((state) => state.pets)
-  // const { reminders } = useAppSelector((state) => state.reminders)
-
-  const handleLogout = () => {
-    dispatch(logout())
-    navigate('/login')
-  }
-
-  const menuItems = [
-    {
-      icon: Settings,
-      label: 'Configuración',
-      description: 'Preferencias de la aplicación',
-      action: () => console.log('Configuración')
-    },
-    {
-      icon: Bell,
-      label: 'Notificaciones',
-      description: 'Gestionar alertas y recordatorios',
-      action: () => console.log('Notificaciones')
-    },
-    {
-      icon: HelpCircle,
-      label: 'Ayuda y soporte',
-      description: 'FAQ y contacto con soporte',
-      action: () => navigate('/faq')
-    },
-    {
-      icon: Shield,
-      label: 'Privacidad',
-      description: 'Política de privacidad y términos',
-      action: () => console.log('Privacidad')
-    },
-  ]
 
   if (!user) {
     return (
@@ -70,53 +29,13 @@ export const ProfilePage: React.FC = () => {
         {/* Información del usuario */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center space-x-4">
-              <Avatar className="h-16 w-16">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="text-lg">
-                  {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
-                <p className="text-gray-600">{user.email}</p>
-                <div className="mt-2">
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Edit className="h-4 w-4" />
-                    Editar perfil
-                  </Button>
-                </div>
-              </div>
+            <div className="text-center space-y-2">
+              <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
+              <p className="text-gray-600">{user.email}</p>
             </div>
           </CardContent>
         </Card>
 
-
-        {/* Menú de opciones */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Configuración</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            {menuItems.map((item, index) => {
-              const Icon = item.icon
-              return (
-                <button
-                  key={index}
-                  onClick={item.action}
-                  className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors text-left"
-                >
-                  <Icon className="h-5 w-5 text-gray-500" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{item.label}</p>
-                    <p className="text-sm text-gray-600">{item.description}</p>
-                  </div>
-                </button>
-              )
-            })}
-          </CardContent>
-        </Card>
 
         {/* Sección de la app */}
         <Card>
@@ -143,19 +62,6 @@ export const ProfilePage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Botón de cerrar sesión */}
-        <Card className="border-red-200">
-          <CardContent className="p-4">
-            <Button 
-              variant="destructive" 
-              onClick={handleLogout}
-              className="w-full gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Cerrar Sesión
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

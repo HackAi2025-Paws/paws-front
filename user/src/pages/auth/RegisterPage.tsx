@@ -6,7 +6,7 @@ import { Input } from '../../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 import { useAppDispatch } from '../../hooks'
 import { loginSuccess } from '../../store/authSlice'
-import { useAuth } from '../../modules/auth/AuthContext'
+import { useAuth } from '../../modules/auth/hooks'
 import { UserPlus } from 'lucide-react'
 import Logo from '../../components/ui/Logo'
 

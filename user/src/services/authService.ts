@@ -19,6 +19,20 @@ export interface AuthService {
   getCurrentUser(): Promise<AuthSession>
 }
 
+interface AuthApiResponse {
+  success: boolean
+  data?: AuthSession
+  token?: string
+  error?: string
+  accessToken?: string
+  user?: {
+    id: number | string
+    name: string
+    email: string
+    phone?: string
+  }
+}
+
 // Servicios OTP (usa mock o API real según configuración)
 export const otpService: OTPService = {
   async sendOTP(input: PhoneLoginInput) {
@@ -54,7 +68,7 @@ export const loginService: LoginService = {
     }
     
     try {
-      const response = await apiClient.post<any>('auth/login', {
+      const response = await apiClient.post<AuthApiResponse>('auth/login', {
         phone: input.phone,
         token: input.otp
       })
@@ -117,7 +131,7 @@ export const authService: AuthService = {
     }
     
     try {
-      const response = await apiClient.post<any>('/auth/login', input)
+      const response = await apiClient.post<AuthApiResponse>('/auth/login', input)
       
       if (!response.success) {
         throw new Error(response.error || 'Failed to login')
@@ -125,7 +139,11 @@ export const authService: AuthService = {
       
       // El backend devuelve: { success: true, accessToken: "...", user: {...} }
       const backendResponse = response.data
-      const token = backendResponse.accessToken
+      if (!backendResponse) {
+        throw new Error('No data received from backend')
+      }
+      
+      const token = backendResponse.accessToken || backendResponse.token
       
       if (token && backendResponse.user) {
         localStorage.setItem(env.AUTH_TOKEN_KEY, token)
@@ -169,10 +187,39 @@ export const authService: AuthService = {
     }
     
     try {
-      const response = await apiClient.post<AuthSession>('/auth/register', input)
+      const response = await apiClient.post<AuthApiResponse>('/auth/register', input)
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to register')
+      }
+      
+      const backendResponse = response.data
+      if (!backendResponse) {
+        throw new Error('No data received from backend')
+      }
+      
       // Guardar token en localStorage
-      localStorage.setItem(env.AUTH_TOKEN_KEY, (response as any).data.token || (response as any).token)
-      return (response as any).data || (response as unknown as AuthSession)
+      const token = backendResponse.accessToken || backendResponse.token
+      if (token) {
+        localStorage.setItem(env.AUTH_TOKEN_KEY, token)
+      }
+      
+      // Si tenemos datos completos, crear sesión normalizada
+      if (backendResponse.user) {
+        const normalizedSession: AuthSession = {
+          user: {
+            id: backendResponse.user.id.toString(),
+            firstName: backendResponse.user.name.split(' ')[0] || backendResponse.user.name,
+            lastName: backendResponse.user.name.split(' ').slice(1).join(' ') || '',
+            email: backendResponse.user.email || '',
+            phone: backendResponse.user.phone
+          },
+          token: token || ''
+        }
+        return normalizedSession
+      }
+      
+      return backendResponse as unknown as AuthSession
     } catch (error) {
       console.error('❌ Error registering:', error)
       // Fallback to mock in case of error
@@ -203,9 +250,38 @@ export const authService: AuthService = {
       return session
     }
     
-    const response = await apiClient.post<AuthSession>('/auth/refresh')
-    localStorage.setItem(env.AUTH_TOKEN_KEY, (response as any).data.token || (response as any).token)
-    return (response as any).data || (response as unknown as AuthSession)
+    const response = await apiClient.post<AuthApiResponse>('/auth/refresh')
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to refresh token')
+    }
+    
+    const backendResponse = response.data
+    if (!backendResponse) {
+      throw new Error('No data received from backend')
+    }
+    
+    const token = backendResponse.accessToken || backendResponse.token
+    if (token) {
+      localStorage.setItem(env.AUTH_TOKEN_KEY, token)
+    }
+    
+    // Si tenemos datos completos, crear sesión normalizada
+    if (backendResponse.user) {
+      const normalizedSession: AuthSession = {
+        user: {
+          id: backendResponse.user.id.toString(),
+          firstName: backendResponse.user.name.split(' ')[0] || backendResponse.user.name,
+          lastName: backendResponse.user.name.split(' ').slice(1).join(' ') || '',
+          email: backendResponse.user.email || '',
+          phone: backendResponse.user.phone
+        },
+        token: token || ''
+      }
+      return normalizedSession
+    }
+    
+    return backendResponse as unknown as AuthSession
   },
 
   async getCurrentUser(): Promise<AuthSession> {
@@ -215,7 +291,32 @@ export const authService: AuthService = {
       return session
     }
     
-    const response = await apiClient.get<AuthSession>('/auth/me')
-    return (response as any).data || (response as unknown as AuthSession)
+    const response = await apiClient.get<AuthApiResponse>('/auth/me')
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to get current user')
+    }
+    
+    const backendResponse = response.data
+    if (!backendResponse) {
+      throw new Error('No data received from backend')
+    }
+    
+    // Si tenemos datos completos, crear sesión normalizada
+    if (backendResponse.user) {
+      const normalizedSession: AuthSession = {
+        user: {
+          id: backendResponse.user.id.toString(),
+          firstName: backendResponse.user.name.split(' ')[0] || backendResponse.user.name,
+          lastName: backendResponse.user.name.split(' ').slice(1).join(' ') || '',
+          email: backendResponse.user.email || '',
+          phone: backendResponse.user.phone
+        },
+        token: backendResponse.accessToken || backendResponse.token || ''
+      }
+      return normalizedSession
+    }
+    
+    return backendResponse as unknown as AuthSession
   }
 }

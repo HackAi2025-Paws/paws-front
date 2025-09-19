@@ -198,7 +198,7 @@ export const ReminderList: React.FC<ReminderListProps> = ({
                       >
                         {reminder.isCompleted ? 'Completado' :
                          isPast ? 'Vencido' :
-                         isUrgent ? 'Próximo' : formatDate(reminder.date)}
+                         isUrgent ? 'Próximo' : 'Pendiente'}
                       </Badge>
                       
                       {!reminder.isCompleted && (
