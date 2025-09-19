@@ -2,10 +2,10 @@ import {useState, useEffect, useCallback} from 'react';
 import { MedicalIcons } from '../MedicalIcons';
 import QuestionSuggestions from './QuestionSuggestions';
 import type { Suggestion } from '../../../types/suggestions';
+import { apiClient } from '../../../services/apiClient';
 
 interface SuggestionsPanelProps {
   transcription: string;
-  conversationContext?: string;
   onSuggestionClick?: (suggestion: Suggestion) => void;
   onManualRefresh?: () => void;
   className?: string;
@@ -13,7 +13,6 @@ interface SuggestionsPanelProps {
 
 export default function SuggestionsPanel({
   transcription,
-  conversationContext,
   onSuggestionClick,
   onManualRefresh,
   className = ""
@@ -44,39 +43,39 @@ export default function SuggestionsPanel({
 
     try {
       // Mock suggestions - esto se reemplazará con el servicio real
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simular delay
+      const response = await apiClient.post<{suggestions: Suggestion[]}>("/suggestions/questions", {
+        "transcription": transcription
+      });
 
-      const mockSuggestions: Suggestion[] = [
-        {
-          id: '1',
-          text: '¿Desde cuándo presenta estos síntomas?',
-          category: 'Historia',
-          priority: 'high'
-        },
-        {
-          id: '2',
-          text: '¿Ha tenido episodios similares anteriormente?',
-          category: 'Antecedentes',
-          priority: 'medium'
-        },
-        {
-          id: '3',
-          text: '¿Hay algún factor desencadenante que haya notado?',
-          category: 'Contextual',
-          priority: 'medium'
-        }
-      ];
+      setIsLoading(false);
 
-      setSuggestions(mockSuggestions);
+      if (!response.success) {
+        setError(response.error!);
+        return;
+      }
+
+      setSuggestions(response.data!.suggestions);
       setLastUpdated(new Date());
-
     } catch (err) {
       console.error('[SuggestionsPanel] ❌ Error obteniendo sugerencias:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setIsLoading(false);
     }
-  }, [transcription, conversationContext]);
+  }, [transcription]);
+
+  // hook que sirve para cuando si recibis me entendes osea para contar la cantidad de final texts (juli arregla tu hook)
+    const [finalTextCounter, setFinalTextCounter] = useState(0);
+    useEffect(() => {
+      // me fijo si lo que si del resto si para ver si request si
+      if (finalTextCounter > 0 && finalTextCounter % 4 === 0) {
+        fetchSuggestions();
+      }
+    }, [transcription, finalTextCounter, fetchSuggestions]);
+  
+    useEffect(() => {
+      setFinalTextCounter((prev) => prev + 1);
+    }, [transcription]);
 
   const fetchAllData = useCallback(async () => {
     console.log('[SuggestionsPanel] 🔄 Iniciando fetch de sugerencias...');

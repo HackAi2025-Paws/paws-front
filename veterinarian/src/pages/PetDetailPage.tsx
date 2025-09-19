@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePatientDetail } from '../hooks/usePatientDetail'
 import { usePatientExport } from '../hooks/usePatientExport'
@@ -18,6 +18,7 @@ import '../components/patient/PatientTabs.css'
 import '../components/patient/AddRecordForm.css'
 import '../components/common/RecordList.css'
 import '../components/patient/VaccinesList.css'
+import { apiClient } from '../services/apiClient'
 
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -27,6 +28,25 @@ export default function PetDetailPage() {
   const [openExport, setOpenExport] = useState(false)
   const [activeTab, setActiveTab] = useState('resumen')
   const { finalText, toggleListening, isListening, clearText } = useSpeechToText();
+
+  // hook que sirve para cuando si recibis me entendes osea para contar la cantidad de final texts (juli arregla tu hook)
+  const [finalTextCounter, setFinalTextCounter] = useState(0);
+  useEffect(() => {
+    // me fijo si lo que si del resto si para ver si request si
+    if (finalTextCounter > 0 && finalTextCounter % 4 === 0) {
+      apiClient.post("/suggestions/questions", {
+        "transcription": finalText
+      }).then((response) => {
+        if (response.success) {
+          console.log(response.data);
+        }
+      });
+    }
+  }, [finalText, finalTextCounter]);
+
+  useEffect(() => {
+    setFinalTextCounter((prev) => prev + 1);
+  }, [finalText]);
 
   // Custom hooks for data and business logic
   const {
