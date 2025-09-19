@@ -15,7 +15,7 @@ export const Header: React.FC<HeaderProps> = ({
   const navigate = useNavigate()
 
   return (
-    <header className="bg-white border-b border-gray-200 px-4 py-3">
+    <header className="header-5colors border-b border-red-200 px-4 py-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {showBack && (
@@ -23,12 +23,12 @@ export const Header: React.FC<HeaderProps> = ({
               variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="h-8 w-8"
+              className="h-10 w-10 text-white hover:bg-white/20 rounded-2xl"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
             </Button>
           )}
-          <h1 className="text-xl font-semibold text-gray-900">{title}</h1>
+          <h1 className="text-2xl font-semibold text-white font-poppins">{title}</h1>
         </div>
 
         <div></div>

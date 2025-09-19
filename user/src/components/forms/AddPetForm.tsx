@@ -19,8 +19,9 @@ import {
 import type { Pet, VaccinationType, Treatment, PetDocument } from '../../types/index.js'
 
 interface AddPetFormProps {
-  onSubmit: (pet: Omit<Pet, 'id'>) => void
+  onSubmit: (pet: Omit<Pet, 'id'>) => Promise<void>
   onCancel: () => void
+  isLoading?: boolean
 }
 
 const VACCINATION_OPTIONS: VaccinationType[] = [
@@ -85,10 +86,11 @@ const OBSERVATIONS_HELP_CONTENT = (
   </div>
 )
 
-export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel }) => {
+export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel, isLoading = false }) => {
   const [formData, setFormData] = useState({
     name: '',
     breed: '',
+    species: '' as 'perro' | 'gato' | '',
     birthDate: '',
     weightMin: '',
     weightMax: '',
@@ -185,18 +187,21 @@ export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel }) =>
     ))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (isLoading) return // Prevent double submission
+    
     // Validaciones básicas
-    if (!formData.name || !formData.breed || !formData.birthDate || !formData.gender) {
-      alert('Por favor completa todos los campos obligatorios')
+    if (!formData.name || !formData.breed || !formData.species || !formData.birthDate || !formData.gender) {
+      alert('Por favor completa todos los campos obligatorios: Nombre, Raza, Especie, Fecha de nacimiento y Género')
       return
     }
 
     const pet: Omit<Pet, 'id'> = {
       name: formData.name,
       breed: formData.breed,
+      species: formData.species,
       birthDate: formData.birthDate,
       age: calculateAge(formData.birthDate),
       weight: {
@@ -242,7 +247,7 @@ export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel }) =>
       consultationRecords: []
     }
 
-    onSubmit(pet)
+    await onSubmit(pet)
   }
 
   const calculateAge = (birthDate: string): string => {
@@ -345,6 +350,21 @@ export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel }) =>
                     placeholder="Raza o mezcla"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Especie *
+                  </label>
+                  <Select
+                    value={formData.species}
+                    onChange={(e) => setFormData(prev => ({ ...prev, species: e.target.value as 'perro' | 'gato' }))}
+                    required
+                  >
+                    <option value="">Seleccionar especie</option>
+                    <option value="perro">🐕 Perro</option>
+                    <option value="gato">🐱 Gato</option>
+                  </Select>
                 </div>
 
                 <div>
@@ -692,11 +712,27 @@ export const AddPetForm: React.FC<AddPetFormProps> = ({ onSubmit, onCancel }) =>
 
             {/* Botones de acción */}
             <div className="flex justify-end gap-3 pt-6 border-t">
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onCancel}
+                disabled={isLoading}
+              >
                 Cancelar
               </Button>
-              <Button type="submit">
-                Registrar Mascota
+              <Button 
+                type="submit"
+                disabled={isLoading}
+                className="min-w-[140px]"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Registrando...
+                  </>
+                ) : (
+                  'Registrar Mascota'
+                )}
               </Button>
             </div>
           </form>

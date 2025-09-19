@@ -236,35 +236,12 @@ export const AddConsultationForm: React.FC<AddConsultationFormProps> = ({
                   disabled={!!selectedPetId}
                 >
                   <option value="">Seleccionar mascota</option>
-                  <option value="2">🩺 Pet ID 2 (Para testing consultas)</option>
-                  <option value="1">🐕 Pet ID 1 (Para testing recordatorios)</option>
                   {pets.map(pet => (
                     <option key={pet.id} value={pet.id}>
                       {pet.name} ({pet.breed})
                     </option>
                   ))}
                 </Select>
-                
-                {formData.petId === '2' && (
-                  <div className="mt-2 p-2 bg-blue-50 rounded-lg">
-                    <div className="flex items-center gap-2 text-sm text-blue-800">
-                      <span className="text-lg">🩺</span>
-                      <span className="font-medium">Consultation Testing</span>
-                      <span>•</span>
-                      <span>Pet ID: 2 (Consultas)</span>
-                    </div>
-                  </div>
-                )}
-                {formData.petId === '1' && (
-                  <div className="mt-2 p-2 bg-green-50 rounded-lg">
-                    <div className="flex items-center gap-2 text-sm text-green-800">
-                      <span className="text-lg">🔧</span>
-                      <span className="font-medium">Reminder Testing</span>
-                      <span>•</span>
-                      <span>Pet ID: 1 (Recordatorios)</span>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div>

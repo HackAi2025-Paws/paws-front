@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { Header } from '../../components/layout/Header'
 import { PetCarousel } from '../../components/features/PetCarousel'
+import { PetIllustration } from '../../components/illustrations/PetIllustration'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Badge } from '../../components/ui/badge'
 import { useAppDispatch, useAppSelector } from '../../hooks'
 import { loadPets } from '../../store/petsSlice'
 import { setReminders } from '../../store/remindersSlice'
 import { petService } from '../../services/petService'
-import { Calendar, AlertTriangle } from 'lucide-react'
+import { Calendar, AlertTriangle, Heart, TrendingUp, ChevronRight, Stethoscope, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export const DashboardPage: React.FC = () => {
@@ -47,49 +48,156 @@ export const DashboardPage: React.FC = () => {
   const upcomingReminders = reminders.filter(r => !r.isCompleted).slice(0, 3)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header title={`Hola, ${user?.name?.split(' ')[0] || 'Usuario'}`} showBack={false} />
-      
-      <div className="p-4 space-y-6">
-        {/* Carrusel de mascotas - PRIMERO */}
-        <PetCarousel pets={pets} />
+    <div className="min-h-screen bg-cream-400">
+      {/* Hero Section con Ilustración */}
+      <div className="relative overflow-hidden bg-red-500 px-6 pt-8 pb-6">
+        {/* Ilustración de fondo */}
+        <div className="absolute top-0 right-0 w-32 h-32 opacity-20">
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            {/* Formas decorativas simples */}
+            <circle cx="20" cy="20" r="8" fill="currentColor" opacity="0.3"/>
+            <path d="M40 10 Q50 20 60 10 Q50 30 40 10" fill="currentColor" opacity="0.2"/>
+            <circle cx="70" cy="30" r="5" fill="currentColor" opacity="0.4"/>
+          </svg>
+        </div>
+        
+        {/* Ilustración principal estilo mascota */}
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Hola, {user?.name?.split(' ')[0] || 'Usuario'} 👋
+            </h1>
+            <p className="text-white/90 text-base">
+              ¿Qué te gustaría hacer hoy?
+            </p>
+          </div>
+          
+          {/* Ilustración de mascota */}
+          <PetIllustration className="w-28 h-28" />
+        </div>
 
-        {/* Sección de recordatorios importantes - SEGUNDO */}
-        {upcomingReminders.length > 0 && (
-          <Card className="border-orange-200 bg-orange-50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center text-orange-800">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                Recordatorios Importantes
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {upcomingReminders.map(reminder => (
-                <div key={reminder.id} className="flex items-start space-x-3 p-2 bg-white rounded-lg">
-                  <Calendar className="h-4 w-4 text-orange-500 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{reminder.title}</p>
-                    <p className="text-xs text-gray-600">{reminder.description}</p>
-                    <p className="text-xs text-orange-600 mt-1">
-                      {new Date(reminder.date).toLocaleDateString('es-ES')}
-                      {reminder.time && ` a las ${reminder.time}`}
-                    </p>
-                    {reminder.location && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        📍 {reminder.location}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-              <Link to="/reminders">
-                <Button variant="outline" size="sm" className="w-full mt-2">
-                  Ver todos los recordatorios
+      </div>
+
+      {/* Contenido principal */}
+      <div className="px-6 py-6 space-y-6">
+        {/* Sección de mascotas */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-dark-900">Mis Mascotas</h2>
+            <Link to="/pet/add">
+              <Button variant="ghost" size="sm" className="text-red-600">
+                <Plus className="w-4 h-4 mr-1" />
+                Agregar
+              </Button>
+            </Link>
+          </div>
+          
+          {pets.length === 0 ? (
+            <Card className="text-center p-8">
+              <Heart className="w-12 h-12 text-red-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-dark-900 mb-2">
+                ¡Agrega tu primera mascota!
+              </h3>
+              <p className="text-dark-500 mb-4">
+                Comienza a cuidar a tus compañeros peludos
+              </p>
+              <Link to="/pet/add">
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Agregar Mascota
                 </Button>
               </Link>
-            </CardContent>
-          </Card>
+            </Card>
+          ) : (
+            <PetCarousel pets={pets} />
+          )}
+        </div>
+
+        {/* Recordatorios importantes */}
+        {upcomingReminders.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-dark-900 flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-red-500" />
+                Próximos
+              </h2>
+              <Link to="/reminders">
+                <Button variant="ghost" size="sm" className="text-red-600">
+                  ver todo
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+
+            <Card className="bg-pink-100 border-red-200">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {upcomingReminders.slice(0, 1).map(reminder => (
+                    <div key={reminder.id} className="flex items-start space-x-4">
+                      <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <Calendar className="w-6 h-6 text-red-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-dark-900 text-base">
+                          {reminder.title}
+                        </h3>
+                        <p className="text-dark-600 text-sm line-clamp-2">
+                          {reminder.description}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {new Date(reminder.date).toLocaleDateString('es-ES')}
+                          </Badge>
+                          {reminder.time && (
+                            <Badge variant="outline" className="text-xs">
+                              {reminder.time}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {upcomingReminders.length > 1 && (
+                  <div className="mt-4 pt-3 border-t border-red-200">
+                    <p className="text-sm text-dark-600">
+                      +{upcomingReminders.length - 1} recordatorios más
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
+
+        {/* Acciones rápidas */}
+        <div>
+          <h2 className="text-xl font-semibold text-dark-900 mb-4">Acciones Rápidas</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <Link to="/consultations">
+              <Card className="bg-pink-200 border-pink-300 hover:shadow-md transition-all">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-pink-400 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <Stethoscope className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-medium text-dark-900 text-sm">Nueva Consulta</h3>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            <Link to="/reminders">
+              <Card className="bg-orange-200 border-orange-300 hover:shadow-md transition-all">
+                <CardContent className="p-4 text-center">
+                  <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-medium text-dark-900 text-sm">Recordatorio</h3>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

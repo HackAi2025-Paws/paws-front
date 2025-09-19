@@ -147,7 +147,6 @@ export const AddReminderForm: React.FC<AddReminderFormProps> = ({
                 className={errors.petId ? 'border-red-500' : ''}
               >
                 <option value="">Seleccionar mascota</option>
-                <option value="max">Max</option>
                 {pets.map(pet => (
                   <option key={pet.id} value={pet.id}>
                     {pet.name} ({pet.breed})

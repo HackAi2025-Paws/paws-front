@@ -156,40 +156,46 @@ export const ConsultationsPage: React.FC = () => {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button 
-                onClick={async () => {
-                  console.log('🧪 Testing GET vaccines for petId=2...')
-                  try {
-                    const vaccines = await petService.getPetVaccines('2')
-                    console.log('✅ Vaccines result:', vaccines)
-                    alert(`Found ${vaccines.length} vaccines. Check console for details.`)
-                  } catch (error) {
-                    console.error('❌ Error testing vaccines:', error)
-                    alert('Error testing vaccines. Check console.')
-                  }
-                }} 
-                variant="outline" 
-                size="sm"
-              >
-                🧪 Test Vaccines
-              </Button>
-              <Button 
-                onClick={async () => {
-                  console.log('🧪 Testing GET treatments for petId=2...')
-                  try {
-                    const treatments = await petService.getPetTreatments('2')
-                    console.log('✅ Treatments result:', treatments)
-                    alert(`Found ${treatments.length} treatments. Check console for details.`)
-                  } catch (error) {
-                    console.error('❌ Error testing treatments:', error)
-                    alert('Error testing treatments. Check console.')
-                  }
-                }} 
-                variant="outline" 
-                size="sm"
-              >
-                🧪 Test Treatments
-              </Button>
+              {pets.length > 0 && (
+                <Button 
+                  onClick={async () => {
+                    const firstPetId = pets[0].id
+                    console.log(`🧪 Testing GET vaccines for petId=${firstPetId}...`)
+                    try {
+                      const vaccines = await petService.getPetVaccines(firstPetId)
+                      console.log('✅ Vaccines result:', vaccines)
+                      alert(`Found ${vaccines.length} vaccines for ${pets[0].name}. Check console for details.`)
+                    } catch (error) {
+                      console.error('❌ Error testing vaccines:', error)
+                      alert('Error testing vaccines. Check console.')
+                    }
+                  }} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  🧪 Test Vaccines ({pets[0]?.name})
+                </Button>
+              )}
+              {pets.length > 0 && (
+                <Button 
+                  onClick={async () => {
+                    const firstPetId = pets[0].id
+                    console.log(`🧪 Testing GET treatments for petId=${firstPetId}...`)
+                    try {
+                      const treatments = await petService.getPetTreatments(firstPetId)
+                      console.log('✅ Treatments result:', treatments)
+                      alert(`Found ${treatments.length} treatments for ${pets[0].name}. Check console for details.`)
+                    } catch (error) {
+                      console.error('❌ Error testing treatments:', error)
+                      alert('Error testing treatments. Check console.')
+                    }
+                  }} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  🧪 Test Treatments ({pets[0]?.name})
+                </Button>
+              )}
               <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
                 Nueva Consulta
