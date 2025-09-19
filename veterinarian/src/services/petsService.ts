@@ -10,6 +10,7 @@ export interface Pet {
   weight: number | null
   breed: string | null
   owners: Owner[]
+  profileImageUrl?: string | null
 }
 
 export interface Owner {
