@@ -2,13 +2,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePetById } from '../hooks/usePets'
-import { useAuth } from '../modules/auth/AuthContext'
 import PatientSidebar from '../components/patient/PatientSidebar'
 import PatientTabs from '../components/patient/PatientTabs'
 import PatientExportModal from '../components/patient/PatientExportModal'
 import AddRecordForm from '../components/patient/AddRecordForm'
 import SuggestionsPanel from '../components/patient/suggestions/SuggestionsPanel'
 import MedicalTranscriptionBox from '../components/patient/MedicalTranscriptionBox'
+import Spinner from '../components/ui/Spinner'
 import type { Suggestion } from '../types/suggestions'
 import { useSpeechToText } from '../hooks/useSpeechToText'
 import './PetDetailPage.css'
@@ -23,7 +23,6 @@ import type { Consultation } from '../types/consultations'
 export default function PetDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { logout } = useAuth()
 
   // Early validation - ID is required
   if (!id || id.trim() === '') {
@@ -63,6 +62,7 @@ export default function PetDetailPage() {
   const petId = parseInt(id)
   const { pet: patient, loading, error } = usePetById(petId)
 
+
   const [search, setSearch] = useState('')
   const [expandedRecordId, setExpandedRecordId] = useState<string | null>(null)
   const [openExport, setOpenExport] = useState(false)
@@ -93,7 +93,11 @@ export default function PetDetailPage() {
   const patientDetails = patient ? {
     weight: patient.weight ? `${patient.weight}kg` : 'Peso no registrado',
     sex: patient.sex === 'MALE' ? 'Macho' : patient.sex === 'FEMALE' ? 'Hembra' : 'No especificado',
-    birthDate: patient.dateOfBirth || '',
+    birthDate: patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }) : 'No especificado',
     ownerPhone: patient.owners && patient.owners.length > 0 ? patient.owners[0].phone : 'Sin teléfono',
     ownerEmail: 'No disponible'
   } : undefined
@@ -155,14 +159,6 @@ export default function PetDetailPage() {
     setConsultation(consultation)
   }
 
-  const handleLogout = async () => {
-    try {
-      await logout()
-    } catch (error) {
-      console.error('Error during logout:', error)
-    }
-  }
-
   // Error handling
   if (error) {
     return (
@@ -172,7 +168,7 @@ export default function PetDetailPage() {
             <button className="backNavButton" onClick={() => navigate(-1)}>
               ←
             </button>
-            <div className="appTitle">PawsCare</div>
+            <div className="appTitle">PetLink</div>
           </div>
         </div>
         <div className="petPage__content">
@@ -182,7 +178,17 @@ export default function PetDetailPage() {
     );
   }
 
-  if (loading) return <div className="petPage">Cargando…</div>;
+  if (loading) return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100vh',
+      backgroundColor: 'var(--background, #f8fafc)'
+    }}>
+      <Spinner size="large" text="Cargando información de la mascota..." />
+    </div>
+  );
   if (!patient)
     return (
       <div className="petPage">
@@ -218,7 +224,7 @@ export default function PetDetailPage() {
             <button className="backNavButton" onClick={() => navigate(-1)}>
               ←
             </button>
-            <div className="appTitle">PawsCare</div>
+            <div className="appTitle">PetLink</div>
           </div>
           <div className="patientSidebarContent">
             <PatientSidebar

@@ -1,0 +1,81 @@
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+}
+
+.spinner {
+  display: inline-block;
+  position: relative;
+}
+
+.spinner--small {
+  width: 20px;
+  height: 20px;
+}
+
+.spinner--medium {
+  width: 32px;
+  height: 32px;
+}
+
+.spinner--large {
+  width: 48px;
+  height: 48px;
+}
+
+.spinner__circle {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--border, #e5e7eb);
+  border-top-color: var(--brand-600, #7c3aed);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner--small .spinner__circle {
+  border-width: 2px;
+}
+
+.spinner--medium .spinner__circle {
+  border-width: 3px;
+}
+
+.spinner--large .spinner__circle {
+  border-width: 4px;
+}
+
+.spinner__text {
+  color: var(--text-muted, #6b7280);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Centered full-screen loading */
+.spinner-container--fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 1000;
+}
+
+/* Page-level loading */
+.spinner-container--page {
+  min-height: 200px;
+  width: 100%;
+}

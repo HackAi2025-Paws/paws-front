@@ -159,7 +159,7 @@ a:hover { text-decoration: underline; }
 .search__filterSelect:hover { background: #f8fafc; }
 .search__filterSelect:focus { color: var(--brand-600); }
 
-.dashboard__panel { background: color-mix(in oklab, var(--brand-50) 60%, #ffffff); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+.dashboard__panel { background: color-mix(in oklab, var(--brand-50) 60%, #ffffff); border: 1px solid var(--border); border-radius: 14px; padding: 16px; max-height: 70vh; overflow-y: auto; }
 .panel__header { display: flex; justify-content: flex-start; align-items: center; padding: 6px 8px; }
 .panel__title { font-weight: 800; display: flex; gap: 8px; align-items: center; color: #0f172a; }
 .panel__icon { color: var(--brand-700); }

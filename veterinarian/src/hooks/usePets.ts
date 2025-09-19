@@ -9,14 +9,13 @@ export function usePetsSearch(params: PetsSearchParams = {}) {
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
-    limit: 5,
+    limit: 0,
     pages: 0
   })
 
   // Memoize params to avoid unnecessary re-renders
   const searchParams = useMemo(() => ({
-    ...params,
-    limit: params.limit || 5 // Default to 5 pets
+    ...params
   }), [params.name, params.breed, params.ownerName, params.page, params.limit])
 
   useEffect(() => {
@@ -31,7 +30,7 @@ export function usePetsSearch(params: PetsSearchParams = {}) {
         if (mounted) {
           setLoading(false)
           setPets([])
-          setPagination({ total: 0, page: 1, limit: 5, pages: 0 })
+          setPagination({ total: 0, page: 1, limit: 0, pages: 0 })
         }
         return
       }
@@ -43,7 +42,7 @@ export function usePetsSearch(params: PetsSearchParams = {}) {
         const response = await petsService.searchPets(searchParams)
         if (mounted) {
           const petsArray = Array.isArray(response) ? response : (response.data || [])
-          const paginationData = response.pagination || { total: 0, page: 1, limit: 5, pages: 0 }
+          const paginationData = response.pagination || { total: 0, page: 1, limit: 0, pages: 0 }
           setPets(petsArray)
           setPagination(paginationData)
         }
@@ -74,8 +73,8 @@ export function usePetsSearch(params: PetsSearchParams = {}) {
   }
 }
 
-// Hook for getting default pets (first 5 without filters)
-export function useDefaultPets(limit: number = 5) {
+// Hook for getting default pets (all pets without filters by default)
+export function useDefaultPets(limit?: number) {
   const [pets, setPets] = useState<Pet[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -88,7 +87,8 @@ export function useDefaultPets(limit: number = 5) {
       setError(null)
 
       try {
-        const response = await petsService.searchPets({ limit })
+        const searchParams = limit ? { limit } : {}
+        const response = await petsService.searchPets(searchParams)
         if (mounted) {
           const petsArray = Array.isArray(response) ? response : (response.data || [])
           setPets(petsArray)

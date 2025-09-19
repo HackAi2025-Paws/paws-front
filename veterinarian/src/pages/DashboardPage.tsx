@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import SearchBar from '../components/dashboard/SearchBar'
 import PatientListItem from '../components/dashboard/PatientListItem'
-import Pagination from '../components/dashboard/Pagination'
+import Spinner from '../components/ui/Spinner'
 import { usePetsSearch, useDefaultPets } from '../hooks/usePets'
 import { useAuth } from '../modules/auth/AuthContext'
 
@@ -9,16 +9,15 @@ import { useAuth } from '../modules/auth/AuthContext'
 export default function DashboardPage() {
   const [query, setQuery] = useState('')
   const [searchFilter, setSearchFilter] = useState<'name' | 'ownerName' | 'breed'>('name')
-  const [currentPage, setCurrentPage] = useState(1)
   const { user, logout } = useAuth()
 
 
   const showingSearch = query.trim().length > 0
 
-  // Load default pets (first 5 without filters) or search pets
-  const { pets: defaultPets, loading: loadingDefault, error: errorDefault } = useDefaultPets(5)
-  const { pets: searchPets, loading: loadingSearch, error: errorSearch, pagination } = usePetsSearch(
-    showingSearch ? { [searchFilter]: query, limit: 5, page: currentPage } : {}
+  // Load default pets (all pets without filters) or search pets (all results)
+  const { pets: defaultPets, loading: loadingDefault, error: errorDefault } = useDefaultPets()
+  const { pets: searchPets, loading: loadingSearch, error: errorSearch } = usePetsSearch(
+    showingSearch ? { [searchFilter]: query } : {}
   )
 
 
@@ -40,13 +39,8 @@ export default function DashboardPage() {
     }
   }
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
   const handleSearch = (newQuery: string) => {
     setQuery(newQuery)
-    setCurrentPage(1) // Reset to first page when searching
   }
 
 
@@ -54,7 +48,7 @@ export default function DashboardPage() {
     <div className="dashboard">
       <header className="dashboard__header">
         <div className="brandRow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <div className="brandRow__brand">VetCare Digital</div>
+          <div className="brandRow__brand">PetLink</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {user && (
               <span style={{ fontSize: '14px', color: 'var(--muted)' }}>
@@ -95,7 +89,13 @@ export default function DashboardPage() {
         </div>
 
         <div className="patientList">
-          {loading && <div className="muted">Cargando…</div>}
+          {loading && (
+            <Spinner
+              size="medium"
+              text={showingSearch ? "Buscando mascotas..." : "Cargando mascotas..."}
+              className="spinner-container--page"
+            />
+          )}
           {error && <div className="muted">Error: {error}</div>}
           {!loading && !error && Array.isArray(allPets) && allPets.map((pet) => (
             <PatientListItem key={pet.id} pet={pet} />
@@ -105,15 +105,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {showingSearch && pagination && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={pagination.pages}
-            totalItems={pagination.total}
-            itemsPerPage={pagination.limit}
-            onPageChange={handlePageChange}
-          />
-        )}
       </section>
     </div>
   )

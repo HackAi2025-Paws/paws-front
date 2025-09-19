@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import type { Pet } from '../../services/petsService'
-import { petsService } from '../../services/petsService'
 
 interface PatientListItemProps {
   pet: Pet
@@ -22,14 +21,8 @@ function formatAge(dateOfBirth: string): string {
 export default function PatientListItem({ pet }: PatientListItemProps) {
   const navigate = useNavigate()
 
-  const handleClick = async () => {
-    try {
-      const petDetail = await petsService.getPetById(pet.id)
-      console.log('Pet detail:', petDetail)
-    } catch (error) {
-      console.error('Error fetching pet detail:', error)
-    }
-
+  const handleClick = () => {
+    console.log('Navigating to pet:', pet.id)
     navigate(`/pets/${pet.id}`)
   }
 

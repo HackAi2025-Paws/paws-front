@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage'
 import PetDetailPage from './pages/PetDetailPage'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import PublicRoute from './components/auth/PublicRoute'
+import Spinner from './components/ui/Spinner'
 import { useAuth } from './modules/auth/AuthContext'
 import './App.css'
 
@@ -16,10 +17,12 @@ export default function App() {
     return (
       <div style={{
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        backgroundColor: '#f8fafc'
+        backgroundColor: '#f8fafc',
+        gap: '24px'
       }}>
         <div style={{
           textAlign: 'center',
@@ -29,9 +32,9 @@ export default function App() {
             fontSize: '48px',
             marginBottom: '16px'
           }}>🩺</div>
-          <div style={{ fontSize: '18px', fontWeight: '600' }}>VetCare Digital</div>
-          <div style={{ fontSize: '14px', marginTop: '8px' }}>Cargando...</div>
+          <div style={{ fontSize: '18px', fontWeight: '600' }}>PetLink</div>
         </div>
+        <Spinner size="large" text="Verificando sesión..." />
       </div>
     )
   }

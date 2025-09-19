@@ -1,4 +1,5 @@
 import type { PatientRecord } from '../../modules/patients/types'
+import Spinner from '../ui/Spinner'
 
 interface PatientRecordsListProps {
   records: PatientRecord[]
@@ -36,7 +37,9 @@ export default function PatientRecordsList({
       </div>
 
       <div className="recordList">
-        {loading && <div className="muted">Cargando…</div>}
+        {loading && (
+          <Spinner size="medium" text="Cargando historial médico..." />
+        )}
         {!loading && records.map((record) => (
           <div key={record.id} className="recordItem">
             <div className="recordItem__icon">{getRecordIcon(record.type)}</div>

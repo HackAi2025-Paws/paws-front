@@ -55,7 +55,7 @@ export default function LoginPage() {
       <div className="authLayout__header">
         <Logo />
         <div className="brand">
-          <div className="brand__title">VetCare Digital</div>
+          <div className="brand__title">PetLink</div>
           <div className="brand__subtitle">Accede a tu plataforma veterinaria</div>
         </div>
       </div>
@@ -119,7 +119,7 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
 
-      <footer className="authLayout__footer">© 2024 VetCare Digital. Plataforma profesional para veterinarias.</footer>
+      <footer className="authLayout__footer">© 2024 PetLink. Plataforma profesional para veterinarias.</footer>
     </div>
   )
 }
