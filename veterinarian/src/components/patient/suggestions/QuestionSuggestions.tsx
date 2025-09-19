@@ -18,25 +18,6 @@ export default function QuestionSuggestions({
   onSuggestionClick,
   onRetry
 }: QuestionSuggestionsProps) {
-
-  const getPriorityDotColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-amber-500';
-      case 'low': return 'bg-blue-500';
-      default: return 'bg-blue-500';
-    }
-  };
-
-  const getPriorityTextColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'text-red-600';
-      case 'medium': return 'text-amber-600';
-      case 'low': return 'text-blue-600';
-      default: return 'text-blue-600';
-    }
-  };
-
   const handleSuggestionClick = (suggestion: Suggestion) => {
     console.log('[QuestionSuggestions] 💡 Sugerencia de pregunta seleccionada:', suggestion);
     if (onSuggestionClick) {
@@ -88,7 +69,7 @@ export default function QuestionSuggestions({
   if (suggestions.length > 0) {
     return (
       <div style={{ display: 'grid', gap: '12px' }}>
-        {suggestions.map((suggestion, index) => (
+        {suggestions.map((suggestion) => (
           <div
             key={suggestion.id}
             style={{
@@ -122,43 +103,6 @@ export default function QuestionSuggestions({
                 <MedicalIcons.MedicalQuestion size={16} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      backgroundColor: 'var(--brand-50)',
-                      color: 'var(--brand-700)'
-                    }}>
-                      {suggestion.category}
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{
-                        width: '8px',
-                        height: '8px',
-                        borderRadius: '50%'
-                      }} className={getPriorityDotColor(suggestion.priority)}></span>
-                      <span style={{
-                        fontSize: '12px',
-                        fontWeight: 500,
-                        textTransform: 'capitalize'
-                      }} className={getPriorityTextColor(suggestion.priority)}>
-                        {suggestion.priority}
-                      </span>
-                    </div>
-                  </div>
-                  <span style={{
-                    fontSize: '12px',
-                    color: 'var(--muted)',
-                    fontFamily: 'monospace'
-                  }}>
-                    #{(index + 1).toString().padStart(2, '0')}
-                  </span>
-                </div>
                 <p style={{
                   fontSize: '14px',
                   color: 'var(--text)',
@@ -174,12 +118,6 @@ export default function QuestionSuggestions({
                   alignItems: 'center',
                   justifyContent: 'space-between'
                 }}>
-                  <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                    Click para usar en consulta
-                  </span>
-                  <svg style={{ width: '16px', height: '16px', color: 'var(--muted)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
                 </div>
               </div>
             </div>

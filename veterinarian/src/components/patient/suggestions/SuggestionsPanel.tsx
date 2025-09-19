@@ -131,13 +131,6 @@ export default function SuggestionsPanel({
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              padding: '8px',
-              backgroundColor: 'var(--brand-600)',
-              borderRadius: '8px'
-            }}>
-              <MedicalIcons.MedicalSuggestions size={20} />
-            </div>
             <div>
               <h3 style={{
                 fontSize: '18px',
@@ -148,14 +141,6 @@ export default function SuggestionsPanel({
               }}>
                 Preguntas Inteligentes
               </h3>
-              <p style={{
-                fontSize: '12px',
-                color: 'var(--brand-700)',
-                fontWeight: 500,
-                margin: 0
-              }}>
-                Sugerencias contextuales para la consulta
-              </p>
             </div>
           </div>
 
