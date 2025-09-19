@@ -1,6 +1,6 @@
-import { InputHTMLAttributes } from 'react'
+import type { InputHTMLAttributes } from 'react'
 
-type SearchFilter = 'owner' | 'pet' | 'breed'
+type SearchFilter = 'name' | 'ownerName' | 'breed'
 
 type Props = {
   value: string
@@ -13,7 +13,7 @@ type Props = {
 export default function SearchBar({
   value,
   onChange,
-  searchFilter = 'pet',
+  searchFilter = 'name',
   onFilterChange,
   placeholder,
   ...props
@@ -22,9 +22,9 @@ export default function SearchBar({
     if (placeholder) return placeholder
 
     switch (searchFilter) {
-      case 'owner':
+      case 'ownerName':
         return 'Buscar por nombre de dueño...'
-      case 'pet':
+      case 'name':
         return 'Buscar por nombre de mascota...'
       case 'breed':
         return 'Buscar por raza...'
@@ -50,8 +50,8 @@ export default function SearchBar({
             value={searchFilter}
             onChange={(e) => onFilterChange(e.target.value as SearchFilter)}
           >
-            <option value="pet">Nombre de mascota</option>
-            <option value="owner">Nombre del dueño</option>
+            <option value="name">Nombre de mascota</option>
+            <option value="ownerName">Nombre del dueño</option>
             <option value="breed">Raza</option>
           </select>
         </div>

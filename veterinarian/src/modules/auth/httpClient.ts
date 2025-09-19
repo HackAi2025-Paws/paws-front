@@ -1,4 +1,4 @@
-import type { AuthClient, AuthSession, LoginInput, PhoneLoginInput, OTPVerificationInput, RegisterInput, PhoneRegisterInput, User } from './types'
+import type { AuthClient, AuthSession, LoginInput, PhoneLoginInput, OTPVerificationInput, RegisterInput, PhoneRegisterInput } from './types'
 import { apiClient } from '../../services/apiClient'
 import { otpService, loginService } from '../../services/authService'
 
@@ -11,9 +11,61 @@ function saveSession(session: AuthSession) {
 function readSession(): AuthSession | null {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) return null
+
   try {
-    return JSON.parse(raw) as AuthSession
-  } catch {
+    const sessionData = JSON.parse(raw) as any
+
+    // Normalize session format
+    let session: AuthSession
+
+    if (sessionData.token || sessionData.accessToken) {
+      // It's already normalized or can be normalized
+      session = {
+        token: sessionData.token || sessionData.accessToken,
+        user: sessionData.user
+      }
+    } else if (sessionData.success && sessionData.accessToken) {
+      // It's the raw API response format, normalize it
+      session = {
+        token: sessionData.accessToken,
+        user: sessionData.user
+      }
+      // Save the normalized format
+      saveSession(session)
+    } else {
+      clearSession()
+      return null
+    }
+
+    // Validate token expiration (only for JWT tokens)
+    const token = session.token
+    if (token) {
+      try {
+        const tokenParts = token.split('.')
+
+        if (tokenParts.length === 3) {
+          // It's a JWT token, validate expiration
+          const tokenPayload = JSON.parse(atob(tokenParts[1]))
+
+          if (tokenPayload.exp) {
+            const isExpired = tokenPayload.exp * 1000 < Date.now()
+
+            if (isExpired) {
+              clearSession()
+              return null
+            }
+          }
+        }
+        // Not a JWT token, assume it's valid
+      } catch (error) {
+        // If token can't be parsed but exists, assume it's valid (maybe it's not JWT)
+        console.error('Token validation error:', error)
+      }
+    }
+
+    return session
+  } catch (error) {
+    clearSession()
     return null
   }
 }
@@ -30,7 +82,25 @@ export const httpAuthClient: AuthClient = {
       throw new Error(response.error || 'Error de login')
     }
 
-    const session = response.data as AuthSession
+    let session: AuthSession
+
+    // Handle different response formats
+    if (response.data) {
+      // If response.data exists, use it
+      const data = response.data as any
+      session = {
+        token: data.token || data.accessToken,
+        user: data.user
+      }
+    } else {
+      // If no response.data, the response itself might be the session
+      const data = response as any
+      session = {
+        token: data.token || data.accessToken,
+        user: data.user
+      }
+    }
+
     saveSession(session)
     return session
   },
@@ -40,7 +110,14 @@ export const httpAuthClient: AuthClient = {
   },
 
   async verifyOTP({ phone, otp }: OTPVerificationInput): Promise<AuthSession> {
-    const session = await loginService.verifyOTP({ phone, otp })
+    const result = await loginService.verifyOTP({ phone, otp })
+
+    // Normalize the session format
+    const session: AuthSession = {
+      token: (result as any).token || (result as any).accessToken,
+      user: (result as any).user
+    }
+
     saveSession(session)
     return session
   },
@@ -52,7 +129,23 @@ export const httpAuthClient: AuthClient = {
       throw new Error(response.error || 'Error al registrar')
     }
 
-    const session = response.data as AuthSession
+    let session: AuthSession
+
+    // Handle different response formats
+    if (response.data) {
+      const data = response.data as any
+      session = {
+        token: data.token || data.accessToken,
+        user: data.user
+      }
+    } else {
+      const data = response as any
+      session = {
+        token: data.token || data.accessToken,
+        user: data.user
+      }
+    }
+
     saveSession(session)
     return session
   },

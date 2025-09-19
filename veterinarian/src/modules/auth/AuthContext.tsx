@@ -1,4 +1,5 @@
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import type { AuthClient, AuthSession, LoginInput, RegisterInput, PhoneRegisterInput, OTPVerificationInput, User } from './types'
 
 type AuthContextValue = {
@@ -25,7 +26,13 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
       .then((s) => {
         if (mounted) setSession(s)
       })
-      .finally(() => mounted && setIsLoading(false))
+      .catch((error) => {
+        console.error('Error getting current session:', error)
+        if (mounted) setSession(null)
+      })
+      .finally(() => {
+        if (mounted) setIsLoading(false)
+      })
     return () => {
       mounted = false
     }

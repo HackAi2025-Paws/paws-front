@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { apiClient } from '../../services/apiClient'
+import type { Consultation } from '../../types/consultations'
 
 interface AddRecordFormProps {
   onSave: (data: any) => void
   onVoiceInput: () => void
   petId: string // Required petId for backend mapping
+  initialData?: Consultation
 }
 
 type EntryType = '' | 'consulta' | 'vacuna' | 'tratamiento' | 'control' | 'emergencia' | 'cirugia' | 'estetica' | 'revision'
@@ -57,7 +59,7 @@ interface BackendConsultation {
   nextConsultation?: string // ISO date string
 }
 
-export default function AddRecordForm({ onSave, onVoiceInput, petId }: AddRecordFormProps) {
+export default function AddRecordForm({ petId, initialData }: AddRecordFormProps) {
   // Early validation - petId is required
   if (!petId || petId.trim() === '') {
     return (
@@ -78,12 +80,12 @@ export default function AddRecordForm({ onSave, onVoiceInput, petId }: AddRecord
 
   const [entryType, setEntryType] = useState<EntryType>('consulta')
   const [formData, setFormData] = useState({
-    motivo: '',
-    hallazgos: '',
-    diagnostico: '',
+    motivo: initialData?.chiefComplaint || '',
+    hallazgos: initialData?.findings || '',
+    diagnostico: initialData?.diagnosis || '',
     tratamiento: '',
-    proximosPasos: '',
-    notas: '',
+    proximosPasos: initialData?.nextSteps || '',
+    notas: initialData?.additionalNotes || '',
     fechaConsulta: new Date().toISOString().split('T')[0],
     proximaConsulta: ''
   })
@@ -91,6 +93,44 @@ export default function AddRecordForm({ onSave, onVoiceInput, petId }: AddRecord
   const [vaccines, setVaccines] = useState<VaccineEntry[]>([])
   const [vaccineCatalog, setVaccineCatalog] = useState<VaccineCatalog[]>([])
   const [treatments, setTreatments] = useState<TreatmentEntry[]>([])
+
+  // Load initial data when component mounts or initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        motivo: initialData.chiefComplaint || '',
+        hallazgos: initialData.findings || '',
+        diagnostico: initialData.diagnosis || '',
+        tratamiento: '',
+        proximosPasos: initialData.nextSteps || '',
+        notas: initialData.additionalNotes || '',
+        fechaConsulta: new Date().toISOString().split('T')[0],
+        proximaConsulta: ''
+      })
+
+      // Load vaccines if present
+      if (initialData.vaccines && Array.isArray(initialData.vaccines)) {
+        const mappedVaccines: VaccineEntry[] = initialData.vaccines.map((vaccine: any, index: number) => ({
+          id: `vaccine-${Date.now()}-${index}`,
+          vaccineId: vaccine.catalogId?.toString() || vaccine.vaccineId || '',
+          date: vaccine.applicationDate || vaccine.date || new Date().toISOString().split('T')[0],
+          expirationDate: vaccine.expirationDate || ''
+        }))
+        setVaccines(mappedVaccines)
+      }
+
+      // Load treatments if present
+      if (initialData.treatments && Array.isArray(initialData.treatments)) {
+        const mappedTreatments: TreatmentEntry[] = initialData.treatments.map((treatment: any, index: number) => ({
+          id: `treatment-${Date.now()}-${index}`,
+          name: treatment.name || '',
+          startDate: treatment.startDate || new Date().toISOString().split('T')[0],
+          endDate: treatment.endDate || ''
+        }))
+        setTreatments(mappedTreatments)
+      }
+    }
+  }, [initialData])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -177,85 +217,7 @@ export default function AddRecordForm({ onSave, onVoiceInput, petId }: AddRecord
     fetchVaccineCatalog()
   }, [])
 
-  // Map form data to backend format
-  const mapToBackendFormat = (): BackendConsultation | null => {
-    const petIdNumber = parseInt(petId, 10)
-    if (isNaN(petIdNumber)) {
-      console.error('petId must be a valid number:', petId)
-      return null
-    }
 
-    // Map vaccines to backend format
-    const backendVaccines: BackendVaccine[] = vaccines
-      .filter(vaccine => vaccine.vaccineId && vaccine.date) // Only include complete vaccines
-      .map(vaccine => ({
-        catalogId: parseInt(vaccine.vaccineId, 10),
-        applicationDate: vaccine.date,
-        expirationDate: vaccine.expirationDate || undefined,
-        petId: petIdNumber
-      }))
-
-    // Map treatments to backend format
-    const backendTreatments: BackendTreatment[] = treatments
-      .filter(treatment => treatment.name.trim() && treatment.startDate) // Only include complete treatments
-      .map(treatment => ({
-        name: treatment.name,
-        startDate: treatment.startDate,
-        endDate: treatment.endDate || undefined,
-        petId: petIdNumber
-      }))
-
-    // Map main consultation data
-    const backendConsultation: BackendConsultation = {
-      petId: petIdNumber,
-      chiefComplaint: formData.motivo,
-      consultationType: entryType,
-      date: formData.fechaConsulta,
-      findings: formData.hallazgos || undefined,
-      diagnosis: formData.diagnostico || undefined,
-      treatment: backendTreatments,
-      vaccines: backendVaccines,
-      nextSteps: formData.proximosPasos || undefined,
-      additionalNotes: formData.notas || undefined,
-      nextConsultation: formData.proximaConsulta || undefined
-    }
-
-    return backendConsultation
-  }
-
-  const handleSave = () => {
-    if (!entryType || !formData.motivo.trim()) {
-      alert('Por favor completa los campos obligatorios')
-      return
-    }
-
-    // Validate petId before attempting to save
-    const petIdNumber = parseInt(petId, 10)
-    if (isNaN(petIdNumber)) {
-      alert('Error: ID de mascota inválido. No se puede guardar la consulta.')
-      console.error('Invalid petId for save operation:', petId)
-      return
-    }
-
-    // Create backend format data
-    const backendData = mapToBackendFormat()
-    if (!backendData) {
-      alert('Error al preparar los datos para el servidor. Verifique la información ingresada.')
-      return
-    }
-
-    // For now, pass both formats - original and backend-ready
-    onSave({
-      // Original format for compatibility
-      type: entryType,
-      ...formData,
-      files,
-      vaccines,
-      treatments,
-      // Backend-ready format
-      backendFormat: backendData
-    })
-  }
 
   return (
     <div className="addRecordContainer">
@@ -358,17 +320,6 @@ export default function AddRecordForm({ onSave, onVoiceInput, petId }: AddRecord
                 value={formData.diagnostico}
                 onChange={(e) => handleInputChange('diagnostico', e.target.value)}
                 rows={3}
-              />
-            </div>
-
-            <div className="formGroup">
-              <label className="fieldLabel">Tratamiento</label>
-              <textarea
-                className="fieldTextarea"
-                placeholder="Plan de tratamiento y medicación..."
-                value={formData.tratamiento}
-                onChange={(e) => handleInputChange('tratamiento', e.target.value)}
-                rows={4}
               />
             </div>
 
