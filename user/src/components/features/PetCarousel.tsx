@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent } from '../ui/card'
-import { Button } from '../ui/button'
 import type { Pet } from '../../types/index.js'
-import { Plus, Calendar, Weight, Stethoscope } from 'lucide-react'
+import { Weight } from 'lucide-react'
 
 interface PetCarouselProps {
   pets: Pet[]
@@ -61,31 +60,13 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
   // const isCardActive = (index: number) => index === currentIndex
 
   if (pets.length === 0) {
-    return (
-      <Card className="border-dashed border-2 border-red-300 bg-transparent">
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <div className="text-6xl mb-4 animate-bounce">🐾</div>
-          <h3 className="text-lg font-semibold text-dark-900 mb-2">
-            ¡Agrega tu primera mascota!
-          </h3>
-          <p className="text-dark-600 text-center mb-4">
-            Comienza creando el perfil de tu compañero peludo
-          </p>
-          <Link to="/pet/add">
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Agregar Mascota
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
-    )
+    return null
   }
 
   return (
     <div className="space-y-4">
       {/* Carrusel estilo billetera virtual */}
-      <div className="relative h-64 overflow-hidden">
+      <div className="relative h-48 overflow-hidden">
         <div 
           ref={carouselRef}
           className="flex gap-4 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing h-full pb-4"
@@ -98,12 +79,8 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {pets.map((pet, _index) => {
+          {pets.map((pet) => {
             // const isActive = isCardActive(index)
-            const upcomingVaccines = pet.vaccinations.filter(v => 
-              v.nextDue && new Date(v.nextDue) > new Date()
-            ).length
-            const totalConsultations = pet.consultationRecords?.length || 0
 
             return (
               <div
@@ -113,10 +90,10 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
               >
                 <Link to={`/pet/${pet.id}`} className="block h-full">
                   <Card className="h-full border-dashed border-2 border-red-300 bg-transparent hover:bg-red-50/30 transition-all duration-300">
-                    <CardContent className="p-6 h-full flex flex-col">
+                    <CardContent className="p-4 h-full flex flex-col">
                       {/* Header con foto y nombre */}
-                      <div className="flex items-start space-x-4 mb-4">
-                        <div className="relative w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-orange-300">
+                      <div className="flex items-start space-x-3 mb-3">
+                        <div className="relative w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-orange-300">
                           {pet.photo ? (
                             <img 
                               src={pet.photo} 
@@ -124,14 +101,14 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
                               className="w-full h-full object-cover rounded-full"
                             />
                           ) : (
-                            <div className="text-2xl">
+                            <div className="text-xl">
                               {pet.breed.toLowerCase().includes('gat') ? '🐱' : '🐕'}
                             </div>
                           )}
                         </div>
                         
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-bold text-dark-900 truncate">
+                          <h3 className="text-base font-bold text-dark-900 truncate">
                             {pet.name}
                           </h3>
                           <p className="text-sm text-dark-600 truncate">
@@ -146,37 +123,19 @@ export const PetCarousel: React.FC<PetCarouselProps> = ({ pets }) => {
                       </div>
 
                       {/* Estadísticas rápidas */}
-                      <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="p-3 rounded-lg text-center bg-cream-200">
-                          <Weight className="h-4 w-4 mx-auto mb-1 text-orange-600" />
-                          <p className="text-xs text-dark-600">Peso</p>
-                          <p className="text-sm font-semibold text-dark-900">
-                            {pet.weight && pet.weight.min > 0 
-                              ? `${pet.weight.min}-${pet.weight.max} ${pet.weight.unit}`
-                              : 'No registrado'
-                            }
-                          </p>
-                        </div>
-                        
-                        <div className="p-3 rounded-lg text-center bg-cream-200">
-                          <Stethoscope className="h-4 w-4 mx-auto mb-1 text-red-600" />
-                          <p className="text-xs text-dark-600">Consultas</p>
-                          <p className="text-sm font-semibold text-dark-900">
-                            {totalConsultations}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Alertas importantes */}
-                      <div className="flex-1 flex flex-col justify-end">
-                        {upcomingVaccines > 0 && (
-                          <div className="flex items-center gap-2 p-2 rounded-lg bg-orange-100 text-orange-800">
-                            <Calendar className="h-4 w-4" />
-                            <span className="text-xs font-medium">
-                              {upcomingVaccines} vacuna{upcomingVaccines !== 1 ? 's' : ''} pendiente{upcomingVaccines !== 1 ? 's' : ''}
+                      <div className="mb-2">
+                        <div className="p-2 rounded text-center bg-cream-200">
+                          <div className="flex items-center justify-center gap-1">
+                            <Weight className="h-3 w-3 text-orange-600" />
+                            <span className="text-xs text-dark-600">Peso:</span>
+                            <span className="text-xs font-medium text-dark-900">
+                              {pet.weight && pet.weight.min > 0 
+                                ? `${pet.weight.min}-${pet.weight.max} ${pet.weight.unit}`
+                                : 'No registrado'
+                              }
                             </span>
                           </div>
-                        )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks'
 import { loadPets } from '../../store/petsSlice'
 import { setReminders } from '../../store/remindersSlice'
 import { petService } from '../../services/petService'
-import { Calendar, Heart, ChevronRight, Stethoscope, Plus, Bell } from 'lucide-react'
+import { Calendar, Heart, ChevronRight, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export const DashboardPage: React.FC = () => {
@@ -27,6 +27,7 @@ export const DashboardPage: React.FC = () => {
         
         // Cargar recordatorios reales del backend
         const reminders = await petService.getPetReminders()
+        console.log('📥 Loaded reminders from backend:', reminders)
         dispatch(setReminders(reminders))
         
         console.log('✅ Dashboard data loaded successfully')
@@ -43,7 +44,18 @@ export const DashboardPage: React.FC = () => {
     loadDashboardData()
   }, [dispatch, pets.length])
 
-  const upcomingReminders = reminders.filter(r => !r.isCompleted).slice(0, 3)
+  const upcomingReminders = reminders.filter(r => {
+    if (r.isCompleted) return false
+    
+    // Filtrar solo recordatorios de hoy o futuros
+    const reminderDate = new Date(r.date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Resetear horas para comparar solo fechas
+    
+    return reminderDate >= today
+  }).slice(0, 3)
+
+  console.log('📊 Total reminders:', reminders.length, 'Upcoming reminders:', upcomingReminders.length)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -63,11 +75,6 @@ export const DashboardPage: React.FC = () => {
           
           {/* Iconos del lado derecho */}
           <div className="flex items-center space-x-3">
-            <Link to="/reminders">
-              <div className="banking-icon-soft">
-                <Bell className="w-5 h-5" />
-              </div>
-            </Link>
             <div className="banking-icon-soft">
               <PetIllustration className="w-8 h-8" />
             </div>
@@ -108,12 +115,6 @@ export const DashboardPage: React.FC = () => {
               <p className="banking-text-secondary mb-4 text-sm">
                 Comienza a cuidar a tus compañeros peludos
               </p>
-              <Link to="/pet/add">
-                <button className="banking-button-primary flex items-center">
-                  Agregar Mascota
-                  <Plus className="w-4 h-4 ml-2" />
-                </button>
-              </Link>
             </div>
           ) : (
         <PetCarousel pets={pets} />
@@ -134,13 +135,10 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <div className="banking-balance-card">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center mb-4">
                 <div className="banking-icon-coral">
                   <Calendar className="w-6 h-6" />
                 </div>
-                <span className="text-sm banking-text-primary font-medium">
-                  {upcomingReminders.length} pendiente{upcomingReminders.length > 1 ? 's' : ''}
-                </span>
               </div>
               
               {upcomingReminders.slice(0, 2).map(reminder => (
@@ -197,23 +195,6 @@ export const DashboardPage: React.FC = () => {
               </div>
             </Link>
             
-            <div className="banking-grid gap-3">
-              <div className="banking-stat-card">
-                <div className="banking-icon-banking mx-auto mb-2">
-                  <Stethoscope className="w-5 h-5" />
-                </div>
-                <h4 className="text-xs font-semibold banking-text-secondary mb-1">Emergencias</h4>
-                <p className="text-xs text-gray-500">Qué hacer en casos urgentes</p>
-              </div>
-              
-              <div className="banking-stat-card">
-                <div className="banking-icon-coral mx-auto mb-2">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <h4 className="text-xs font-semibold banking-text-secondary mb-1">Vacunación</h4>
-                <p className="text-xs text-gray-500">Calendario de vacunas</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

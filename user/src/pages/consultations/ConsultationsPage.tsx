@@ -37,6 +37,18 @@ import {
 export const ConsultationsPage: React.FC = () => {
   // const dispatch = useAppDispatch()
   const { pets } = useAppSelector((state) => state.pets)
+
+  // Función para formatear fechas evitando problemas de zona horaria
+  const formatDisplayDate = (dateString: string) => {
+    if (!dateString) return ''
+    // Crear fecha como local para evitar conversión UTC
+    const date = new Date(dateString)
+    // Si la fecha parece ser UTC, ajustarla manualmente
+    if (dateString.includes('T') && dateString.includes('Z')) {
+      date.setTime(date.getTime() + date.getTimezoneOffset() * 60000)
+    }
+    return date.toLocaleDateString('es-ES')
+  }
   
   const [showAddForm, setShowAddForm] = useState(false)
   const [showVaccineForm, setShowVaccineForm] = useState(false)
@@ -157,37 +169,47 @@ export const ConsultationsPage: React.FC = () => {
         <Header title="Historial de Consultas" showBack={false} />
         
         <div className="p-4 space-y-6">
-          {/* Botón agregar consulta */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Registros Médicos
-              </h2>
-              <p className="text-sm text-gray-600">
-                {filteredRecords.length} registro{filteredRecords.length !== 1 ? 's' : ''} encontrado{filteredRecords.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={() => setShowAddForm(true)} className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Nueva Consulta
-              </Button>
-              <Button 
-                onClick={() => setShowVaccineForm(true)} 
-                className="flex items-center gap-2"
-                variant="outline"
-              >
-                <Syringe className="h-4 w-4" />
-                Nueva Vacuna
-              </Button>
-              <Button 
-                onClick={() => setShowTreatmentForm(true)} 
-                className="flex items-center gap-2"
-                variant="outline"
-              >
-                <Pill className="h-4 w-4" />
-                Nuevo Tratamiento
-              </Button>
+          {/* Header y botones */}
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+              <div>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                  Registros Médicos
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {filteredRecords.length} registro{filteredRecords.length !== 1 ? 's' : ''} encontrado{filteredRecords.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              
+              {/* Botones compactos */}
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  onClick={() => setShowAddForm(true)} 
+                  size="sm"
+                  className="flex items-center gap-1.5"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span className="text-sm">Consulta</span>
+                </Button>
+                <Button 
+                  onClick={() => setShowVaccineForm(true)} 
+                  size="sm"
+                  variant="outline"
+                  className="flex items-center gap-1.5"
+                >
+                  <Syringe className="h-3.5 w-3.5" />
+                  <span className="text-sm">Vacuna</span>
+                </Button>
+                <Button 
+                  onClick={() => setShowTreatmentForm(true)} 
+                  size="sm"
+                  variant="outline"
+                  className="flex items-center gap-1.5"
+                >
+                  <Pill className="h-3.5 w-3.5" />
+                  <span className="text-sm">Tratamiento</span>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -206,7 +228,7 @@ export const ConsultationsPage: React.FC = () => {
               </div>
 
               {/* Filtros */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     <Filter className="h-4 w-4 inline mr-1" />
@@ -300,40 +322,41 @@ export const ConsultationsPage: React.FC = () => {
                 const isExpanded = expandedRecords.has(record.id)
                 
                 return (
-                  <Card key={record.id} className="hover:shadow-md transition-shadow">
+                  <Card key={record.id} className="hover:shadow-md transition-shadow overflow-hidden">
                     <CardContent className="p-0">
                       <button
                         onClick={() => toggleExpanded(record.id)}
-                        className="w-full p-4 text-left hover:bg-gray-50 transition-colors"
+                        className="w-full p-3 sm:p-4 text-left hover:bg-gray-50 transition-colors"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0 space-y-2 sm:space-y-3">
                             {/* Encabezado */}
-                            <div className="flex items-start gap-3">
-                              <div className="text-2xl">{typeInfo.icon}</div>
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-gray-900">
+                            <div className="flex items-start gap-2 sm:gap-3">
+                              <div className="text-lg sm:text-xl flex-shrink-0 mt-0.5">{typeInfo.icon}</div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-gray-900 text-sm sm:text-base break-words leading-tight">
                                   {record.title}
                                 </h3>
-                                <p className="text-sm text-gray-600">
-                                  {record.petName} • {new Date(record.date).toLocaleDateString('es-ES')}
-                                </p>
+                                <div className="text-xs sm:text-sm text-gray-600 mt-1">
+                                  <div className="truncate">{record.petName}</div>
+                                  <div className="text-xs text-gray-500">{formatDisplayDate(record.date)}</div>
+                                </div>
                               </div>
                             </div>
 
                             {/* Badges y info básica */}
-                            <div className="flex flex-wrap gap-2">
-                              <Badge variant="outline" className={typeInfo.color}>
+                            <div className="flex flex-wrap gap-1 sm:gap-2 max-w-full">
+                              <Badge variant="outline" className={`${typeInfo.color} text-xs`}>
                                 {typeInfo.label}
                               </Badge>
                               {record.veterinarian && (
-                                <Badge variant="outline" className="bg-gray-100 text-gray-700">
-                                  <User className="h-3 w-3 mr-1" />
-                                  {record.veterinarian}
+                                <Badge variant="outline" className="bg-gray-100 text-gray-700 text-xs max-w-[120px] sm:max-w-none">
+                                  <User className="h-3 w-3 mr-1 flex-shrink-0" />
+                                  <span className="truncate">{record.veterinarian}</span>
                                 </Badge>
                               )}
                               {record.cost && (
-                                <Badge variant="outline" className="bg-green-100 text-green-700">
+                                <Badge variant="outline" className="bg-green-100 text-green-700 text-xs">
                                   <DollarSign className="h-3 w-3 mr-1" />
                                   ${record.cost}
                                 </Badge>
@@ -341,16 +364,17 @@ export const ConsultationsPage: React.FC = () => {
                             </div>
 
                             {/* Diagnóstico preview */}
-                            <p className="text-sm text-gray-700 line-clamp-2">
-                              <strong>Diagnóstico:</strong> {record.diagnosis}
-                            </p>
+                            <div className="text-xs sm:text-sm text-gray-700">
+                              <span className="font-medium">Diagnóstico:</span>
+                              <p className="line-clamp-2 break-words mt-1">{record.diagnosis}</p>
+                            </div>
                           </div>
                           
-                          <div className="flex-shrink-0 ml-3">
+                          <div className="flex-shrink-0 ml-2 sm:ml-3 mt-1">
                             {isExpanded ? (
-                              <ChevronUp className="h-5 w-5 text-gray-400" />
+                              <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                             ) : (
-                              <ChevronDown className="h-5 w-5 text-gray-400" />
+                              <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                             )}
                           </div>
                         </div>
@@ -358,29 +382,29 @@ export const ConsultationsPage: React.FC = () => {
                       
                       {/* Contenido expandido */}
                       {isExpanded && (
-                        <div className="px-4 pb-4 border-t border-gray-100">
-                          <div className="pt-4 space-y-4">
+                        <div className="px-3 sm:px-4 pb-3 sm:pb-4 border-t border-gray-100">
+                          <div className="pt-3 sm:pt-4 space-y-3 sm:space-y-4">
                             {/* Información completa */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
                               {record.clinicName && (
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4 text-gray-400" />
-                                  <span><strong>Clínica:</strong> {record.clinicName}</span>
+                                <div className="flex items-start gap-2">
+                                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                                  <span className="break-words"><strong>Clínica:</strong> {record.clinicName}</span>
                                 </div>
                               )}
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-gray-400" />
-                                <span><strong>Fecha:</strong> {new Date(record.date).toLocaleDateString('es-ES')}</span>
+                              <div className="flex items-start gap-2">
+                                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                                <span><strong>Fecha:</strong> {formatDisplayDate(record.date)}</span>
                               </div>
                             </div>
 
                             {/* Diagnóstico completo */}
                             <div>
-                              <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-                                <Stethoscope className="h-4 w-4" />
+                              <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
+                                <Stethoscope className="h-4 w-4 flex-shrink-0" />
                                 Diagnóstico
                               </h4>
-                              <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">
+                              <p className="text-gray-700 bg-gray-50 p-3 rounded-lg text-xs sm:text-sm break-words">
                                 {record.diagnosis}
                               </p>
                             </div>
@@ -388,11 +412,11 @@ export const ConsultationsPage: React.FC = () => {
                             {/* Prescripción */}
                             {record.prescription && (
                               <div>
-                                <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-                                  <FileText className="h-4 w-4" />
+                                <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
+                                  <FileText className="h-4 w-4 flex-shrink-0" />
                                   Prescripción/Tratamiento
                                 </h4>
-                                <p className="text-gray-700 bg-blue-50 p-3 rounded-lg">
+                                <p className="text-gray-700 bg-blue-50 p-3 rounded-lg text-xs sm:text-sm break-words">
                                   {record.prescription}
                                 </p>
                               </div>
@@ -401,8 +425,8 @@ export const ConsultationsPage: React.FC = () => {
                             {/* Notas */}
                             {record.notes && (
                               <div>
-                                <h4 className="font-medium text-gray-900 mb-2">Notas</h4>
-                                <p className="text-gray-600 italic">
+                                <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Notas</h4>
+                                <p className="text-gray-600 italic text-xs sm:text-sm break-words">
                                   {record.notes}
                                 </p>
                               </div>
@@ -411,9 +435,9 @@ export const ConsultationsPage: React.FC = () => {
                             {/* Próxima cita */}
                             {record.nextAppointment && (
                               <div className="bg-orange-50 p-3 rounded-lg">
-                                <p className="text-orange-800 font-medium">
-                                  <Calendar className="h-4 w-4 inline mr-1" />
-                                  Próxima cita: {new Date(record.nextAppointment).toLocaleDateString('es-ES')}
+                                <p className="text-orange-800 font-medium text-xs sm:text-sm flex items-center gap-1">
+                                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                                  <span>Próxima cita: {formatDisplayDate(record.nextAppointment)}</span>
                                 </p>
                               </div>
                             )}
@@ -421,7 +445,7 @@ export const ConsultationsPage: React.FC = () => {
                             {/* Metadatos */}
                             <div className="pt-2 border-t border-gray-100">
                               <p className="text-xs text-gray-500">
-                                Registrado el {new Date(record.createdAt).toLocaleDateString('es-ES')} a las{' '}
+                                Registrado el {formatDisplayDate(record.createdAt)} a las{' '}
                                 {new Date(record.createdAt).toLocaleTimeString('es-ES')}
                               </p>
                             </div>

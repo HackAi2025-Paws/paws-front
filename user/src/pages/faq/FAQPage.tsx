@@ -80,34 +80,6 @@ export const FAQPage: React.FC = () => {
       
       <div className="p-4 space-y-6">
         {/* Información personalizada */}
-        {pets.length > 0 && !showAllQuestions && (
-          <Card className="border-blue-200 bg-blue-50">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-                <div className="flex-1">
-                  <h3 className="font-medium text-blue-900 mb-1">
-                    Preguntas personalizadas para tus mascotas
-                  </h3>
-                  <p className="text-sm text-blue-800 mb-3">
-                    Mostrando preguntas relevantes para: {' '}
-                    {userPetSpecies.filter(s => s !== 'general').map(species =>
-                      `${getSpeciesEmoji(species)} ${getSpeciesLabel(species)}`
-                    ).join(', ')}
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowAllQuestions(true)}
-                    className="text-blue-700 border-blue-300 hover:bg-blue-100"
-                  >
-                    Ver todas las preguntas
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {showAllQuestions && (
           <Card className="border-gray-200">
